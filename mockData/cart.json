@@ -1,0 +1,18 @@
+[
+    {
+        "products": [
+            {
+                "productId": "6773d15c678876b6710d2d29",
+                "deliveryOptionId": "1",
+                "dateOrdered": "December 31",
+                "quantity": 2
+            },
+            {
+                "productId": "6773d15c678876b6710d2d2c",
+                "deliveryOptionId": "1",
+                "dateOrdered": "December 31",
+                "quantity": 1
+            }
+        ]
+    }
+]

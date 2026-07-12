@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
+  <title>Afrodatagh - Login & Signup</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 5px;
+    }
+
+    p {
+      margin-bottom: 30px;
+      color: #666;
+    }
+
+    .form-group {
+      position: relative;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 40px 12px 35px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .form-group .icon {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      color: #888;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #00bfff;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .forgot,
+    .toggle {
+      margin-top: 15px;
+      display: block;
+      color: #007bff;
+      font-size: 14px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .crafted {
+      margin-top: 30px;
+      font-size: 13px;
+      color: #888;
+    }
+
+    .crafted span {
+      color: red;
+    }
+
+    #signup-form {
+      display: none;
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        padding: 25px;
+      }
+    }
+
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .success {
+      color: green;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #00bfff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
+  <link rel="stylesheet" href="/font-awesome/css/all.min.css" />
+</head>
+
+<body>
+
+  <div class="container">
+    <h2 id="form-title">Welcome Back!</h2>
+    <p id="form-subtitle">Sign in to continue to the dashboard.</p>
+
+    <!-- Login Form -->
+    <form id="login-form">
+      <div class="form-group">
+        <i class="fa fa-envelope icon"></i>
+        <input type="email" id="login-email" placeholder="Email" required />
+      </div>
+      <div class="form-group">
+        <i class="fa fa-lock icon"></i>
+        <input type="password" id="login-password" placeholder="Password" required />
+      </div>
+      <button type="submit">Log In</button>
+      <a class="forgot" onclick="showResetForm()">Forgot your password?</a>
+
+    </form>
+
+    <!-- Signup Form -->
+    <form id="signup-form">
+      <div class="form-group">
+        <i class="fa fa-user icon"></i>
+        <input type="text" id="signup-username" placeholder="Username" required />
+      </div>
+      <div class="form-group">
+        <i class="fa fa-user icon"></i>
+        <input type="text" id="signup-firstname" placeholder="First Name" required />
+      </div>
+      <div class="form-group">
+        <i class="fa fa-user icon"></i>
+        <input type="text" id="signup-lastname" placeholder="Last Name" required />
+      </div>
+      <div class="form-group">
+        <i class="fa fa-phone icon"></i>
+        <input type="text" id="signup-phone" placeholder="Phone number" required />
+      </div>
+      <div class="form-group">
+        <i class="fa fa-envelope icon"></i>
+        <input type="email" id="signup-email" placeholder="Email" required />
+      </div>
+      <div class="form-group">
+        <i class="fa fa-lock icon"></i>
+        <input type="password" id="signup-password" placeholder="Password" required />
+      </div>
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <!-- Reset Password Form -->
+    <form id="reset-form" style="display: none;">
+      <!-- <h2>Reset Password</h2>
+  <p>Send a password reset link to your email.</p> -->
+      <div class="form-group">
+        <i class="fa fa-envelope icon"></i>
+        <input type="email" id="reset-email" placeholder="Email" required />
+      </div>
+      <button type="submit">Send Email</button>
+      <a class="forgot" onclick="showLoginForm()">Login with Password</a>
+    </form>
+
+
+    <span class="toggle" onclick="toggleForms()">Don't have an account? Sign up</span>
+
+    <div id="response-msg"></div>
+
+    <div class="crafted">
+      Crafted with <span>❤</span> by Abakah Joshua
+    </div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById("login-form");
+    const signupForm = document.getElementById("signup-form");
+    const toggleText = document.querySelector(".toggle");
+    const title = document.getElementById("form-title");
+    const subtitle = document.getElementById("form-subtitle");
+    const responseMsg = document.getElementById("response-msg");
+
+    function toggleForms() {
+      if (loginForm.style.display === "none") {
+        loginForm.style.display = "block";
+        signupForm.style.display = "none";
+        toggleText.textContent = "Don't have an account? Sign up";
+        title.textContent = "Welcome Back!";
+        subtitle.textContent = "Sign in to continue to the dashboard.";
+        responseMsg.innerHTML = '';
+      } else {
+        loginForm.style.display = "none";
+        signupForm.style.display = "block";
+        toggleText.textContent = "Already have an account? Log in";
+        title.textContent = "Join Us!";
+        subtitle.textContent = "Create your account to get started.";
+        responseMsg.innerHTML = '';
+      }
+    }
+
+    // Login Submit
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+      const button = loginForm.querySelector("button");
+      button.disabled = true;
+      button.innerHTML = `Logging in <span class="spinner"></span>`;
+
+      const res = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
+      button.disabled = false;
+      button.innerHTML = "Log In";
+      //   console.log
+      const data = await res.json();
+      console.log(data)
+      if (data.token) {
+        localStorage.setItem(`token-${data.userId}`, data.token);
+        localStorage.setItem(`userId`, data.userId)
+        sessionStorage.setItem(`token-${data.userId}`, data.token);
+        sessionStorage.setItem(`userId`, data.userId)
+
+      }
+      if (res.ok) {
+        responseMsg.innerHTML = `<p class="success">${data.message || "Login successful!"}</p>`;
+        setTimeout(() => {
+          // window.location.href = `/api/v1/bundle?id=${data.userId}`; // Redirect to dashboard
+          window.location.href = `/afrodatahome`;
+        }, 1000); // Optional delay
+      } else {
+        responseMsg.innerHTML = `<p class="error">${data.msg || "Login failed."}</p>`;
+      }
+
+    });
+
+    // Signup Submit
+    signupForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("signup-username").value;
+      const firstName = document.getElementById("signup-firstname").value;
+      const lastName = document.getElementById("signup-lastname").value;
+      const email = document.getElementById("signup-email").value;
+      const password = document.getElementById("signup-password").value;
+      const phone = document.getElementById("signup-phone").value;
+      const button = signupForm.querySelector("button");
+      button.disabled = true;
+      button.innerHTML = `Signing up <span class="spinner"></span>`;
+
+
+      const res = await fetch("/api/v1/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, firstName, lastName, email, password, phone })
+      });
+      button.disabled = false;
+      button.innerHTML = "Sign Up";
+      const data = await res.json();
+      console.log(data)
+      if (data.token) {
+        localStorage.setItem(`token-${data.userId}`, data.token);
+        localStorage.setItem(`userId`, data.userId)
+        sessionStorage.setItem(`token-${data.userId}`, data.token);
+        sessionStorage.setItem(`userId`, data.userId)
+      }
+      if (res.ok) {
+        responseMsg.innerHTML = `<p class="success">${data.message || "Login successful!"}</p>`;
+        setTimeout(() => {
+          // window.location.href = `/api/v1/bundle?id=${data.userId}`; // Redirect to dashboard
+          window.location.href = `/afrodatahome`;
+        }, 1000); // Optional delay
+      } else {
+        responseMsg.innerHTML = `<p class="error">${data.msg || "Login failed."}</p>`;
+      }
+
+    });
+
+
+    function showResetForm() {
+      loginForm.style.display = "none";
+      signupForm.style.display = "none";
+      document.getElementById("reset-form").style.display = "block";
+      toggleText.style.display = "none"; // hide toggle for login/signup
+      title.textContent = "Reset Password";
+      subtitle.textContent = "Send a password reset link to your email.";
+      responseMsg.innerHTML = '';
+    }
+
+    function showLoginForm() {
+      loginForm.style.display = "block";
+      signupForm.style.display = "none";
+      document.getElementById("reset-form").style.display = "none";
+      toggleText.style.display = "block"; // show toggle again
+      title.textContent = "Welcome Back!";
+      subtitle.textContent = "Sign in to continue to the dashboard.";
+      responseMsg.innerHTML = '';
+    }
+
+    // Handle reset email submission
+    document.getElementById("reset-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("reset-email").value;
+      const button = document.getElementById("reset-form").querySelector("button");
+      button.disabled = true;
+      button.innerHTML = `Sending Email<span class="spinner"></span>`;
+
+      const res = await fetch("/api/v1/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email })
+      });
+
+      button.disabled = false;
+      button.innerHTML = "Send Email";
+
+      const data = await res.json();
+      if (res.ok) {
+        responseMsg.innerHTML = `<p class="success">${data.message || "Reset link sent!"}</p>`;
+      } else {
+        responseMsg.innerHTML = `<p class="error">${data.msg || "Reset failed."}</p>`;
+      }
+    });
+  </script>
+
+</body>
+
+</html>

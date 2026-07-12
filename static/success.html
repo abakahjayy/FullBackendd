@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AfroData - Payment Success</title>
+    <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #1b1f3b, #4b79a1);
+            min-height: 100vh;
+            color: #fff;
+            padding-top: 65px;
+            /* Prevent content hiding under navbar */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            text-align: center;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #101322;
+            padding: 15px 25px;
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .navbar h2 {
+            font-size: 1.5em;
+            color: #4bc0c8;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-info span {
+            font-size: 0.9em;
+        }
+
+        .login-btn {
+            background: #00bcd4;
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Success Message Box */
+        .success-box {
+            margin-top: 120px;
+            background: rgba(75, 192, 200, 0.15);
+            border: 2px solid #4bc0c8;
+            border-radius: 15px;
+            padding: 40px 30px;
+            max-width: 450px;
+            width: 100%;
+            color: #e0f7fa;
+            box-shadow: 0 0 15px #4bc0c8aa;
+        }
+
+        .success-box h1 {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            color: #00bcd4;
+        }
+
+        .success-box p {
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            color: #d0f0f8;
+        }
+
+        .success-box .reference {
+            font-weight: bold;
+            font-size: 1.2em;
+            background: #004d40;
+            padding: 10px 20px;
+            border-radius: 8px;
+            user-select: all;
+            cursor: pointer;
+            margin-bottom: 30px;
+            display: inline-block;
+        }
+
+        .success-box button {
+            background: #00bcd4;
+            border: none;
+            color: #101322;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .success-box button:hover {
+            background: #008c9e;
+            color: #fff;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.1);
+            color: #aaa;
+            font-size: 0.9em;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .success-box {
+                margin-top: 100px;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <h2 onclick="window.location.href='/afrodatahome'" style="cursor: pointer;">AfroData</h2>
+        <div class="user-info" id="auth-section">
+            <!-- Populated by JS -->
+        </div>
+    </div>
+
+    <!-- Success Content -->
+    <div class="success-box" role="main" aria-live="polite">
+        <h1>Payment Successful!</h1>
+        <p>Thank you for your purchase. Your data bundle will be activated shortly.</p>
+
+        <div>
+            <div>Payment Reference:</div>
+            <div class="reference" id="paymentReference" title="Click to copy"></div>
+        </div>
+
+        <button id="goDashboardBtn">Go to Dashboard</button>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        &copy; 2025 AfroData. All rights reserved.
+    </footer>
+
+    <script>
+        // User Auth & Navbar logic from your original page
+        const authSection = document.getElementById("auth-section");
+
+        function clearCookies() {
+            document.cookie.split(";").forEach(cookie => {
+                const eqPos = cookie.indexOf("=");
+                const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+            });
+        }
+
+        function logout() {
+            const userId = getUserId();
+            fetch(`/api/v1/auth/logout?userId=${userId}`, {
+                method: "POST",
+                credentials: "include"
+            })
+                .then(res => {
+                    if (res.ok) {
+                        localStorage.removeItem(`token-${userId}`);
+                        localStorage.removeItem("userId");
+                        sessionStorage.removeItem("userId");
+                        localStorage.removeItem(`datas-${userId}`);
+                        localStorage.clear();
+                        sessionStorage.clear();
+                        clearCookies();
+                        window.location.href = "/afrodatahome";
+                    } else {
+                        alert("Logout failed");
+                    }
+                })
+                .catch(() => alert("Logout error"));
+        }
+
+        function getUserId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get("id") || localStorage.getItem("userId") || sessionStorage.getItem("userId");
+        }
+
+        async function fetchUserData(userId) {
+            try {
+                const response = await fetch(`/api/v1/users/${userId}`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" }
+                });
+
+                if (!response.ok) throw new Error("Failed to fetch user data");
+
+                const data = await response.json();
+
+                localStorage.setItem(`profileId-${userId}`, data.user.profilePictureId || "");
+                localStorage.setItem("userId", data.user._id);
+                localStorage.setItem("userRole", data.user.role);
+                localStorage.setItem("username", data.user.username);
+                localStorage.setItem("email", data.user.email);
+
+                return data.user;
+            } catch {
+                return null;
+            }
+        }
+
+        async function fetchProfilePicture(profilePictureId) {
+            if (!profilePictureId) return null;
+            try {
+                const res = await fetch(`/api/v1/uploadFiles/download/${profilePictureId}`);
+                if (!res.ok) throw new Error("Failed to fetch profile picture");
+
+                const blob = await res.blob();
+                return URL.createObjectURL(blob);
+            } catch {
+                return null;
+            }
+        }
+
+        async function setupUserProfile() {
+            const userId = getUserId();
+
+            if (!userId) {
+                authSection.innerHTML = `
+        <img src="https://www.gravatar.com/avatar?d=mp" alt="Guest Avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
+        <span>Guest</span>
+        <button class="login-btn" onclick="login()">Login</button>
+      `;
+                return;
+            }
+
+            const user = await fetchUserData(userId);
+
+            if (!user) {
+                authSection.innerHTML = `
+        <img src="https://www.gravatar.com/avatar?d=mp" alt="Guest Avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
+        <span>Guest</span>
+        <button class="login-btn" onclick="login()">Login</button>
+      `;
+                return;
+            }
+
+            const adminContainer = document.getElementById("admin-button-container");
+            if (user.role === "admin") {
+                // (You can add admin buttons here if you want)
+            }
+
+            const profilePicUrl = await fetchProfilePicture(user.profile_picture_id);
+            const imgSrc = profilePicUrl || "https://www.gravatar.com/avatar?d=mp";
+
+            const displayText = user.role === "admin" ? "Admin" : user.username || "User";
+
+            authSection.innerHTML = `
+      <img src="${imgSrc}" alt="User Avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">
+      <span>${displayText}</span>
+      <button class="login-btn" style="background:#f44336;" id="logout-btn">Logout</button>
+    `;
+
+            document.getElementById("logout-btn").addEventListener("click", logout);
+        }
+
+        function login() {
+            window.location.href = "/api/v1/bundle/login";
+        }
+
+        // Copy reference to clipboard on click
+       document.addEventListener("DOMContentLoaded", () => {
+    setupUserProfile();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const reference = urlParams.get("reference") || "N/A";
+    const isAFA = urlParams.get("type") === "afa"; // <-- detect AFA payment
+
+    // Update page text based on type
+    if (isAFA) {
+        document.querySelector(".success-box h1").textContent = "AFA Registration Successful!";
+        document.querySelector(".success-box p").textContent =
+            "Thank you for registering for AFA. Your details have been recorded successfully.";
+    }
+
+    const refEl = document.getElementById("paymentReference");
+    refEl.textContent = reference;
+    refEl.addEventListener("click", () => {
+        navigator.clipboard.writeText(reference).then(() => {
+            alert("Reference copied to clipboard!");
+        });
+    });
+
+    document.getElementById("goDashboardBtn").addEventListener("click", () => {
+        const userId = getUserId();
+        if (userId) {
+            window.location.href = "/afrodatadashboard";
+        } else {
+            window.location.href = "/api/v1/bundle/login";
+        }
+    });
+});
+
+        
+    </script>
+</body>
+
+</html>

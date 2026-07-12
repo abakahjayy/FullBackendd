@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AfroData - Buy Data</title>
+  <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #1b1f3b, #4b79a1);
+      min-height: 100vh;
+      color: #fff;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #101322;
+      padding: 15px 25px;
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .navbar h2 {
+      font-size: 1.5em;
+      color: #4bc0c8;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-info img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .user-info span {
+      font-size: 0.9em;
+    }
+
+    .login-btn {
+      background: #00bcd4;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    /* Heading */
+    .heading {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .heading h1 {
+      font-size: 2.5em;
+      margin-bottom: 5px;
+    }
+
+    .heading p {
+      font-size: 1.1em;
+      color: #ccc;
+    }
+
+    /* Network Cards */
+    .network-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 30px;
+      padding: 40px 20px;
+    }
+
+    .card {
+      background: #f5f5f5;
+      color: #000;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      width: 240px;
+      padding: 25px;
+      text-align: center;
+      transition: 0.3s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .card img {
+      width: 90px;
+      height: auto;
+      margin-bottom: 15px;
+    }
+
+    .card h3 {
+      margin-bottom: 5px;
+      font-size: 1.1em;
+    }
+
+    .card p {
+      font-size: 0.85em;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .card button {
+      background: #222;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .card button:hover {
+      /* background: #00bcd4; */
+      opacity:1;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.1);
+      color: #aaa;
+      font-size: 0.9em;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        width: 90%;
+      }
+
+      .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .user-info {
+        margin-top: 10px;
+      }
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #1b1f3b, #4b79a1);
+      min-height: 100vh;
+      color: #fff;
+      padding-top: 65px;
+      /* Prevent content from hiding under navbar */
+    }
+
+    /* Navbar fixed at top */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #101322;
+      padding: 15px 25px;
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+
+
+
+    /* Modal Styles */
+#buyModal, #afaModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 30, 0.85);
+  z-index: 9999;
+  backdrop-filter: blur(3px);
+   overflow-y: auto;       /* Enable vertical scrolling */
+   scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+
+.modal-content {
+  background: linear-gradient(135deg, #ffffff, #e3f2fd);
+  color: #333;
+  width: 90%;
+  max-width: 420px;
+  margin: 100px auto;
+  padding: 25px 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.modal-content h3 {
+  color: #1b1f3b;
+  margin-bottom: 20px;
+}
+
+.modal-content input,
+.modal-content select {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 16px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1em;
+  outline: none;
+}
+
+.modal-content input:focus,
+.modal-content select:focus {
+  border-color: #4b79a1;
+  box-shadow: 0 0 5px #4b79a1aa;
+}
+
+.modal-content button {
+  background: linear-gradient(to right, #4bc0c8, #319795);
+  color: white;
+  font-weight: bold;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s ease;
+}
+
+.modal-content button:hover {
+  background: linear-gradient(to right, #319795, #1b1f3b);
+}
+
+.modal-content span {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  color: #555;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+
+
+@media (max-width: 600px) {
+  .card {
+    width: 90%;
+  }
+
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .user-info {
+    margin-top: 10px;
+  }
+
+  #admin-button-container {
+    text-align: left;
+    margin: 1rem 1rem 0 1rem;
+    width: 100%;
+  }
+
+  #admin-button-container button {
+    margin-top: 25px;
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+  }
+}
+
+.crafted span {
+      color: red;
+    }
+
+
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #003366;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.custom-card {
+  position: relative;
+  height: 180px;
+  border-radius: 20px;
+  /* padding: 0; */
+  overflow: hidden;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-logo {
+  width: 80px;
+  height: auto;
+  object-fit: contain;
+  z-index: 2;
+}
+
+.card-btn {
+  position: absolute;
+  bottom: 15px;
+  background: #000;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 3;
+  font-size: 0.9rem;
+  opacity:0.7;
+}
+
+.afa-overlay {
+  font-size: 2.8em;
+  font-weight: 900;
+  color: white;
+  letter-spacing: 2px;
+  z-index: 2;
+  margin-top: 10px;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+}
+
+
+
+
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <h2>AfroData</h2>
+    <div class="user-info" id="auth-section">
+      <!-- Populated by JavaScript -->
+    </div>
+  </div>
+
+  <!-- Admin Button Placeholder -->
+  <div id="admin-button-container" style="text-align: center; margin-top: 1rem;"></div>
+
+  <!-- Heading -->
+  <div class="heading">
+    <h1>Buy Internet Data</h1>
+    <p>Select a network to continue</p>
+  </div>
+
+  <!-- Networks -->
+  <div class="network-container">
+    <div class="network-container">
+  <!-- MTN Buy -->
+  <div class="card custom-card" style="background-image: url('/images/newmtn.png'); background-size: cover; background-position: center;">
+    <!-- <img src="/images/mtn.png" alt="MTN Logo" class="card-logo" /> -->
+    <button class="card-btn" onclick="buyData(643)">🛒 Buy Now</button>
+  </div>
+
+  <!-- Telecel -->
+  <div class="card custom-card" style="background-image: url('/images/telecel.png'); background-size: cover; background-position: center;">
+    <!-- <img src="/images/telecel.png" alt="Telecel Logo" class="card-logo" /> -->
+    <button class="card-btn" onclick="buyData(770)">🛒 Buy Now</button>
+  </div>
+
+  <!-- AFA MTN Register -->
+  <div class="card custom-card" style="background-image: url('/images/afa.png'); background-size: cover; background-position: center;">
+    <!-- <img src="/images/mtn.png" alt="MTN Logo" class="card-logo" /> -->
+    <!-- <div class="afa-overlay">AFA</div> -->
+    <button class="card-btn" onclick="openAFAModal()">🛒 Register Now</button>
+  </div>
+
+  <!-- AirtelTigo -->
+  <div class="card custom-card" style="background-image: url('/images/AIrtelTigoLogo.png'); background-size: cover; background-position: center;">
+    <!-- <img src="/images/AIrtelTigoLogo.png" alt="AT Logo" class="card-logo" /> -->
+    <button class="card-btn" onclick="buyData(1109)">🛒 Buy Now</button>
+  </div>
+</div>
+  </div>
+
+  <!-- AFA REGISTRATION MODAL -->
+<div id="afaModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <span class="close" onclick="closeAFAModal()">&times;</span>
+    <h2>AFA Registration</h2>
+    <p>AFA bundles are mainly for customers using MTN only</p>
+    <p>Customers pay GHS 10 cedis for registration</p>
+
+    <form id="afaForm">
+      <label>Full name on Ghana Card</label>
+      <input type="text" name="fullname" required />
+
+      <label>ID number (Ghana Card, Driver's License or Voter’s ID)</label>
+      <input type="text" name="idnumber" required placeholder="GHA-XXXXXXX-X" />
+
+      <label>Date of Birth</label>
+      <input type="date" name="dob" required />
+
+      <label>Phone Number</label>
+      <input type="tel" name="phone" required />
+
+      <label>Location</label>
+      <input type="text" name="location" required />
+
+      <label>Region</label>
+      <input type="text" name="region" required />
+
+      <label>Occupation</label>
+      <input type="text" name="occupation" required />
+
+      <button type="submit">Submit Registration</button>
+    </form>
+  </div>
+</div>
+
+
+  <!-- AFA Payment Modal (place after your buyModal) -->
+<div id="afaPayModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000000b3; z-index:10000;">
+  <div class="modal-content">
+    <span onclick="closeAFAPayModal()" style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:20px;">&times;</span>
+    <h3>Pay for AFA Registration</h3>
+    <p>Registration fee: <strong>GHS 10.00</strong></p>
+
+    <form id="afaPayForm">
+      <!-- use pesewas (1000) by default; adjust if your backend expects other units -->
+      <input type="hidden" id="afaPayAmount" value="10" />
+      <button type="submit" id="afaPayBtn" style="background:#003366; color:#fff; padding:10px 20px; border:none; border-radius:5px; width:100%;">Pay GHS 10</button>
+
+      <div id="afaPaySpinner" style="display:none; text-align:center; margin-top:12px;">
+        <div class="loader" style="width:30px;height:30px;border-width:4px;"></div>
+      </div>
+    </form>
+  </div>
+</div>
+
+  <!-- Buy Data Modal -->
+  <div id="buyModal"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000000b3; z-index:9999;">
+    <div class="modal-content">
+
+      <span onclick="closeModal()"
+        style="position:absolute; top:10px;color:black; right:15px; cursor:pointer; font-size:20px;">&times;</span>
+      <h3>Select Bundle</h3>
+      <form id="buyForm">
+        <input type="hidden" name="operatorId" id="operatorId">
+
+        <label for="recipient">Phone Number</label><br>
+        <input type="text" id="recipient" required placeholder="e.g. 0555512345"><br><br>
+
+        <label for="quantity">Data Bundle</label><br>
+        <select id="quantity" required></select><br><br>
+
+        <label for="payment">Payment Method</label><br>
+        <select id="payment" required>
+          <option value="paystack">Paystack</option>
+        </select><br><br>
+
+        <button type="submit"
+          style="background:#003366; color:#fff; padding:10px 20px; border:none; border-radius:5px;">Pay Now</button>
+          <div id="spinner" style="display:none; text-align:center; margin-top:15px;">
+  <p style="color:#003366;">Processing...</p>
+  <div class="loader"></div>
+</div>
+
+      </form>
+    </div>
+  </div>
+
+  
+  <!-- Footer -->
+  <footer>
+    &copy; 2025 AfroData. All rights reserved.
+    <div class="crafted">
+      Crafted with <span>❤</span> by Abakah Joshua
+    </div>
+  </footer>
+
+<script>
+/* --------- Config / state --------- */
+let selectedOperatorId = null;
+let selectedNetwork = null;
+let selectedPriceGHS = 0;
+let email = `user${Date.now()}@afrodata.com`;
+
+/* DOM references */
+const authSection = document.getElementById("auth-section");
+const adminContainer = document.getElementById("admin-button-container");
+
+/* Utility: clear cookies (best effort) */
+function clearCookies() {
+  document.cookie.split(";").forEach(cookie => {
+    const eqPos = cookie.indexOf("=");
+    const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+    // best-effort clear; domain/path variations may prevent full removal
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+  });
+}
+
+/* -- Safe way to render auth section to avoid XSS -- */
+function renderAuthSection({ avatarUrl, displayText, isLoggedIn }) {
+  authSection.innerHTML = ""; // clear
+  const img = document.createElement("img");
+  img.src = avatarUrl || "https://www.gravatar.com/avatar?d=mp";
+  img.alt = "User Avatar";
+  Object.assign(img.style, { width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover" });
+
+  const span = document.createElement("span");
+  span.textContent = displayText || "Guest";
+
+  authSection.appendChild(img);
+  authSection.appendChild(span);
+
+  if (isLoggedIn) {
+    const btn = document.createElement("button");
+    btn.className = "login-btn";
+    btn.textContent = "Logout";
+    btn.style.background = "#f44336";
+    btn.addEventListener("click", logout);
+    authSection.appendChild(btn);
+  } else {
+    const btn = document.createElement("button");
+    btn.className = "login-btn";
+    btn.textContent = "Login";
+    btn.addEventListener("click", () => (window.location.href = "/api/v1/bundle/login"));
+    authSection.appendChild(btn);
+  }
+}
+
+/* --------------- Auth / profile --------------- */
+function getUserId() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get("id") || localStorage.getItem("userId") || sessionStorage.getItem("userId");
+}
+
+async function fetchUserData(userId) {
+  try {
+    const res = await fetch(`/api/v1/users/${encodeURIComponent(userId)}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    if (!res.ok) throw new Error(`User fetch failed: ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error("fetchUserData error:", err);
+    return null;
+  }
+}
+
+async function fetchProfilePicture(profilePictureId) {
+  if (!profilePictureId) return null;
+  try {
+    const res = await fetch(`/api/v1/uploadFiles/download/${encodeURIComponent(profilePictureId)}`);
+    if (!res.ok) throw new Error("Failed to fetch profile picture");
+    const blob = await res.blob();
+    return URL.createObjectURL(blob);
+  } catch (err) {
+    console.warn("fetchProfilePicture:", err);
+    return null;
+  }
+}
+
+async function setupUserProfile() {
+  const userId = getUserId();
+  if (!userId) {
+    renderAuthSection({ displayText: "Guest", isLoggedIn: false });
+    return;
+  }
+
+  const payload = await fetchUserData(userId);
+  if (!payload || !payload.user) {
+    renderAuthSection({ displayText: "Guest", isLoggedIn: false });
+    return;
+  }
+  const user = payload.user;
+
+  // tolerate multiple naming conventions
+  const profilePictureId = user.profile_picture_id || user.profilePictureId || user.profilePicture || null;
+  const profilePicUrl = await fetchProfilePicture(profilePictureId);
+  const avatarUrl = profilePicUrl || user.avatarUrl || "https://www.gravatar.com/avatar?d=mp";
+
+  // Save useful values to localStorage (keep minimal)
+  try {
+    if (user._id) localStorage.setItem("userId", user._id);
+    if (user.email) localStorage.setItem("email", user.email);
+    if (user.username) localStorage.setItem("username", user.username);
+    if (user.role) localStorage.setItem("userRole", user.role);
+  } catch (e) {
+    console.warn("localStorage may be unavailable:", e);
+  }
+
+  // admin/user button
+  if (user.role === "admin") {
+    const btn = document.createElement("button");
+    btn.textContent = "View Data";
+    btn.style.padding = "0.5rem 1rem";
+    btn.style.backgroundColor = "#319795";
+    btn.style.color = "white";
+    btn.style.border = "none";
+    btn.style.cursor = "pointer";
+    btn.addEventListener("click", () => (window.location.href = `/api/v1/bundle?id=${user._id}`));
+    adminContainer.appendChild(btn);
+  } else if (user.role === "user") {
+    const btn = document.createElement("button");
+    btn.textContent = "Dashboard";
+    btn.style.padding = "0.5rem 1rem";
+    btn.style.backgroundColor = "#319795";
+    btn.style.color = "white";
+    btn.style.border = "none";
+    btn.style.cursor = "pointer";
+    btn.addEventListener("click", () => (window.location.href = `/afrodatadashboard`));
+    adminContainer.appendChild(btn);
+  }
+
+  // Use safe render
+  const displayText = user.role === "admin" ? "Admin" : (user.username || "User");
+  renderAuthSection({ avatarUrl, displayText, isLoggedIn: true });
+}
+
+/* --------------- Logout --------------- */
+function logout() {
+  const userId = getUserId();
+  console.log("Logging out user:", userId);
+  fetch(`/api/v1/auth/logout?userId=${encodeURIComponent(userId)}`, {
+    method: "POST",
+    credentials: "include"
+  })
+    .then(res => {
+      if (res.ok) {
+        // Remove only keys we set (avoid full clear unless intended)
+        localStorage.removeItem(`token-${userId}`);
+        localStorage.removeItem("userId");
+        localStorage.removeItem("username");
+        localStorage.removeItem("email");
+        localStorage.removeItem("userRole");
+        sessionStorage.removeItem("userId");
+        sessionStorage.removeItem("pendingAFA");
+        clearCookies();
+        window.location.href = "/afrodatahome";
+      } else {
+        alert("Logout failed");
+      }
+    })
+    .catch(err => {
+      console.error("Logout error:", err);
+      alert("Logout error");
+    });
+}
+
+/* --------------- Buy flow --------------- */
+function buyData(operatorId) {
+  // set both numeric operatorId and the human-readable network
+  selectedOperatorId = Number(operatorId);
+  const map = {
+    643: "MTN",
+    770: "Telecel",
+    1109: "Tigo",
+    109: "Tigo"
+  };
+  selectedNetwork = map[selectedOperatorId] || "Unknown";
+
+  document.getElementById("operatorId").value = selectedNetwork;
+  document.getElementById("buyModal").style.display = "block";
+
+  // Fetch bundles for this network
+  fetch(`/api/v1/bundles?network=${encodeURIComponent(selectedNetwork)}`)
+    .then(res => {
+      if (!res.ok) throw new Error(`Failed loading bundles: ${res.status}`);
+      return res.json();
+    })
+    .then(data => {
+      const select = document.getElementById("quantity");
+      select.innerHTML = "";
+      if (!Array.isArray(data) || data.length === 0) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "No bundles available";
+        select.appendChild(opt);
+        return;
+      }
+      data.forEach(bundle => {
+        const opt = document.createElement("option");
+        // store numeric GHS price as value (we'll convert to pesewas on submit)
+        opt.value = String(bundle.price);
+        opt.textContent = `${bundle.size} - GHS ${bundle.price}`;
+        select.appendChild(opt);
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Failed to load bundles");
+    });
+}
+
+function closeModal() {
+  document.getElementById("buyModal").style.display = "none";
+}
+
+/* Ensure single handler for buyForm submit with pesewa conversion */
+document.addEventListener("DOMContentLoaded", () => {
+  // initialize profile and also check for payment reference in URL
+  setupUserProfile();
+
+  // If email exists in localStorage (from earlier session) set local var
+  if (localStorage.getItem("email")) {
+    email = localStorage.getItem("email");
+  }
+
+  // handle buy form
+  const buyForm = document.getElementById("buyForm");
+  if (buyForm) {
+    buyForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const recipient = document.getElementById("recipient").value.trim();
+      const quantitySelect = document.getElementById("quantity");
+      const quantityText = quantitySelect.options[quantitySelect.selectedIndex]?.text || "";
+      const priceGHS = parseFloat(quantitySelect.value);
+      const spinner = document.getElementById("spinner");
+      const payBtn = e.target.querySelector('button[type="submit"]');
+
+      if (!recipient) {
+        return alert("Please enter a valid phone number");
+      }
+      if (Number.isNaN(priceGHS)) {
+        return alert("Please select a valid bundle");
+      }
+
+      // convert to pesewas (Paystack expects amount in smallest currency unit)
+      const amountPesewas = Math.round(priceGHS);
+
+      spinner.style.display = "block";
+      if (payBtn) {
+        payBtn.disabled = true;
+        payBtn.style.display = "none";
+      }
+
+      try {
+        const body = {
+          email,
+          amount: amountPesewas, // pesewas
+          channel: ["mobile_money", "bank", "card"],
+          recipient,
+          operatorId: selectedNetwork,
+          quantity: quantityText,
+          phone: recipient
+        };
+
+        const res = await fetch("/api/v1/paystack/initiate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+
+        const json = await res.json();
+        if (res.ok && json.authorization_url) {
+          window.location.href = json.authorization_url;
+        } else {
+          console.error("Paystack init error:", json);
+          alert("Payment initialization failed: " + (json.message || res.statusText || "Unknown"));
+        }
+      } catch (err) {
+        console.error("Payment Error:", err);
+        alert("An error occurred during payment");
+      } finally {
+        spinner.style.display = "none";
+        if (payBtn) {
+          payBtn.disabled = false;
+          payBtn.style.display = "block";
+        }
+      }
+    });
+  }
+
+  // handle reference from Paystack once (unified verification)
+  const urlParams = new URLSearchParams(window.location.search);
+  const reference = urlParams.get("reference");
+  if (reference) verifyAndHandlePostPayment(reference);
+});
+
+/* --------------- AFA registration & payment --------------- */
+function openAFAModal() { document.getElementById("afaModal").style.display = "block"; }
+function closeAFAModal() { document.getElementById("afaModal").style.display = "none"; }
+function openAFAPayModal() { document.getElementById("afaPayModal").style.display = "block"; }
+function closeAFAPayModal() { document.getElementById("afaPayModal").style.display = "none"; }
+
+/* AFA form submit: save pending registration and open pay modal */
+const afaForm = document.getElementById("afaForm");
+if (afaForm) {
+  afaForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    sessionStorage.setItem("pendingAFA", JSON.stringify(data));
+    openAFAPayModal();
+  });
+}
+
+/* AFA payment submit: initiate payment with metadata and redirect */
+const afaPayForm = document.getElementById("afaPayForm");
+if (afaPayForm) {
+  afaPayForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const payBtn = document.getElementById("afaPayBtn");
+    const spinner = document.getElementById("afaPaySpinner");
+    const amountGHS = parseFloat(document.getElementById("afaPayAmount").value || "10");
+    const amountPesewas = Math.round(amountGHS);
+    const prevText = payBtn?.innerHTML || "Pay";
+
+    try {
+      if (payBtn) {
+        payBtn.disabled = true;
+        payBtn.innerText = "Processing...";
+      }
+      spinner.style.display = "block";
+      const pending = sessionStorage.getItem("pendingAFA");
+      const pendingObj = pending ? JSON.parse(pending) : {};
+      const metadata = { type: "afa_registration", afa: pendingObj };
+
+      const res = await fetch("/api/v1/paystack/initiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: localStorage.getItem("email") || email,
+          amount: amountPesewas,
+          channel: ["mobile_money", "bank", "card"],
+          phone: pendingObj.phone || "",
+          metadata
+        })
+      });
+
+      const json = await res.json();
+      if (res.ok && json.authorization_url) {
+        window.location.href = json.authorization_url;
+      } else {
+        console.error("Paystack init error:", json);
+        alert("Payment initialization failed: " + (json.message || res.statusText));
+      }
+    } catch (err) {
+      console.error("Payment initiation error:", err);
+      alert("Network error while initiating payment.");
+    } finally {
+      if (payBtn) {
+        payBtn.disabled = false;
+        payBtn.innerHTML = prevText;
+      }
+      spinner.style.display = "none";
+    }
+  });
+}
+
+/* --------------- Unified verification & post-payment handling --------------- */
+async function verifyAndHandlePostPayment(reference) {
+  try {
+    const verifyRes = await fetch(`/api/v1/paystack/verify/${encodeURIComponent(reference)}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    });
+    const verifyJson = await verifyRes.json();
+    console.log("Payment verification response:", verifyJson);
+    const verified = verifyRes.ok && (verifyJson.status === "success" || /verified/i.test(verifyJson.message || ""));
+    if (!verified) {
+      alert("Payment not verified: " + (verifyJson.message || verifyRes.statusText));
+      return;
+    }
+
+    const pending = sessionStorage.getItem("pendingAFA");
+    if (pending) {
+      const payload = JSON.parse(pending);
+      payload.paymentReference = reference;
+      const createRes = await fetch("/api/v1/afa/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const createJson = await createRes.json();
+      if (createRes.ok) {
+        sessionStorage.removeItem("pendingAFA");
+        window.location.href = `/datasuccess?reference=${encodeURIComponent(reference)}&type=afa`;
+      } else {
+        console.error("AFA create failed:", createJson);
+        alert("Payment verified but AFA registration failed: " + (createJson.message || createRes.statusText));
+      }
+    } else {
+      // fallback for data orders (keep behavior minimal)
+      if (verifyJson.message && /order created/i.test(verifyJson.message)) {
+        window.location.href = `/datasuccess?reference=${encodeURIComponent(reference)}`;
+      } else {
+        alert("Payment verified but nothing to create.");
+      }
+    }
+  } catch (err) {
+    console.error("Error verifying payment:", err);
+    alert("Error verifying payment: " + (err.message || err));
+  }
+}
+
+/* --------------- Click outside to close modals (non-destructive) --------------- */
+window.addEventListener("click", (event) => {
+  const afaModal = document.getElementById("afaModal");
+  const buyModal = document.getElementById("buyModal");
+  if (afaModal && event.target === afaModal) closeAFAModal();
+  if (buyModal && event.target === buyModal) closeModal();
+});
+</script>
+
+  <!-- <script src="https://js.paystack.co/v1/inline.js"></script> -->
+
+</body>
+
+</html>
