@@ -87,6 +87,85 @@ paths:
           description: ''
           headers: {}
       deprecated: false
+  /contact:
+    post:
+      tags:
+        - Portfolio
+      summary: Submit Contact Form
+      description: Submits the portfolio "Contact Me" form and notifies the site owner by email.
+      operationId: SubmitContact
+      parameters: []
+      requestBody:
+        description: Contact form submission
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+            example:
+              fullName: Jane Doe
+              email: jane@example.com
+              phone: '+1 555 123 4567'
+              subject: Website redesign inquiry
+              projectType: E-commerce
+              budget: $1000 - $2000
+              timeline: 4 weeks
+              message: Hi, I'd like to discuss a redesign of my small business website.
+        required: true
+      responses:
+        '201':
+          description: Submission saved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactResponse'
+        '400':
+          description: Missing required fields
+        '500':
+          description: Server error while saving the submission
+      deprecated: false
+      security: []
+  /order:
+    post:
+      tags:
+        - Portfolio
+      summary: Submit Website Order Form
+      description: Submits the portfolio "Order a Website" form and notifies the site owner by email.
+      operationId: SubmitOrder
+      parameters: []
+      requestBody:
+        description: Website order submission
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+            example:
+              businessName: Acme Ltd
+              name: John Smith
+              email: john@example.com
+              phone: '+1 555 987 6543'
+              projectType: Portfolio website
+              websitePages: Home, About, Services, Contact
+              featuresNeeded: Booking form, blog
+              budget: $500 - $1000
+              deadline: '2026-08-01'
+              referenceWebsite: https://example.com
+              projectDescription: I need a clean portfolio site to showcase my work.
+              preferredContactMethod: Email
+              agreeToBeContacted: true
+        required: true
+      responses:
+        '201':
+          description: Submission saved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '400':
+          description: Missing required fields
+        '500':
+          description: Server error while saving the submission
+      deprecated: false
+      security: []
   /jobs/{id}:
     parameters:
       - in: path
@@ -201,6 +280,94 @@ components:
       example:
         company: random
         position: intern
+    ContactRequest:
+      title: ContactRequest
+      required:
+        - fullName
+        - email
+        - subject
+        - message
+      type: object
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        subject:
+          type: string
+        projectType:
+          type: string
+        budget:
+          type: string
+        timeline:
+          type: string
+        message:
+          type: string
+      example:
+        fullName: Jane Doe
+        email: jane@example.com
+        subject: Website redesign inquiry
+        message: Hi, I'd like to discuss a redesign of my small business website.
+    ContactResponse:
+      title: ContactResponse
+      type: object
+      properties:
+        success:
+          type: boolean
+        submission:
+          type: object
+    OrderRequest:
+      title: OrderRequest
+      required:
+        - name
+        - email
+        - projectType
+        - projectDescription
+        - agreeToBeContacted
+      type: object
+      properties:
+        businessName:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        projectType:
+          type: string
+        websitePages:
+          type: string
+        featuresNeeded:
+          type: string
+        budget:
+          type: string
+        deadline:
+          type: string
+        referenceWebsite:
+          type: string
+        projectDescription:
+          type: string
+        preferredContactMethod:
+          type: string
+        agreeToBeContacted:
+          type: boolean
+      example:
+        name: John Smith
+        email: john@example.com
+        projectType: Portfolio website
+        projectDescription: I need a clean portfolio site to showcase my work.
+        agreeToBeContacted: true
+    OrderResponse:
+      title: OrderResponse
+      type: object
+      properties:
+        success:
+          type: boolean
+        submission:
+          type: object
   securitySchemes:
     httpBearer:
       type: http
@@ -212,3 +379,5 @@ tags:
     description: ''
   - name: Jobs
     description: ''
+  - name: Portfolio
+    description: Portfolio site contact and order forms

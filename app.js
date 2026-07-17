@@ -69,6 +69,7 @@ const mealRoutes = require("./routes/mealRoutes");
 const foodordersRoutes = require("./routes/foodorders");
 
 const feedbackRoutes = require("./routes/foodFeedback");
+const portfolioRoutes = require("./routes/portfolio.js");
 // console.log(ClerkExpressRequireAuth)
 
 
@@ -87,6 +88,16 @@ if (fs.existsSync(openApiPath)) {
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
 } else {
     console.warn('⚠️ Swagger UI not available yet. Make some API requests to generate openapi.json');
+}
+
+// Serve the hand-written swagger.yaml (includes the portfolio /contact and
+// /order endpoints) as its own Swagger UI page, separate from the
+// auto-generated docs above.
+const YAML = require('yamljs');
+const portfolioSwaggerPath = path.join(__dirname, 'swagger.yaml');
+if (fs.existsSync(portfolioSwaggerPath)) {
+    const portfolioSwaggerSpec = YAML.load(portfolioSwaggerPath);
+    app.use('/api-docs/portfolio', swaggerUi.serve, swaggerUi.setup(portfolioSwaggerSpec));
 }
 
 
@@ -224,6 +235,10 @@ app.use('/api/v1/afa', afaRoutes);
 app.use("/api/v1/foodorders", foodordersRoutes);
 
 app.use("/api/v1/feedbacks", feedbackRoutes);
+
+// Portfolio site forms (matches frontend's fetch('api/contact') / fetch('api/order'))
+
+app.use("/api", portfolioRoutes);
 
 
 
