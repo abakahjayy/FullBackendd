@@ -4,8 +4,8 @@ require('dotenv').config()
 const connectDB = require('./db/connect')
 
 //This are the only stuff that you need to change the path to the desired one
-const Model = require('./models/Cart.js') //You Can just change the directory of the Model to the model you want
-const jsonData = require('./mockData/cart.json')//You Can just change the directory of the MockData to the data you want
+const Model = require('./models/Meals.js') //You Can just change the directory of the Model to the model you want
+const jsonData = require('./mockData/meals.json')//You Can just change the directory of the MockData to the data you want
 
 
 const start = async() => {

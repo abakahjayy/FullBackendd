@@ -31,7 +31,7 @@ const foodordersSchema = new mongoose.Schema(
         },
         orderedByRole: {
             type: String,
-            enum: ["worker", "caterer", "admin"],
+            enum: ["worker", "caterer", "admin","user"],
             required: true,
         },
         date: {
