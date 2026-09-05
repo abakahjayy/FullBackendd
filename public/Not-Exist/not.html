@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not Exist</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background-color: black;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 {
+            padding-top: 230px;
+            padding-bottom: 20px;
+            font-size: 50px;
+        }
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .green-star {
+            position: absolute;
+            top: 10px;
+            left: 30px;
+            width: 200px;
+            height: 200px;
+            background-color: #00A82D;
+            clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+        }
+        .pink-circle {
+            position: absolute;
+            bottom: 70px;
+            right: 50px;
+            width: 200px;
+            height: 200px;
+            background-color: #F5C0E0;
+            border-radius: 50%;
+        }
+        .green {
+            color: #00A82D;
+        }
+        .pink {
+            color: #d7439c;
+        }
+    </style>
+</head>
+<body >
+    <div class="background">
+        <div class="green-star"></div>
+        <div class="pink-circle"></div>
+    </div>
+    <h1>This <span class="pink">Route</span> does not <span class="green">Exist</span> </h1>
+    <h2>Please check the <span class="pink">url</span>  and try <span class="green">again</span> later</h2>
+</body>
+    <script>
+        console.log('Hello there')
+    </script>
+</html>

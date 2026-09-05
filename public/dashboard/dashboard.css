@@ -1,0 +1,152 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+/* Header Styling */
+header {
+    background-color: #00A82D;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#navbar {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+}
+
+h1 {
+    font-size: 1.8rem;
+}
+
+#profile-container {
+    display: flex;
+    align-items: center;
+}
+
+#profile-pic {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    margin-right: 1rem;
+}
+
+#user-name {
+    font-size: 1.2rem;
+    color: #fff;
+    margin-right: 1rem;
+}
+
+/* Button Styling */
+button {
+    background-color: #ff5722;
+    border: none;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #e64a19;
+}
+
+/* Main Section */
+main {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 2rem auto;
+}
+
+section {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #00A82D;
+}
+
+section p {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #555;
+}
+
+/* Image Upload Section */
+#upload-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#file-input {
+    margin-bottom: 1rem;
+}
+
+#upload-status {
+    font-size: 1rem;
+    color: #00796b;
+}
+
+/* User Details Styling */
+#user-details {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.95rem;
+    background: #f4f4f4;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    header button {
+        margin-top: 1rem;
+    }
+
+    main {
+        padding: 1rem;
+    }
+
+    #profile-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #profile-pic {
+        width: 70px;
+        height: 70px;
+    }
+}

@@ -1,0 +1,294 @@
+/* General styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #F9F6F2;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* height: 72px; */
+    border-bottom: 1px solid black;
+    padding: 20px;
+}
+
+ul {
+    display: flex;
+    gap: 50px;
+}
+
+.nav-links li {
+    list-style-type: none;
+}
+
+.nav-toggle {
+    display: none;
+    color: #00A82D;
+    border: none;
+    background: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-links li a {
+    text-decoration: none;
+    color: black;
+    font-size: 14px;
+}
+
+img {
+    width: 160px;
+    height: 40px;
+}
+
+.logins {
+    display: flex;
+    gap: 20px;
+}
+
+.logins a {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+}
+
+.logins .start {
+    background-color: #00A82D;
+    border: 1px solid black;
+    padding: 10px 20px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+}
+
+.logins .download {
+    background-color: transparent;
+    border: 1px solid black;
+    padding: 10px 20px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 3px;
+    color: black;
+    font-size: 15px;
+}
+
+select {
+    border: none;
+    background-color: #F9F6F2;
+    font-size: 14px;
+}
+
+.hero-section {
+    margin-top: 75px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 20px;
+}
+
+.hero-section .head {
+    font-size: 70px;
+    margin-bottom: 30px;
+}
+
+.achieve {
+    color: #00A82D;
+}
+
+.below {
+    font-size: 18px;
+}
+
+.get {
+    background-color: #00A82D;
+    color: white;
+    border: 1px solid black;
+    margin-top: 45px;
+    width: 270px;
+    height: 60px;
+    border-radius: 5px;
+    font-size: 18px;
+}
+
+button {
+    transition: box-shadow, transform 0.15s;
+}
+
+button:hover {
+    transform: translateX(-2px);
+    box-shadow: 5px 5px 5px rgb(0, 0, 0);
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 1000px) {
+    nav {
+        padding: 20px;
+    }
+
+    .nav-links {
+        gap: 20px;
+    }
+
+    .hero-section .head {
+        font-size: 50px;
+    }
+
+    .logins .start, .logins .download {
+        font-size: 12px;
+        padding: 8px 16px;
+    }
+    img {
+        width: 115px;
+        height: 30px;
+    }
+}
+
+@media (max-width: 750px) {
+    nav {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px 20px;
+        gap: 10px;
+    }
+
+    .nav-toggle {
+        display: block;
+    }
+    .nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 400px;
+    }
+
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    img {
+        width: 120px;
+        height: 30px;
+    }
+
+    .hero-section .head {
+        font-size: 40px;
+    }
+
+    .hero-section {
+        padding: 0 20px;
+    }
+}
+
+@media (max-width: 575px) {
+    .nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 200px;
+    }
+    
+    .hero-section .head {
+        font-size: 30px;
+    }
+
+    .get {
+        width: 200px;
+        height: 50px;
+        font-size: 16px;
+    }
+
+    .below {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 450px) {
+    nav {
+        padding: 10px;
+    }
+
+    .logins {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .logins .start, .logins .download {
+        width: 100%;
+        text-align: center;
+    }
+
+    .hero-section .head {
+        font-size: 25px;
+    }
+
+    .get {
+        width: 100%;
+        font-size: 14px;
+    }
+    .nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 210px;
+    }
+}
+@media (max-width: 360px) {
+    nav {
+        padding: 10px;
+    }
+
+    .logins {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .logins .start, .logins .download {
+        width: 100%;
+        text-align: center;
+    }
+
+    .hero-section .head {
+        font-size: 25px;
+    }
+
+    .get {
+        display: flex;
+        width: 100%;
+        font-size: 14px;
+        padding: 20px;
+        text-align: center;
+        align-items: center;
+    }
+    .nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 170px;
+    }
+}
+

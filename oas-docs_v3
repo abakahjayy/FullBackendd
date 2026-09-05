@@ -1,0 +1,1029 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "openlabs-project",
+    "version": "1.0.0",
+    "license": {
+      "name": "ISC"
+    },
+    "description": "Specification JSONs: [v2](/api-spec/v2), [v3](/api-spec/v3).\n\nBackend For Anything you want to do"
+  },
+  "paths": {
+    "/api/v1/auth/upload-profile-pic": {
+      "patch": {
+        "summary": "/api/v1/auth/upload-profile-pic",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/uploadFiles/upload-profile-pic": {
+      "patch": {
+        "summary": "/api/v1/uploadFiles/upload-profile-pic",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/uploadFiles/upload/single": {
+      "post": {
+        "summary": "/api/v1/uploadFiles/upload/single",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/uploadFiles/upload/multiple": {
+      "post": {
+        "summary": "/api/v1/uploadFiles/upload/multiple",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/uploadFiles/download/{fileId}": {
+      "get": {
+        "summary": "/api/v1/uploadFiles/download/{fileId}",
+        "parameters": [
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/uploadFiles/download/zip": {
+      "get": {
+        "summary": "/api/v1/uploadFiles/download/zip",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/uploadFiles/download/base64": {
+      "get": {
+        "summary": "/api/v1/uploadFiles/download/base64",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/uploadFiles/rename/{fileId}": {
+      "put": {
+        "summary": "/api/v1/uploadFiles/rename/{fileId}",
+        "parameters": [
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/uploadFiles/delete/{fileId}": {
+      "delete": {
+        "summary": "/api/v1/uploadFiles/delete/{fileId}",
+        "parameters": [
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/userse/{username}/editUserProfile": {
+      "patch": {
+        "summary": "/api/v1/userse/{username}/editUserProfile",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/posts": {
+      "post": {
+        "summary": "/api/v1/posts",
+        "responses": {},
+        "tags": []
+      },
+      "get": {
+        "summary": "/api/v1/posts",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/posts/user/{id}": {
+      "get": {
+        "summary": "/api/v1/posts/user/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/posts/image/{id}": {
+      "get": {
+        "summary": "/api/v1/posts/image/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": []
+      }
+    },
+    "/api/v1/posts/image/{fileId}": {
+      "delete": {
+        "summary": "/api/v1/posts/image/{fileId}",
+        "parameters": [
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/posts/{postId}/like": {
+      "patch": {
+        "summary": "/api/v1/posts/{postId}/like",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/posts/{postId}/unlike": {
+      "patch": {
+        "summary": "/api/v1/posts/{postId}/unlike",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/ai/upload/{userId}/{chatId}": {
+      "post": {
+        "summary": "/api/v1/ai/upload/{userId}/{chatId}",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/ai/image/{id}": {
+      "get": {
+        "summary": "/api/v1/ai/image/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/ai/chats/image/{chatId}/{fileId}": {
+      "delete": {
+        "summary": "/api/v1/ai/chats/image/{chatId}/{fileId}",
+        "parameters": [
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/auth/signup": {
+      "post": {
+        "summary": "/api/v1/auth/signup",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "/api/v1/auth/login",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "/api/v1/auth/logout",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/auth/dashboard": {
+      "get": {
+        "summary": "/api/v1/auth/dashboard",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/auth/userId": {
+      "post": {
+        "summary": "/api/v1/auth/userId",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/auth/{userId}": {
+      "patch": {
+        "summary": "/api/v1/auth/{userId}",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "get": {
+        "summary": "/api/v1/auth/verify-email",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/auth/google": {
+      "get": {
+        "summary": "/api/v1/auth/google",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/auth/google/callback": {
+      "get": {
+        "summary": "/api/v1/auth/google/callback",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/products/static": {
+      "get": {
+        "summary": "/api/v1/products/static",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "summary": "/api/v1/products",
+        "responses": {},
+        "tags": []
+      },
+      "post": {
+        "summary": "/api/v1/products",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/products/{id}": {
+      "get": {
+        "summary": "/api/v1/products/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/cart": {
+      "post": {
+        "summary": "/api/v1/cart",
+        "responses": {},
+        "tags": []
+      },
+      "get": {
+        "summary": "/api/v1/cart",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/cart/{id}": {
+      "get": {
+        "summary": "/api/v1/cart/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      },
+      "delete": {
+        "summary": "/api/v1/cart/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      },
+      "patch": {
+        "summary": "/api/v1/cart/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/cart/{id}/{productId}": {
+      "patch": {
+        "summary": "/api/v1/cart/{id}/{productId}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/cart/{id}/{productId}/{quantity}": {
+      "patch": {
+        "summary": "/api/v1/cart/{id}/{productId}/{quantity}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "quantity",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/orders": {
+      "post": {
+        "summary": "/api/v1/orders",
+        "responses": {},
+        "tags": []
+      },
+      "get": {
+        "summary": "/api/v1/orders",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/orders/{id}": {
+      "get": {
+        "summary": "/api/v1/orders/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      },
+      "delete": {
+        "summary": "/api/v1/orders/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      },
+      "patch": {
+        "summary": "/api/v1/orders/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/delivery/{deliveryOptionId}": {
+      "get": {
+        "summary": "/api/v1/delivery/{deliveryOptionId}",
+        "parameters": [
+          {
+            "name": "deliveryOptionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/delivery": {
+      "get": {
+        "summary": "/api/v1/delivery",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/changedel/{id}": {
+      "patch": {
+        "summary": "/api/v1/changedel/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/changedel/{id}/{productId}/{option}": {
+      "patch": {
+        "summary": "/api/v1/changedel/{id}/{productId}/{option}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "option",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/messages": {
+      "post": {
+        "summary": "/api/v1/messages",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/messages/{userId1}/{userId2}": {
+      "get": {
+        "summary": "/api/v1/messages/{userId1}/{userId2}",
+        "parameters": [
+          {
+            "name": "userId1",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId2",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/messages/{messageId}": {
+      "patch": {
+        "summary": "/api/v1/messages/{messageId}",
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/users/{id}/follow": {
+      "patch": {
+        "summary": "/api/v1/users/{id}/follow",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/users/{id}/unfollow": {
+      "patch": {
+        "summary": "/api/v1/users/{id}/unfollow",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/users/{id}": {
+      "get": {
+        "summary": "/api/v1/users/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "summary": "/api/v1/users",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/users/{username}": {
+      "patch": {
+        "summary": "/api/v1/users/{username}",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/users/{username}/editUser": {
+      "patch": {
+        "summary": "/api/v1/users/{username}/editUser",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/comments/{postId}": {
+      "post": {
+        "summary": "/api/v1/comments/{postId}",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      },
+      "delete": {
+        "summary": "/api/v1/comments/{postId}",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      },
+      "get": {
+        "summary": "/api/v1/comments/{postId}",
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/ai/chats/{userId}": {
+      "post": {
+        "summary": "/api/v1/ai/chats/{userId}",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/ai/userchats/{userId}": {
+      "get": {
+        "summary": "/api/v1/ai/userchats/{userId}",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/ai/chats/{userId}/{chatId}": {
+      "get": {
+        "summary": "/api/v1/ai/chats/{userId}/{chatId}",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "304": {
+            "description": ""
+          }
+        },
+        "tags": []
+      },
+      "patch": {
+        "summary": "/api/v1/ai/chats/{userId}/{chatId}",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      },
+      "delete": {
+        "summary": "/api/v1/ai/chats/{userId}/{chatId}",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/ai/chats/{userId}/{chatId}/{messageIndex}": {
+      "delete": {
+        "summary": "/api/v1/ai/chats/{userId}/{chatId}/{messageIndex}",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "chatId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "messageIndex",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v1/ai/ask": {
+      "post": {
+        "summary": "/api/v1/ai/ask",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/chat": {
+      "post": {
+        "summary": "/api/chat",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "/",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/styles.css": {
+      "get": {
+        "summary": "/styles.css",
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/favicon.ico": {
+      "get": {
+        "summary": "/favicon.ico",
+        "responses": {
+          "304": {
+            "description": ""
+          }
+        },
+        "tags": []
+      }
+    },
+    "/index.js": {
+      "get": {
+        "summary": "/index.js",
+        "responses": {},
+        "tags": []
+      }
+    }
+  },
+  "swaggerUiServePath": "/api-docs",
+  "tags": [],
+  "writeIntervalMs": 5000
+}

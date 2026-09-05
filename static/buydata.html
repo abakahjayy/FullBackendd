@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Afrodata Bundle Purchase</title>
+    <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" /> -->
+    <link
+        rel="stylesheet"
+        href="/font-awesome/css/all.min.css"
+    />
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f3f3;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        button {
+            margin-top: 5px;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #007bff;
+            color: #fff;
+            margin-top: 15px;
+            cursor: pointer;
+            border: none;
+            transition: 0.3s ease;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .message {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Afrodata Bundle</h1>
+
+        <form id="purchaseForm">
+            <label for="network">Select Network:</label>
+            <select id="network" required>
+                <option value="">--Choose--</option>
+                <option value="643">MTN Ghana Data</option>
+                <option value="1109">AirtelTigo Ghana Data</option>
+                <option value="770">Telecel Ghana Data</option>
+            </select>
+
+            <label for="amount">Select Amount:</label>
+            <select id="amount" required></select>
+
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" placeholder="e.g. 0532900914" required />
+
+            <button type="submit">Buy Now</button>
+        </form>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        const operatorAmounts = {
+            643: [
+                { amount: 0.5, label: "20MB - GHS 0.50" },
+                { amount: 1, label: "71MB - GHS 1.00" },
+                { amount: 3, label: "400MB - GHS 3.00" },
+                { amount: 5, label: "354MB - GHS 5.00" },
+                { amount: 10, label: "1.3GB - GHS 10.00" },
+            ],
+            1109: [
+                { amount: 3, label: "1GB - GHS 3.00" },
+                { amount: 5, label: "1.1GB - GHS 5.00" },
+                { amount: 6, label: "2GB - GHS 6.00" },
+                { amount: 10, label: "1.75GB - GHS 10.00" },
+            ],
+            770: [
+                { amount: 1, label: "50MB - GHS 1.00" },
+                { amount: 3, label: "440MB - GHS 3.00" },
+                { amount: 10, label: "1.1GB - GHS 10.00" },
+                { amount: 50, label: "6GB - GHS 50.00" },
+            ],
+        };
+
+        const form = document.getElementById("purchaseForm");
+        const networkSelect = document.getElementById("network");
+        const amountSelect = document.getElementById("amount");
+        const messageBox = document.getElementById("message");
+
+        networkSelect.addEventListener("change", () => {
+            const operatorId = networkSelect.value;
+            amountSelect.innerHTML = "";
+
+            if (operatorAmounts[operatorId]) {
+                operatorAmounts[operatorId].forEach(pkg => {
+                    const opt = document.createElement("option");
+                    opt.value = pkg.amount;
+                    opt.textContent = pkg.label;
+                    amountSelect.appendChild(opt);
+                });
+            }
+        });
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            messageBox.textContent = "Processing...";
+            messageBox.style.color = "black";
+
+            const operatorId = parseInt(networkSelect.value);
+            const amount = parseFloat(amountSelect.value);
+            const recipientPhone = document.getElementById("phone").value.trim();
+
+            try {
+                const res = await fetch("/api/v1/reloadly/purchase", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ operatorId, amount, recipientPhone }),
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    messageBox.textContent = "✅ " + data.message;
+                    messageBox.style.color = "green";
+                    form.reset();
+                    amountSelect.innerHTML = "";
+                } else {
+                    messageBox.textContent = "❌ " + (data.detail?.message || data.error);
+                    messageBox.style.color = "red";
+                }
+            } catch (err) {
+                messageBox.textContent = "❌ Failed to connect to server.";
+                messageBox.style.color = "red";
+            }
+        });
+    </script>
+</body>
+
+</html>

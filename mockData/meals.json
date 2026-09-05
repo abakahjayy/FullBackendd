@@ -1,0 +1,99 @@
+[
+    {
+        "image": "/banku.jpg",
+        "name": "Banku and Fish",
+        "rating": {
+            "stars": 4.5,
+            "count": 120
+        },
+        "priceCents": 4000,
+        "keywords": [
+            "banku",
+            "fish",
+            "ghana",
+            "local",
+            "dinner"
+        ],
+        "type": "dinner"
+    },
+    {
+        "image": "/kenkey.jpg",
+        "name": "Kenkey and Fish",
+        "rating": {
+            "stars": 4.2,
+            "count": 90
+        },
+        "priceCents": 4000,
+        "keywords": [
+            "kenkey",
+            "fish",
+            "ghana",
+            "lunch"
+        ],
+        "type": "lunch"
+    },
+    {
+        "image": "/beans.jpg",
+        "name": "Beans and Korkor",
+        "rating": {
+            "stars": 4.0,
+            "count": 80
+        },
+        "priceCents": 4000,
+        "keywords": [
+            "beans",
+            "korkor",
+            "plantain",
+            "breakfast"
+        ],
+        "type": "breakfast"
+    },
+    {
+        "image": "/jollof.jpg",
+        "name": "Jollof",
+        "rating": {
+            "stars": 4.8,
+            "count": 200
+        },
+        "priceCents": 4000,
+        "keywords": [
+            "jollof",
+            "rice",
+            "ghana",
+            "party"
+        ],
+        "type": "lunch"
+    },
+    {
+        "image": "/fufusoup.jpg",
+        "name": "Fufu and Soup",
+        "rating": {
+            "stars": 4.6,
+            "count": 150
+        },
+        "priceCents": 4000,
+        "keywords": [
+            "fufu",
+            "soup",
+            "ghana",
+            "dinner"
+        ],
+        "type": "dinner"
+    },
+    {
+        "image": "/Waakye.jpg",
+        "name": "Waakye",
+        "rating": {
+            "stars": 4.3,
+            "count": 110
+        },
+        "priceCents": 4000,
+        "keywords": [
+            "waakye",
+            "rice",
+            "beans",
+            "ghana"
+        ],
+        "type": "breakfast"
+    }
+]

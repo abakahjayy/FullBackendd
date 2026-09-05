@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Settings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .card-type {
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+            background-size: contain;
+        }
+
+        .mastercard {
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/a/a4/Mastercard_2019_logo.svg');
+        }
+
+        .visa {
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png');
+        }
+
+        .remove-card-btn {
+            background-color: #ff5a5f;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .remove-card-btn:hover {
+            background-color: #e04a4c;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-card-btn {
+            display: block;
+            width: 100%;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .add-card-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Settings</h1>
+        <h2>Payment</h2>
+
+        <section>
+            <h3>Saved cards:</h3>
+            <div class="card">
+                <span class="card-type mastercard"></span>
+                <span>**** **** **** 3193</span>
+                <button class="remove-card-btn">Remove card</button>
+            </div>
+            <div class="card">
+                <span class="card-type visa"></span>
+                <span>**** **** **** 4296</span>
+                <button class="remove-card-btn">Remove card</button>
+            </div>
+        </section>
+
+        <section>
+            <h3>Add new card:</h3>
+            <form id="add-card-form">
+                <div class="form-group">
+                    <label for="cardholder-name">Cardholder's Name</label>
+                    <input type="text" id="cardholder-name" name="cardholderName" required>
+                </div>
+                <div class="form-group">
+                    <label for="card-number">Card Number</label>
+                    <input type="text" id="card-number" name="cardNumber" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="expiry-date">Expire</label>
+                        <input type="text" id="expiry-date" name="expiryDate" placeholder="MM/YY" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cvv">CVV</label>
+                        <input type="text" id="cvv" name="cvv" required>
+                    </div>
+                </div>
+                <button type="submit" class="add-card-btn">Add Card</button>
+            </form>
+        </section>
+    </div>
+    <script>
+        document.getElementById("add-card-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const cardholderName = document.getElementById("cardholder-name").value;
+            const cardNumber = document.getElementById("card-number").value;
+            const expiryDate = document.getElementById("expiry-date").value;
+            const cvv = document.getElementById("cvv").value;
+
+            if (cardholderName && cardNumber && expiryDate && cvv) {
+                alert(`Card added successfully for ${cardholderName}`);
+                this.reset();
+            } else {
+                alert("Please fill out all fields.");
+            }
+        });
+
+        const removeButtons = document.querySelectorAll(".remove-card-btn");
+        removeButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                const card = this.parentElement;
+                card.remove();
+            });
+        });
+    </script>
+</body>
+
+</html>

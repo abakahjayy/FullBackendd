@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+    <title>Evernote Login</title>
+    <!-- normalize.css -->
+    <link rel="stylesheet" href="./normalize.css" />
+    <!-- main.css -->
+    <link rel="stylesheet" href="./login.css" />
+    <link
+        rel="stylesheet"
+        href="../font-awesome/css/all.min.css"
+    />
+</head>
+
+<body>
+    <div class="background">
+        <div class="green-star"></div>
+        <div class="pink-circle"></div>
+    </div>
+    <nav>
+        <div class="nav-header">
+            <a href="../homepage/index.html" title="home"><img src="../images/evernote-logo.svg" alt="" class="go-home"></a>
+            <button class="nav-toggle" title="toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <ul class="nav-links">
+            <li><a href="">Why Evernote</a></li>
+            <li><a href=""><select name="explore" id="exlore" title="explore">
+                        <option value="">Explore</option>
+                    </select></option></a></li>
+            <li><a href="">Plans</a></li>
+            <li><a href="">Enterprise</a></li>
+        </ul>
+    </nav>
+    <main>
+        <form class="form">
+            <h4>login form</h4>
+            <div class="form-row">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-input email-input" name="email" title="email" />
+                <small class="form-alert"></small>
+            </div>
+            <div class="form-row">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" name="password" title="password" class="form-input password-input" />
+                <small class="form-alert"></small>
+            </div>
+            <button type="submit" class="btn btn-block submit-btn">Continue</button>
+        </form>
+        <div class="social-login ">
+            <button class="google-login btns">
+                <img src="../images/pngs/google.png" alt="Google Logo"> Continue with Google
+            </button>
+            <button class="apple-login btns">
+                <img src="../images/pngs/apple.png" alt="Apple Logo"> Continue with Apple
+            </button>
+        </div>
+        <div class="footer-links">
+            <p>Don't have an account? <a href="../signup/signup.html" style="color: #4285F4;">Sign up</a></p>
+            <p>Can't sign in? <a href="#">Click here</a></p>
+        </div>
+        <div class="legal-links">
+            <a href="#">Security</a>
+            <a href="#">Legal</a>
+            <a href="#">Privacy</a>
+        </div>
+    </main>
+    <script src="./login.js"></script>
+</body>
+
+</html>

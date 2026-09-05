@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Dashboard</title>
+  <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <link
+        rel="stylesheet"
+        href="/font-awesome/css/all.min.css"
+    />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #1b1f3b;
+      color: #fff;
+      padding-top: 70px;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #101322;
+      padding: 15px 25px;
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+
+
+
+
+
+    }
+
+    .navbar h2 {
+      color: #4bc0c8;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-info img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .login-btn {
+      background: #f44336;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .dashboard-container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .dashboard-container h1 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .order-card {
+      background: #fff;
+      color: #000;
+      border-radius: 10px;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .order-card h3 {
+      margin: 0 0 10px 0;
+      color: #003366;
+    }
+
+    .order-card p {
+      margin: 4px 0;
+    }
+
+    .order-card button {
+      margin-top: 10px;
+      background: #003366;
+      color: #fff;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .order-card button:hover {
+      background: #00bcd4;
+    }
+
+    @media screen and (max-width: 600px) {
+      .dashboard-container {
+        padding: 10px;
+      }
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Medium screens (tablets) */
+    @media (max-width: 768px) {
+      body {
+        font-size: 14px;
+      }
+    }
+
+    /* Small screens (phones) */
+    @media (max-width: 480px) {
+      body {
+        font-size: 12px;
+      }
+    }
+
+
+
+    /* Modal Styles */
+    #buyModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 10, 30, 0.85);
+      z-index: 9999;
+      backdrop-filter: blur(3px);
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, #ffffff, #e3f2fd);
+      color: #333;
+      width: 90%;
+      max-width: 420px;
+      margin: 100px auto;
+      padding: 25px 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .modal-content h3 {
+      color: #1b1f3b;
+      margin-bottom: 20px;
+    }
+
+    .modal-content input,
+    .modal-content select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0 16px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1em;
+      outline: none;
+    }
+
+    .modal-content input:focus,
+    .modal-content select:focus {
+      border-color: #4b79a1;
+      box-shadow: 0 0 5px #4b79a1aa;
+    }
+
+    .modal-content button {
+      background: linear-gradient(to right, #4bc0c8, #319795);
+      color: white;
+      font-weight: bold;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.3s ease;
+    }
+
+    .modal-content button:hover {
+      background: linear-gradient(to right, #319795, #1b1f3b);
+    }
+
+    .modal-content span {
+      position: absolute;
+      top: 12px;
+      right: 15px;
+      color: #555;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #003366;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .status-delivered {
+      color: green;
+      font-weight: bold;
+    }
+
+    .status-failed {
+      color: red;
+      font-weight: bold;
+    }
+
+    .status-pending {
+      color: gold;
+      font-weight: bold;
+    }
+
+    /* layout */
+.layout {
+  display: flex;
+  /* margin-top: 70px; */
+}
+nav#sidebar {
+  width: 200px;
+  background: #101322;
+  color: #fff;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  bottom: 0;
+  overflow-y: auto;
+  padding: 20px 0;
+}
+nav#sidebar ul { list-style: none; }
+nav#sidebar li {
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background .2s;
+}
+nav#sidebar li:hover,
+nav#sidebar li.active {
+  background: #1b1f3b;
+}
+main {
+  margin-left: 200px;
+  flex-grow: 1;
+}
+/* hide sidebar toggle by default */
+#sidebarToggle { display: none; }
+/* hide sections */
+.section-hidden { display: none; }
+
+/* responsive */
+@media (max-width: 768px) {
+  nav#sidebar { 
+    left: -220px; /* hidden off-canvas */
+    transition: left .3s;
+  }
+  nav#sidebar.open { left: 0; }
+  main { margin-left: 0; }
+  #sidebarToggle { display: block; }
+}
+
+/* always hide on desktop, show on small */
+.sidebar-toggle {
+  position: fixed;
+  top: 80px; left: 10px;
+  z-index: 2000;
+  background: #4bc0c8;
+  border: none;
+  color: #fff;
+  padding: 8px;
+  border-radius: 4px;
+  display: none;            /* default off */
+}
+@media (max-width: 768px) {
+  .sidebar-toggle {
+    display: block;         /* on mobile: show */
+  }
+}
+
+  </style>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <h2 onclick="window.location.href='/afrodatahome'" style="cursor: pointer;">AfroData</h2>
+    <div class="user-info" id="auth-section">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+
+  <!-- Sidebar toggle button (mobile only) -->
+  <button id="sidebarToggle" class="sidebar-toggle">☰</button>
+
+  <div class="layout">
+    <nav id="sidebar">
+  <ul>
+  <li class="active" data-section="ordersSection" onclick="showSection('ordersSection')">
+    <i class="fa fa-clock"></i> Orders
+  </li>
+  <li data-section="profileSection" onclick="showSection('profileSection')">
+    <i class="fa fa-user"></i> Profile
+  </li>
+</ul>
+
+</nav>
+
+    <main>
+      <!-- Dashboard -->
+      <div class="dashboard-container" id="ordersSection">
+        <h1>Your Orders</h1>
+        <!-- Spinner -->
+        <div id="orders-spinner" style="text-align:center; margin-top: 30px;">
+          <div class="spinner"
+            style="display: inline-block; width: 40px; height: 40px; border: 4px solid #4bc0c8; border-top: 4px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;">
+          </div>
+        </div>
+
+        <div id="orders-list">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- new profile section (initially hidden) -->
+      <!-- Profile Section -->
+<!-- in your <main> … </main>, after the ordersSection -->
+<!-- Profile Section -->
+<div class="dashboard-container section-hidden" id="profileSection">
+  <h1>Your Profile</h1>
+<form id="profileForm" style="max-width:400px;margin:auto;">
+  <div style="text-align:center;margin-bottom:1rem;">
+    <img id="profilePreview"
+         src="https://www.gravatar.com/avatar?d=mp&s=80"
+         alt="Profile"
+         style="width:80px;height:80px;border-radius:50%;object-fit:cover;"/>
+  </div>
+
+  <label>Change Photo</label>
+  <input type="file" id="profilePicInput" accept="image/*" style="width:100%;margin-bottom:1rem;"/>
+
+  <label>First Name</label>
+  <input type="text" id="profileFirstName" required style="width:100%; padding:8px; margin-bottom:1rem;"/>
+
+  <label>Last Name</label>
+  <input type="text" id="profileLastName" required style="width:100%; padding:8px; margin-bottom:1rem;"/>
+
+  <label>Username</label>
+  <input type="text" id="profileUsername" required style="width:100%;padding:8px;margin-bottom:1rem;"/>
+
+  <label>Email</label>
+  <input type="email" id="profileEmail" required style="width:100%;padding:8px;margin-bottom:1rem;"/>
+
+  <label>Phone</label>
+  <input type="tel" id="profilePhone" required style="width:100%;padding:8px;margin-bottom:1rem;"/>
+
+  <!-- Save button + small inline spinner -->
+  <button id="saveProfileBtn" type="submit"
+          style="background:#4bc0c8;color:#fff;padding:10px;border:none;border-radius:5px;width:100%;">
+    Save Changes
+  </button>
+
+  <!-- Optional larger spinner area (shown during processing) -->
+  <div id="profileSpinner" style="display:none; text-align:center; margin-top:12px;">
+    <div class="loader" style="width:30px;height:30px;border-width:4px;"></div>
+  </div>
+</form>
+
+</div>
+
+
+    </main>
+
+
+  </div>
+  <!-- Buy Data Modal -->
+  <div id="buyModal"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000000b3; z-index:9999;">
+    <div class="modal-content">
+
+      <span onclick="closeModal()"
+        style="position:absolute; top:10px;color:black; right:15px; cursor:pointer; font-size:20px;">&times;</span>
+      <h3>Select Bundle</h3>
+      <form id="buyForm">
+        <input type="hidden" name="operatorId" id="operatorId">
+
+        <label for="recipient">Phone Number</label><br>
+        <input type="text" id="recipient" required placeholder="e.g. 0555512345"><br><br>
+
+        <label for="quantity">Data Bundle</label><br>
+        <select id="quantity" required></select><br><br>
+
+        <label for="payment">Payment Method</label><br>
+        <select id="payment" required>
+          <option value="paystack">Paystack</option>
+        </select><br><br>
+
+        <button type="submit"
+          style="background:#003366; color:#fff; padding:10px 20px; border:none; border-radius:5px;">Pay Now</button>
+        <div id="spinner" style="display:none; text-align:center; margin-top:15px;">
+          <p style="color:#003366;">Processing...</p>
+          <div class="loader"></div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+
+  <script>
+    const authSection = document.getElementById("auth-section");
+    const ordersList = document.getElementById("orders-list");
+
+    const clearCookies = () => {
+      document.cookie.split(";").forEach(c => {
+        document.cookie = c.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      });
+    };
+
+    const logout = () => {
+      const userId = localStorage.getItem("userId");
+      fetch(`/api/v1/auth/logout?userId=${userId}`, {
+        method: "POST",
+        credentials: "include",
+      }).then(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+        clearCookies();
+        location.href = "/afrodatahome";
+      });
+    };
+
+    async function setupUser() {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        authSection.innerHTML = `<span>Guest</span> <button class="login-btn" onclick="location.href='/api/v1/bundle/login'">Login</button>`;
+        return;
+      }
+
+      const res = await fetch(`/api/v1/users/${userId}`);
+      const data = await res.json();
+      const user = data.user;
+      // console.log(user)
+      const avatar = await fetchProfilePic(user.profile_picture_id);
+      const displayText = user.role === "admin" ? "Admin" : (user.username || "User");
+
+      authSection.innerHTML = `
+        <img src="${avatar || 'https://www.gravatar.com/avatar?d=mp'}" alt="Avatar" />
+        <span>${displayText}</span>
+        <button class="login-btn" onclick="logout()">Logout</button>
+        `;
+
+      loadOrders(userId, user.email);
+    }
+
+    async function fetchProfilePic(id) {
+      if (!id) return null;
+      const res = await fetch(`/api/v1/uploadFiles/download/${id}`);
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      return URL.createObjectURL(blob);
+    }
+
+    function getStatusClass(status) {
+      switch (status.toLowerCase()) {
+        case 'delivered':
+          return 'status-delivered';
+        case 'failed':
+          return 'status-failed';
+        case 'pending':
+          return 'status-pending';
+        default:
+          return '';
+      }
+    }
+
+
+    async function loadOrders(userId, email) {
+      const spinner = document.getElementById("orders-spinner");
+      spinner.style.display = "block"; // Show spinner
+      ordersList.innerHTML = "";       // Clear old content
+
+      try {
+        const res = await fetch(`/api/v1/ordersdata/${email}?userId=${userId}`);
+        const data = await res.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+          ordersList.innerHTML = "<p>You have no orders yet.</p>";
+        } else {
+          data.forEach(order => {
+            const div = document.createElement("div");
+            div.className = "order-card";
+            div.innerHTML = `
+          <h3>Network ID: ${order.network}</h3>
+          <p><strong>Recipient:</strong> ${order.recipient}</p>
+          <p><strong>Bundle:</strong> ${order.quantity}</p>
+          <p><strong>Price:</strong> GHS ${order.price}</p>
+          <p>
+  <strong>Status:</strong> 
+  <span class="${getStatusClass(order.status)}">${order.status}</span>
+</p>
+
+          <p><strong>Order Time:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+          <button onclick='orderAgain(${JSON.stringify(order).replace(/"/g, '&quot;')})'>Order Again</button>
+        `;
+            ordersList.appendChild(div);
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch orders", err);
+        ordersList.innerHTML = "<p>Error loading your orders.</p>";
+      } finally {
+        spinner.style.display = "none"; // Hide spinner after loading
+      }
+    }
+
+
+    function orderAgain(order) {
+      document.getElementById('buyModal').style.display = 'block';
+
+      const operatorId = order.network === 'MTN' ? 643 : order.network === 'Telecel' ? 770 : 1109;
+      document.getElementById('operatorId').value = order.network;
+      document.getElementById('recipient').value = order.recipient;
+      //   console.log(order)
+
+      // Fetch bundles from the backend using query parameter
+      fetch(`/api/v1/bundles?network=${order.network}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Network response was not ok");
+          return res.json();
+        })
+        .then(data => {
+          const select = document.getElementById('quantity');
+          select.innerHTML = ''; // Clear existing options
+          //   console.log("Bundles data:", data);
+          data.forEach(bundle => {
+            const opt = document.createElement('option');
+            opt.value = bundle.price;
+            opt.textContent = `${bundle.size} - GHS ${bundle.price}`; // or customize text
+            select.appendChild(opt);
+          });
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Failed to load bundles');
+        });
+    }
+
+
+    document.addEventListener("DOMContentLoaded", setupUser);
+    document.getElementById('buyForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const recipient = document.getElementById('recipient').value;
+      const quantitySelect = document.getElementById('quantity');
+      const quantity = quantitySelect.options[quantitySelect.selectedIndex].text;
+      const price = parseFloat(quantitySelect.value);
+      const channel = ["mobile_money", "bank", "card"];
+
+      const email = localStorage.getItem('email') || `user${Date.now()}@example.com`;
+      const spinner = document.getElementById('spinner');
+      const payBtn = e.target.querySelector('button[type="submit"]');
+
+      spinner.style.display = 'block';           // Show spinner
+      payBtn.disabled = true;                    // Disable button
+      payBtn.style.display = 'none';      // Optional: Change text
+
+
+      try {
+        const response = await fetch('/api/v1/paystack/initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            amount: price,
+            channel,
+            recipient,
+            operatorId: document.getElementById('operatorId').value,
+            quantity,
+            phone: recipient
+          })
+        });
+
+        const data = await response.json();
+        if (data.authorization_url) {
+          window.location.href = data.authorization_url;
+        } else {
+          alert("Payment initialization failed");
+        }
+      } catch (err) {
+        console.error("Payment Error:", err);
+        alert("An error occurred during payment");
+      } finally {
+        spinner.style.display = 'none';      // Hide spinner
+        payBtn.disabled = false;            // Re-enable button
+        payBtn.style.display = 'block';
+      }
+    });
+    function closeModal() {
+      document.getElementById('buyModal').style.display = 'none';
+    }
+/// safe sidebar + section switching
+
+const sidebar = document.getElementById('sidebar');
+const toggle = document.getElementById('sidebarToggle');
+
+// guard: only add listener if toggle exists
+if (toggle && sidebar) {
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+  });
+}
+
+// section switching: use data-section attributes and defensive checks
+function showSection(id) {
+  // remove active class from all sidebar items
+  document.querySelectorAll('nav#sidebar li').forEach(li => li.classList.remove('active'));
+
+  // find the matching nav item by data-section; fallback to first li
+  const targetLi = document.querySelector(`nav#sidebar li[data-section="${id}"]`) ||
+                   document.querySelector('nav#sidebar li');
+
+  if (targetLi) targetLi.classList.add('active');
+
+  // hide all dashboard-container sections inside main
+  document.querySelectorAll('main .dashboard-container, main .section-hidden').forEach(el => {
+    el.classList.add('section-hidden');
+  });
+
+  // show requested section if it exists
+  const section = document.getElementById(id);
+  if (section) section.classList.remove('section-hidden');
+
+  // on mobile, optionally close the sidebar after selection
+  if (sidebar) sidebar.classList.remove('open');
+}
+
+// initialize to ordersSection when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  // Make sure ordersSection exists before calling
+  if (document.getElementById('ordersSection')) {
+    showSection('ordersSection');
+  } else {
+    // fallback: show first section found
+    const firstSection = document.querySelector('main .dashboard-container');
+    if (firstSection) {
+      const sid = firstSection.id || null;
+      if (sid) showSection(sid);
+    }
+  }
+});
+
+
+// near the bottom of your <script> …
+
+// 1) load the existing profile into the form when you open it
+async function loadProfile() {
+  const uid = localStorage.getItem("userId");
+  if (!uid) return;
+  const res = await fetch(`/api/v1/users/${uid}`);
+  if (!res.ok) return;
+  const { user } = await res.json();
+
+  document.getElementById("profilePreview").src =
+    user.profile_picture_id
+      ? await fetchProfilePic(user.profile_picture_id)
+      : document.getElementById("profilePreview").src;
+  localStorage.setItem("username", user.username || ""); // store email for payment
+  document.getElementById("profileUsername").value = user.username || "";
+  document.getElementById("profileEmail").value    = user.email    || "";
+  document.getElementById("profilePhone").value    = user.phone    || "";
+  document.getElementById("profileFirstName").value=user.firstName||"";
+  document.getElementById("profileLastName").value=user.lastName||"";
+}
+// 2) instant preview when choosing a file
+document.getElementById("profilePicInput").addEventListener("change", e => {
+  const f = e.target.files[0];
+  if (f) document.getElementById("profilePreview").src = URL.createObjectURL(f);
+});
+
+// 3) on “Save Changes” submit multipart/form-data
+// submit handler with spinner + disable
+const profileForm = document.getElementById("profileForm");
+const saveBtn = document.getElementById("saveProfileBtn");
+const profileSpinner = document.getElementById("profileSpinner");
+
+profileForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const uid = localStorage.getItem("userId");
+  const username = localStorage.getItem("username");
+  if (!uid) return alert("Not logged in");
+
+  // show loading UI
+  saveBtn.disabled = true;
+  const originalBtnHTML = saveBtn.innerHTML;
+  saveBtn.innerHTML = 'Saving...';
+  profileSpinner.style.display = "block";
+
+  const pic = document.getElementById("profilePicInput").files[0];
+
+  const payload = {
+    usernames: document.getElementById("profileUsername").value,
+    email:     document.getElementById("profileEmail").value,
+    phone:     document.getElementById("profilePhone").value,
+    firstName: document.getElementById("profileFirstName").value,
+    lastName:  document.getElementById("profileLastName").value
+  };
+
+  try {
+    // 1) if a file is selected, upload it first to the special route
+    if (pic) {
+      const picForm = new FormData();
+      picForm.append("profile_pictures", pic);
+      // add username in case backend needs it
+      picForm.append("usernames", payload.usernames || "");
+
+      const uploadUrl = `/api/v1/userse/${encodeURIComponent(username)}/editUserProfile`;
+      const uploadRes = await fetch(uploadUrl, { method: "PATCH", body: picForm });
+      const uploadJson = await uploadRes.json().catch(() => ({}));
+      if (!uploadRes.ok) {
+        alert("Image upload failed: " + (uploadJson.message || uploadRes.statusText));
+        return; // finally will run to hide spinner and re-enable button
+      }
+    }
+
+    // 2) update the profile fields
+    const updateUrl = `/api/v1/users/${encodeURIComponent(username)}/editUser`;
+    const updateRes = await fetch(updateUrl, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const updateJson = await updateRes.json().catch(() => ({}));
+    if (!updateRes.ok) {
+      alert("Profile update failed: " + (updateJson.message || updateRes.statusText));
+      return;
+    }
+
+    alert("Profile updated!");
+    await loadProfile();
+
+  } catch (err) {
+    console.error(err);
+    alert("An error occurred while updating your profile.");
+  } finally {
+    // restore UI
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = originalBtnHTML;
+    profileSpinner.style.display = "none";
+  }
+});
+
+// 4) when you click the sidebar “Profile” tab, fetch/update the form
+function showSection(id) {
+  document.querySelectorAll("nav#sidebar li").forEach(li => li.classList.remove("active"));
+  document.querySelector(`nav#sidebar li[data-section="${id}"]`)?.classList.add("active");
+
+  document.querySelectorAll("main > .dashboard-container").forEach(sec => sec.classList.add("section-hidden"));
+  document.getElementById(id).classList.remove("section-hidden");
+
+  if (id === "profileSection") loadProfile();
+}
+
+// 5) initialize to orders on page load
+document.addEventListener("DOMContentLoaded", () => {
+  setupUser();           // your existing user+orders loader
+  showSection("ordersSection");
+});
+
+  </script>
+</body>
+
+</html>
