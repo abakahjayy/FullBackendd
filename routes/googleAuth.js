@@ -39,7 +39,11 @@ router.get(
     "/google/callback",
     passport.authenticate("google", { session: false }),
     async (req, res) => {
-        const { id, email, fullName, photoURL } = req.user;
+        // utils/passport.js hands back { id, email, fullName, profilePic } -
+        // this used to destructure a nonexistent `photoURL` field, so the
+        // real Google photo was silently dropped in favor of the schema's
+        // placeholder default.
+        const { email, fullName, profilePic } = req.user;
 
         let user = await User.findOne({ email });
 
@@ -53,14 +57,19 @@ router.get(
                 email,
                 password: randomPassword,
                 role: "worker",
-                profile_picture: photoURL,
-                profile_picture_id: photoURL,
+                profile_picture: profilePic,
                 followers: [],
                 following: [],
                 posts: [],
                 bio: "This is your bio. Add something interesting!",
                 isVerified: true,
             });
+            await user.save();
+        } else if (profilePic && user.profile_picture !== profilePic) {
+            // Keep the photo in sync with Google on every login - this also
+            // self-heals accounts created before this field was wired up
+            // correctly (they're stuck on the placeholder otherwise).
+            user.profile_picture = profilePic;
             await user.save();
         }
 
