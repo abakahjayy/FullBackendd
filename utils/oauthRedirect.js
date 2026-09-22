@@ -41,6 +41,25 @@ const isAllowedRedirectUri = (redirectUri) => {
     });
 };
 
+// Deliberately unrestricted by domain (routes/googleAuth.js uses this, not
+// isAllowedRedirectUri) - only checks that the value is a well-formed
+// http(s) URL, not which host it points at, per explicit instruction to
+// allow Google login to work with any site automatically, no .env edit per
+// app. This is a real open-redirect: a crafted
+// /auth/google?redirect_uri=https://attacker.example link sends a genuine
+// login token to attacker.example after a real Google login, because there
+// is no allowlist to catch it. Do not reuse this for anything that isn't
+// explicitly meant to be wide open - isAllowedRedirectUri above is the safe
+// default for everything else (e.g. controllers/seedbridgePayment.js).
+const isWellFormedHttpUrl = (url) => {
+    if (!url) return false;
+    try {
+        return ['http:', 'https:'].includes(new URL(url).protocol);
+    } catch {
+        return false;
+    }
+};
+
 const appendQueryParam = (url, key, value) => {
     const separator = url.includes('?') ? '&' : '?';
     return `${url}${separator}${key}=${encodeURIComponent(value)}`;
@@ -63,6 +82,7 @@ const decodeOAuthState = (state) => {
 
 module.exports = {
     isAllowedRedirectUri,
+    isWellFormedHttpUrl,
     appendQueryParam,
     encodeOAuthState,
     decodeOAuthState,

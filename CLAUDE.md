@@ -53,16 +53,19 @@ dashboard pages (`/afrodatadashboard`, `/api/v1/bundle/`, `/api/v1/buydata/`).
 there is one shared Google Cloud OAuth client for the whole backend, with one callback URL registered in
 Google Cloud Console (`CALLBACK_URL`, resolved to an absolute URL against the incoming request by
 passport-oauth2). Any frontend can start a login by hitting `GET /api/v1/auth/google?redirect_uri=<its own
-callback URL>` — no per-app registration step is needed. The `redirect_uri` travels through Google's `state`
-param (`encodeOAuthState`/`decodeOAuthState`) and, after the callback issues a JWT, the user is redirected
-back to that exact `redirect_uri` with `?token=<jwt>` appended. The only gate is
-`isAllowedRedirectUri()`, which checks the `redirect_uri`'s hostname against the `ALLOWED_REDIRECT_DOMAINS`
-env var (comma-separated hostnames, or `.domain.com` to allow any subdomain) — this exists solely to block
-open-redirect abuse (a link that tricks a user into completing a real login but siphons the resulting token
-off to an attacker-controlled domain), not as an app allowlist/approval step. **Add every real frontend's
-domain to `ALLOWED_REDIRECT_DOMAINS` as it goes live**, or its Google login will get a 400. If a caller omits
-`redirect_uri`, it falls back to `${REDIRECT_URL}/auth/callback` for backwards compatibility with the
-original single-app integration.
+callback URL>` — no per-app registration step and no `.env` edit is needed. The `redirect_uri` travels through
+Google's `state` param (`encodeOAuthState`/`decodeOAuthState`) and, after the callback issues a JWT, the user
+is redirected back to that exact `redirect_uri` with `?token=<jwt>` appended. If a caller omits `redirect_uri`,
+it falls back to `${REDIRECT_URL}/auth/callback` for backwards compatibility with the original single-app
+integration.
+
+Validation is `isWellFormedHttpUrl()` (`utils/oauthRedirect.js`), which only checks the value is a well-formed
+http(s) URL — **not** which host it points at. This is a deliberate, explicit tradeoff (any site works
+automatically, no `ALLOWED_REDIRECT_DOMAINS` entry needed) that accepts a real open-redirect risk: a crafted
+`/auth/google?redirect_uri=https://attacker.example` link will send a genuine login token to attacker.example
+after a real Google login. `ALLOWED_REDIRECT_DOMAINS` and the stricter `isAllowedRedirectUri()` still exist but
+no longer gate Google auth — they now only protect `controllers/seedbridgePayment.js`'s payment callback
+redirect, which is unrelated and was deliberately left unchanged.
 
 **Errors**: custom error classes in `errors/` (`BadRequestError`, `NotFoundError`, `UnauthenticatedError`,
 `UnauthorizedError`, all extending `CustomAPIError`) are thrown from controllers/middleware — routes rely on

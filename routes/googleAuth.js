@@ -4,7 +4,7 @@ const crypto = require("crypto");
 const User = require("../models/User");
 const seedStarterTransactions = require("../utils/seedStarterTransactions");
 const {
-    isAllowedRedirectUri,
+    isWellFormedHttpUrl,
     appendQueryParam,
     encodeOAuthState,
     decodeOAuthState,
@@ -17,16 +17,25 @@ const DEFAULT_REDIRECT_URI = process.env.REDIRECT_URL
     ? `${process.env.REDIRECT_URL}/auth/callback`
     : undefined;
 
-// Any frontend app can kick off login by hitting this route with its own
-// ?redirect_uri=<where it wants the token sent back to>. No prior
-// registration is needed - the URL just has to resolve to a host in
-// ALLOWED_REDIRECT_DOMAINS (see utils/oauthRedirect.js).
+// Any frontend app - any site at all, no .env edit or registration step -
+// can kick off login by hitting this route with its own
+// ?redirect_uri=<where it wants the token sent back to>.
+//
+// SECURITY NOTE: by explicit request, this does NOT check redirect_uri
+// against an allowlist (contrast with controllers/seedbridgePayment.js,
+// which still does via isAllowedRedirectUri). That means this route is an
+// open redirect: anyone can craft
+// /auth/google?redirect_uri=https://attacker.example and a victim who
+// clicks it and completes a real Google login will have their login token
+// sent to attacker.example. Re-adding isAllowedRedirectUri here (swap the
+// import below) closes that hole at the cost of requiring each real
+// frontend's domain to be added to ALLOWED_REDIRECT_DOMAINS in .env.
 router.get("/google", (req, res, next) => {
     const redirectUri = req.query.redirect_uri || DEFAULT_REDIRECT_URI;
 
-    if (!redirectUri || !isAllowedRedirectUri(redirectUri)) {
+    if (!redirectUri || !isWellFormedHttpUrl(redirectUri)) {
         return res.status(400).json({
-            msg: "Missing or disallowed redirect_uri. Add its domain to ALLOWED_REDIRECT_DOMAINS in .env.",
+            msg: "Missing or invalid redirect_uri.",
         });
     }
 
@@ -81,7 +90,7 @@ router.get(
 
         const state = decodeOAuthState(req.query.state);
         const redirectUri =
-            state && isAllowedRedirectUri(state.redirectUri)
+            state && isWellFormedHttpUrl(state.redirectUri)
                 ? state.redirectUri
                 : DEFAULT_REDIRECT_URI;
 
