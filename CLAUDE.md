@@ -77,7 +77,19 @@ the supported syntax (e.g. `useFindAndModify`, `useCreateIndex` are still set ex
 
 **Real-time**: Socket.IO is initialized on top of the same HTTP server (`http.createServer(app)` in `app.js`)
 and configured in `utils/socket.js`; used for the messaging feature (`routes/messageRoutes.js`,
-`models/Message.js`).
+`models/Message.js`). Every connection is authenticated via `io.use()` middleware that verifies the same JWT
+issued by `POST /api/v1/auth/login` (passed as `io(url, { auth: { token } })` on the client) — `socket.userId`
+comes only from the verified token, never from a client-supplied field, so a socket can't send or read
+messages as a different user. `utils/socket.js` tracks `userId -> Set<socketId>` (not a single id) so a user
+with multiple tabs/devices gets delivery to all of them, and disconnecting one tab can't clobber another
+still-live tab's registration. `typing` events are emitted only to the named recipient's sockets, not
+broadcast to everyone connected. The REST endpoints in `routes/messageRoutes.js` require the same
+`authMiddleware` as everything else and independently enforce the same rule — `getMessages`/`markAsRead` 401
+for anyone who isn't a participant in that conversation. **No frontend in this workspace currently talks to
+this** — `ChatAppDemo.jsx` (present in both `GHGPT-main` and `React-products-master/Instagram`, identical
+file) is the one place that attempts a real socket.io-client connection, but it's never mounted (commented
+out in `App.jsx`); the live "Messages" UI in both of those apps (`MessagesPage.jsx`, `messagesModal.jsx`) is
+hardcoded mock data with no backend calls at all.
 
 **AI/chatbot**: Two separate integrations exist side by side — (1) `utils/openaiService.js` /
 `utils/askAi.js` call OpenAI/OpenRouter directly from Node for `routes/chatAi.js` and `routes/aiModel.js`; (2)

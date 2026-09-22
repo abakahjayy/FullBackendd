@@ -1,6 +1,9 @@
 const express = require('express');
+const authMiddleware = require('../middleware/auth.js');
 const { sendMessage, getMessages, markAsRead } = require('../controllers/messageController');
 const router = express.Router();
+
+router.use(authMiddleware);
 
 // Send a new message
 router.post('/', sendMessage);
