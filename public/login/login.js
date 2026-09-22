@@ -37,3 +37,11 @@ navToggle.addEventListener('click', () => {
     navToggle.classList.toggle('active');
 });
 
+// Sends the user to Google, telling the backend to send them back to this
+// site's own dashboard afterwards (see utils/oauthRedirect.js server-side -
+// any redirect_uri whose host is on ALLOWED_REDIRECT_DOMAINS is accepted).
+document.querySelector('.google-login').addEventListener('click', () => {
+    const redirectUri = `${window.location.origin}/dashboard/dashboard.html`;
+    window.location.href = `/api/v1/auth/google?redirect_uri=${encodeURIComponent(redirectUri)}`;
+});
+

@@ -3,49 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Dashboard — FullBackend</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./dashboard.css">
+    <link rel="stylesheet" href="../font-awesome/css/all.min.css" />
 </head>
 <body>
     <header>
         <div id="navbar">
-            <h1>Welcome to Your Dashboard</h1>
+            <a href="../homepage/index.html" class="brand">
+                <span class="brand-mark"><i class="fas fa-layer-group"></i></span>
+                FullBackend
+            </a>
             <div id="profile-container">
-                <img id="profile-pic" src="./placeholder.jpg" alt="Profile Picture">
-                <span id="user-name">Loading...</span>
-                <button id="logout">Logout</button>
+                <a class="docs-link" href="/api-docs"><i class="fas fa-book"></i> API Docs</a>
+                <a class="docs-link" href="https://portfolio-8jmo.onrender.com/" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-briefcase"></i> Portfolio
+                </a>
+                <div class="profile-chip">
+                    <img id="profile-pic" src="./placeholder.jpg" alt="Profile Picture">
+                    <span id="user-name">Loading...</span>
+                </div>
+                <button id="logout"><i class="fas fa-arrow-right-from-bracket"></i> Logout</button>
             </div>
         </div>
     </header>
-    
+
     <main>
-        <section>
-            <h2>Your Account Details</h2>
-            <p id="user-details"></p>
+        <section class="status-banner">
+            <span class="status-dot"></span>
+            <span>API operational</span>
+            <span class="status-sep">&middot;</span>
+            <span>MongoDB connected</span>
+            <span class="status-sep">&middot;</span>
+            <a href="/api-docs">View interactive docs <i class="fas fa-arrow-up-right-from-square"></i></a>
         </section>
 
-        <!-- Image Upload Section -->
-        <section id="upload-section">
-            <h2>Upload Profile Picture To Code</h2>
-            <input type="file" id="file-input" accept="image/*" name="profile_picture" title="Upload"/>
-            <button id="upload-btn">Upload</button>
-            <p id="upload-status"></p>
-            <!-- <form action="/api/v1/auth/upload-profile-pic" method="POST" enctype="multipart/form-data">
-                <input type="file" name="profile_picture" required id="file-input" accept="image/*" />
-                <button type="submit" id="upload-btn" >Upload</button>
-                <p id="upload-status"></p>
-            </form> -->
-            
+        <div class="dash-grid">
+            <section class="card account-card">
+                <h2>Your account</h2>
+                <p id="user-details">Loading account details…</p>
+            </section>
+
+            <section class="card services-card">
+                <h2>Available services</h2>
+                <p class="card-sub">Every route group live on this backend right now.</p>
+                <div class="service-grid">
+                    <div class="service-pill"><i class="fas fa-user-shield"></i> Auth &amp; Google OAuth</div>
+                    <div class="service-pill"><i class="fas fa-shopping-cart"></i> Products &amp; Cart</div>
+                    <div class="service-pill"><i class="fas fa-box"></i> Orders &amp; Delivery</div>
+                    <div class="service-pill"><i class="fas fa-wallet"></i> Transactions</div>
+                    <div class="service-pill"><i class="fas fa-credit-card"></i> Paystack Payments</div>
+                    <div class="service-pill"><i class="fas fa-robot"></i> AI Chat</div>
+                    <div class="service-pill"><i class="fas fa-comments"></i> Real-time Messaging</div>
+                    <div class="service-pill"><i class="fas fa-seedling"></i> SeedBridge Marketplace</div>
+                </div>
+            </section>
+        </div>
+
+        <section class="card upload-card">
+            <h2>Profile picture</h2>
+            <p class="card-sub">Stored directly on this server (multer disk storage).</p>
+            <div class="upload-row">
+                <input type="file" id="file-input" accept="image/*" name="profile_picture" title="Upload"/>
+                <button id="upload-btn" class="btn">Upload</button>
+            </div>
+            <p id="upload-status" class="upload-status"></p>
         </section>
 
-        <!-- testing Api -->
-        <section id="upload-section">
-            <h2>Upload Profile Picture Database</h2>
-            <input type="file" id="file-inputs" name="profile_pictures" title="File Input" accept="image/*"/>
-            <button id="upload-btns">Upload</button>
-            <p id="upload-statuss"></p>
+        <section class="card upload-card">
+            <h2>Profile picture (GridFS)</h2>
+            <p class="card-sub">Stored in MongoDB via GridFS instead of the filesystem.</p>
+            <div class="upload-row">
+                <input type="file" id="file-inputs" name="profile_pictures" title="File Input" accept="image/*"/>
+                <button id="upload-btns" class="btn">Upload</button>
+            </div>
+            <p id="upload-statuss" class="upload-status"></p>
         </section>
-        
     </main>
 
     <script type="module" src="./dashboard.js"></script>

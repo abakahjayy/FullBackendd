@@ -1,46 +1,41 @@
-// import Cookie from '../../node_modules/js-cookie';
 document.addEventListener("DOMContentLoaded", async () => {
-    // Regular Colors
-console.log('\x1b[31m%s\x1b[0m', 'This is red');       // Red text
-console.log('\x1b[32m%s\x1b[0m', 'This is green');     // Green text
-console.log('\x1b[33m%s\x1b[0m', 'This is yellow');    // Yellow text
-console.log('\x1b[34m%s\x1b[0m', 'This is blue');      // Blue text
-console.log('\x1b[35m%s\x1b[0m', 'This is magenta');   // Magenta text
-console.log('\x1b[36m%s\x1b[0m', 'This is cyan');      // Cyan text
-console.log('\x1b[37m%s\x1b[0m', 'This is white');     // White text
-
-// Background Colors
-console.log('\x1b[41m%s\x1b[0m', 'This has red background'); // Red background
-console.log('\x1b[42m%s\x1b[0m', 'This has green background'); // Green background
-
-// Bold and Underline
-console.log('\x1b[1m%s\x1b[0m', 'This is bold');        // Bold text
-console.log('\x1b[4m%s\x1b[0m', 'This is underlined');  // Underlined text
-
-// Reset Style
-console.log('\x1b[0m%s\x1b[0m', 'This is normal again'); // Reset style
     const urlParams = new URLSearchParams(window.location.search);
-    const userId =urlParams.get("id")|| localStorage.getItem("userId") || sessionStorage.getItem("userId");
-    const userTok =urlParams.get("oven")
-    // console.log(userId);
-    
-    const response = await fetch("/api/v1/auth/userId", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId,userTok}),
-    });
 
-    let datas = await response.json();
-    // console.log(datas);
-    
-    let token = datas.cookie?datas.cookie.token : datas.userTok;
-    // console.log(token);
-    // console.log(userId);
+    // Google OAuth (see login.js/signup.js) lands here with ?token=<jwt> -
+    // that's already a valid, self-contained token, so skip the legacy
+    // cookie-lookup flow below entirely for that case.
+    let token = urlParams.get("token");
+    let userId = urlParams.get("id") || localStorage.getItem("userId") || sessionStorage.getItem("userId");
+
+    if (!token) {
+        const userTok = urlParams.get("oven");
+        const response = await fetch("/api/v1/auth/userId", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, userTok }),
+        });
+        const datas = await response.json();
+        token = datas.cookie ? datas.cookie.token : datas.userTok;
+    } else if (!userId) {
+        // JWT payload is base64url-encoded JSON in the middle segment -
+        // decode it locally instead of a round-trip just to learn our own id.
+        try {
+            userId = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).userId;
+        } catch {
+            // Not fatal - userId is only used to namespace cached localStorage keys below.
+        }
+    }
+
     if (!token) {
         window.location.href = "../login/login.html"; // Redirect if not logged in
         return;
     }
-    
+
+    if (userId) {
+        localStorage.setItem(`token-${userId}`, token);
+        localStorage.setItem("userId", userId);
+    }
+
     const FetchImage=async()=>{
         try {
             const profilePictureId=localStorage.getItem(`profileId-${userId}`);

@@ -4,40 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
-    <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
-    <link
-        rel="stylesheet"
-        href="../font-awesome/css/all.min.css"
-    />
-    <title>Evernote</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../font-awesome/css/all.min.css" />
+    <title>FullBackend — Multi-App Backend Platform</title>
 </head>
 <body>
     <nav>
         <div class="nav-header">
-            <img src="../images/evernote-logo.svg" alt="Evernote Logo">
+            <a href="/" class="brand">
+                <span class="brand-mark"><i class="fas fa-layer-group"></i></span>
+                FullBackend
+            </a>
             <button class="nav-toggle" title="toggle">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
         <ul class="nav-links links">
-            <li><a href="">Why Evernote</a></li>
-            <li><a href=""><select name="explore" id="exlore" title="explore"><option value="">Explore</option></select></option></a></li>
-            <li><a href="">Plans</a></li>
-            <li><a href="">Enterprise</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="/api-docs">API Docs</a></li>
+            <li><a href="https://portfolio-8jmo.onrender.com/" target="_blank" rel="noopener noreferrer">Portfolio</a></li>
         </ul>
         <div class="logins">
             <a href="../login/login.html">Log in</a>
-            <button title="download" class="download">Download</button>
-            <a href="../signup/signup.html"><button title="Start for free" class="start">Start for free</button></a>
+            <a href="../signup/signup.html"><button class="start">Get started</button></a>
         </div>
     </nav>
+
     <div class="hero-section">
-        <p class="head">What will you <br><span class="achieve">achieve </span>today?</p>
-        <p class="below">Remember everything and tackle any project with your notes, tasks,<br><span class="next">and schedule all in one place.</span> </p>
-        <a href="../signup/signup.html"><button class="get">Get Evernote free</button></a>
+        <span class="eyebrow"><i class="fas fa-bolt"></i> Live in production</span>
+        <p class="head">One backend. <br><span class="achieve">Every app you build.</span></p>
+        <p class="below">A single Node.js / Express / MongoDB service powering e-commerce, payments, AI chat,
+            real-time messaging and multi-app Google login — so every new project starts with auth and a
+            database already solved.</p>
+        <div class="hero-cta">
+            <a href="../signup/signup.html"><button class="get">Create an account</button></a>
+            <a href="/api-docs" class="ghost-btn">View API docs <i class="fas fa-arrow-right"></i></a>
+        </div>
     </div>
-    
-    
+
+    <section class="features" id="features">
+        <div class="features-head">
+            <span class="eyebrow"><i class="fas fa-cubes"></i> What's inside</span>
+            <h2>Built for apps that need a real backend</h2>
+            <p>Every feature below is live and running right now — this isn't a marketing page for
+                software that doesn't exist yet.</p>
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-user-shield"></i></div>
+                <h3>Multi-app auth</h3>
+                <p>JWT sessions plus Google OAuth that any number of frontends can share — each app gets
+                    redirected back to itself, not a hardcoded URL.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-credit-card"></i></div>
+                <h3>Payments</h3>
+                <p>Paystack checkout with signature-verified webhooks, so a payment is never lost just
+                    because a browser tab closed early.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-robot"></i></div>
+                <h3>AI integrations</h3>
+                <p>OpenAI and OpenRouter-backed chat endpoints, plus a self-hosted model pipeline for
+                    fully custom responses.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-comments"></i></div>
+                <h3>Real-time messaging</h3>
+                <p>Socket.IO wired straight into the same Express server — no separate service to keep
+                    in sync.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shopping-cart"></i></div>
+                <h3>E-commerce primitives</h3>
+                <p>Products, cart, orders and delivery tracking, ready to sit behind any storefront.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3>Security by default</h3>
+                <p>Helmet, rate limiting, Mongo sanitization and XSS filtering applied globally, not
+                    bolted on per route.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="brand-mark"><i class="fas fa-layer-group"></i></span>
+                <span>FullBackend</span>
+            </div>
+            <div class="footer-links">
+                <a href="/api-docs">API Docs</a>
+                <a href="../login/login.html">Log in</a>
+                <a href="../signup/signup.html">Sign up</a>
+                <a href="https://portfolio-8jmo.onrender.com/" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-briefcase"></i> Developer Portfolio
+                </a>
+            </div>
+        </div>
+        <p class="footer-copy">&copy; <span id="year"></span> Built by Abakah Joshua.</p>
+    </footer>
+
     <script src="index.js" type="module"></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>

@@ -4,86 +4,79 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
-    <title>Evernote Sign-Up</title>
-    <!-- normalize.css -->
-    <link rel="stylesheet" href="./normalize.css" />
-    <!-- main.css -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <title>Sign up — FullBackend</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./signup.css" />
-    <link
-        rel="stylesheet"
-        href="../font-awesome/css/all.min.css"
-    />
+    <link rel="stylesheet" href="../font-awesome/css/all.min.css" />
 </head>
 
 <body>
     <div class="background">
-        <div class="green-star"></div>
-        <div class="pink-circle"></div>
+        <div class="glow glow-a"></div>
+        <div class="glow glow-b"></div>
     </div>
     <nav>
         <div class="nav-header">
-            <a href="../homepage/index.html" title="home"><img src="../images/evernote-logo.svg" alt="" class="go-home"></a>
+            <a href="../homepage/index.html" class="brand" title="home">
+                <span class="brand-mark"><i class="fas fa-layer-group"></i></span>
+                FullBackend
+            </a>
             <button class="nav-toggle" title="toggle">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
         <ul class="nav-links">
-            <li><a href="">Why Evernote</a></li>
-            <li><a href=""><select name="explore" id="exlore" title="explore">
-                        <option value="">Explore</option>
-                    </select></option></a></li>
-            <li><a href="">Plans</a></li>
-            <li><a href="">Enterprise</a></li>
+            <li><a href="../homepage/index.html#features">Features</a></li>
+            <li><a href="/api-docs">API Docs</a></li>
+            <li><a href="https://portfolio-8jmo.onrender.com/" target="_blank" rel="noopener noreferrer">Portfolio</a></li>
         </ul>
     </nav>
     <main>
-
-
-        <form class="form">
-            <h4>Sign-up form</h4>
-            <div class="form-row">
-                <label for="name" class="form-label">First Name</label>
-                <input type="name" class="form-input first-name-input" name="First Name" title="First Name" required />
-                <small class="form-alert"></small>
+        <div class="auth-card">
+            <h4>Create your account</h4>
+            <p class="auth-sub">Get a working backend behind your next app in seconds.</p>
+            <form class="form">
+                <div class="form-grid">
+                    <div class="form-row">
+                        <label for="firstName" class="form-label">First name</label>
+                        <input type="text" class="form-input first-name-input" name="firstName" title="First Name" required />
+                        <small class="form-alert"></small>
+                    </div>
+                    <div class="form-row">
+                        <label for="lastName" class="form-label">Last name</label>
+                        <input type="text" class="form-input last-name-input" name="lastName" title="Last Name" required />
+                        <small class="form-alert"></small>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-input user-name-input" name="username" title="User Name" required />
+                    <small class="form-alert"></small>
+                </div>
+                <div class="form-row">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-input email-input" name="email" title="email" required />
+                    <small class="form-alert"></small>
+                </div>
+                <div class="form-row">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" name="password" title="password" class="form-input password-input" required />
+                    <small class="form-alert"></small>
+                </div>
+                <button type="submit" class="btn btn-block submit-btn">Create account</button>
+            </form>
+            <div class="divider"><span>or</span></div>
+            <div class="social-login">
+                <button class="google-login btns" type="button">
+                    <img src="../images/pngs/google.png" alt="Google Logo"> Continue with Google
+                </button>
             </div>
-            <div class="form-row">
-                <label for="name" class="form-label">Last Name</label>
-                <input type="name" class="form-input last-name-input" name="Last Name" title="Last Name" required />
-                <small class="form-alert"></small>
+            <div class="footer-links">
+                <p>Already have an account? <a href="../login/login.html">Log in</a></p>
             </div>
-            <div class="form-row">
-                <label for="name" class="form-label">User Name</label>
-                <input type="name" class="form-input user-name-input" name="User Name" title="User Name" required />
-                <small class="form-alert"></small>
-            </div>
-            <div class="form-row">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-input email-input" name="email" title="email" required />
-                <small class="form-alert"></small>
-            </div>
-            <div class="form-row">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" name="password" title="password" class="form-input password-input" required />
-                <small class="form-alert"></small>
-            </div>
-            <button type="submit" class="btn btn-block submit-btn">submit</button>
-        </form>
-        <div class="social-login ">
-            <button class="google-login btns">
-                <img src="../images/pngs/google.png" alt="Google Logo"> Continue with Google
-            </button>
-            <button class="apple-login btns">
-                <img src="../images/pngs/apple.png" alt="Apple Logo"> Continue with Apple
-            </button>
-        </div>
-        <div class="footer-links">
-            <p>Already have an account? <a href="../login/login.html" style="color: #4285F4;">Log in</a></p>
-        </div>
-        <div class="legal-links">
-            <a href="#">Security</a>
-            <a href="#">Legal</a>
-            <a href="#">Privacy</a>
         </div>
     </main>
     <script src="./signup.js"></script>
