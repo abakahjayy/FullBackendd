@@ -45,10 +45,24 @@ parsers around app.js:110-140.
 
 **Auth**: JWT-based (`middleware/auth.js`), checking `Authorization: Bearer <token>` header, then a `token`
 cookie, then a `?oven=` query param, in that priority order. Verified against `JWT_SECRET`; attaches
-`req.user = { userId, username, token }`. Google OAuth via Passport (`utils/passport.js`, `routes/googleAuth.js`)
-and Clerk (`@clerk/clerk-sdk-node`) are also wired in for specific flows. `middleware/adminOnly.js` gates
-admin-only routes; `middleware/htmlAuth.js` gates the server-rendered static dashboard pages
-(`/afrodatadashboard`, `/api/v1/bundle/`, `/api/v1/buydata/`).
+`req.user = { userId, username, token }`. Clerk (`@clerk/clerk-sdk-node`) is also wired in for specific flows.
+`middleware/adminOnly.js` gates admin-only routes; `middleware/htmlAuth.js` gates the server-rendered static
+dashboard pages (`/afrodatadashboard`, `/api/v1/bundle/`, `/api/v1/buydata/`).
+
+**Google OAuth is multi-app by design** (`utils/passport.js`, `routes/googleAuth.js`, `utils/oauthRedirect.js`):
+there is one shared Google Cloud OAuth client for the whole backend, with one callback URL registered in
+Google Cloud Console (`CALLBACK_URL`, resolved to an absolute URL against the incoming request by
+passport-oauth2). Any frontend can start a login by hitting `GET /api/v1/auth/google?redirect_uri=<its own
+callback URL>` — no per-app registration step is needed. The `redirect_uri` travels through Google's `state`
+param (`encodeOAuthState`/`decodeOAuthState`) and, after the callback issues a JWT, the user is redirected
+back to that exact `redirect_uri` with `?token=<jwt>` appended. The only gate is
+`isAllowedRedirectUri()`, which checks the `redirect_uri`'s hostname against the `ALLOWED_REDIRECT_DOMAINS`
+env var (comma-separated hostnames, or `.domain.com` to allow any subdomain) — this exists solely to block
+open-redirect abuse (a link that tricks a user into completing a real login but siphons the resulting token
+off to an attacker-controlled domain), not as an app allowlist/approval step. **Add every real frontend's
+domain to `ALLOWED_REDIRECT_DOMAINS` as it goes live**, or its Google login will get a 400. If a caller omits
+`redirect_uri`, it falls back to `${REDIRECT_URL}/auth/callback` for backwards compatibility with the
+original single-app integration.
 
 **Errors**: custom error classes in `errors/` (`BadRequestError`, `NotFoundError`, `UnauthenticatedError`,
 `UnauthorizedError`, all extending `CustomAPIError`) are thrown from controllers/middleware — routes rely on
@@ -85,9 +99,17 @@ bundle dashboard/login/buydata pages, success/reset-password pages) served direc
 `app.js`, gated by `htmlAuth` where noted above. `navbar-app/` is a small standalone JS widget. These are not
 part of the JSON API and don't go through the `routes/`→`controllers/` layering.
 
-**Environment variables** (see `.env`, not committed with real secrets in prod): `MONGO_URI`, `PORT`,
-`JWT_SECRET`, `JWT_LIFETIME`, `SESSION_KEY`, `NODE_ENV`, `ORIGIN`, `CLIENT_URL`, `CLIENT_URL_AI`,
-`CALLBACK_URL`, `REDIRECT_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `EMAIL_USER`, `EMAIL_PASS`,
+**Environment variables**: `.env.example` is the source of truth for which keys every environment must define
+(local/staging/prod) — copy it to `.env` and fill in real values; add new keys to both files together so
+environments stay in sync. Vars actually read via `process.env.*` in code: `MONGO_URI`, `PORT`, `JWT_SECRET`,
+`JWT_LIFETIME`, `SESSION_KEY`, `NODE_ENV`, `ORIGIN`, `CLIENT_URL_AI`, `CALLBACK_URL`, `REDIRECT_URL`,
+`ALLOWED_REDIRECT_DOMAINS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `EMAIL_USER`, `EMAIL_PASS`,
 `IMAGE_KIT_PUBLIC_KEY`, `IMAGE_KIT_PRIVATE_KEY`, `IMAGE_KIT_ENDPOINT`, `OPENAI_API_KEYS`,
 `OPENROUTER_API_KEY`, `PAYSTACK_SECRET_KEY`, `TEST_PAYSTACK_SECRET_KEY`, `PAYSTACK_CALLBACK_URL`,
 `RELOADLY_CLIENT_ID`, `RELOADLY_CLIENT_SECRET`.
+
+> ⚠️ `.env` is currently committed to this repo (`git ls-files .env` shows it tracked, and it's *not* covered
+> by `.gitignore` — the ignore rule is `.env/` with a trailing slash, which only matches a directory). It
+> holds live secrets (Paystack live secret key, OpenAI key, Reloadly, Clerk, email app password, etc). Treat
+> those as already exposed if this repo/remote has ever been public or shared, and get the user's explicit
+> go-ahead before rotating keys or rewriting history — don't do it unilaterally.

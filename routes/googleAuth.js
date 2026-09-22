@@ -2,12 +2,38 @@ const express = require("express");
 const passport = require("passport");
 const crypto = require("crypto");
 const User = require("../models/User");
+const {
+    isAllowedRedirectUri,
+    appendQueryParam,
+    encodeOAuthState,
+    decodeOAuthState,
+} = require("../utils/oauthRedirect");
 const router = express.Router();
 
-router.get(
-    "/google",
-    passport.authenticate("google", { scope: ["profile", "email"] })
-);
+// Default target when a caller doesn't pass its own redirect_uri, kept for
+// backwards compatibility with the original single-app integration.
+const DEFAULT_REDIRECT_URI = process.env.REDIRECT_URL
+    ? `${process.env.REDIRECT_URL}/auth/callback`
+    : undefined;
+
+// Any frontend app can kick off login by hitting this route with its own
+// ?redirect_uri=<where it wants the token sent back to>. No prior
+// registration is needed - the URL just has to resolve to a host in
+// ALLOWED_REDIRECT_DOMAINS (see utils/oauthRedirect.js).
+router.get("/google", (req, res, next) => {
+    const redirectUri = req.query.redirect_uri || DEFAULT_REDIRECT_URI;
+
+    if (!redirectUri || !isAllowedRedirectUri(redirectUri)) {
+        return res.status(400).json({
+            msg: "Missing or disallowed redirect_uri. Add its domain to ALLOWED_REDIRECT_DOMAINS in .env.",
+        });
+    }
+
+    passport.authenticate("google", {
+        scope: ["profile", "email"],
+        state: encodeOAuthState({ redirectUri }),
+    })(req, res, next);
+});
 
 router.get(
     "/google/callback",
@@ -41,7 +67,18 @@ router.get(
         const token = user.createJWT();
 
         res.cookie("token", token, { httpOnly: true });
-        res.redirect(`${process.env.REDIRECT_URL}/auth/callback?token=${token}`);
+
+        const state = decodeOAuthState(req.query.state);
+        const redirectUri =
+            state && isAllowedRedirectUri(state.redirectUri)
+                ? state.redirectUri
+                : DEFAULT_REDIRECT_URI;
+
+        if (!redirectUri) {
+            return res.status(400).json({ msg: "No valid redirect_uri for this login request." });
+        }
+
+        res.redirect(appendQueryParam(redirectUri, "token", token));
     }
 );
 
