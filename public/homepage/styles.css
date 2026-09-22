@@ -196,6 +196,15 @@ nav {
 
 .nav-logout:hover { border-color: var(--danger); color: var(--danger); }
 
+.nav-account-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.nav-account-row .nav-profile-link { flex: 1; min-width: 0; }
+
 /* ---------- Hero ---------- */
 
 .hero-section {

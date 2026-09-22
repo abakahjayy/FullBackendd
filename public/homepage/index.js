@@ -82,7 +82,12 @@ function renderLoggedIn(user) {
         renderLoggedOut();
     });
 
-    logins.append(profileLink, logoutBtn);
+    // Wrapped in one row so the chip and logout button stay side-by-side
+    // even inside .logins.active's column layout on mobile.
+    const row = document.createElement('div');
+    row.className = 'nav-account-row';
+    row.append(profileLink, logoutBtn);
+    logins.append(row);
 }
 
 async function checkAuth() {

@@ -9,6 +9,11 @@
 // This exists purely to stop /auth/google?redirect_uri=https://evil.com
 // from being used to steal a login token via open redirect - it is not a
 // per-app registration step, any host on the list works automatically.
+// Exact hostnames only by default (no wildcard like ".onrender.com") -
+// that's a shared hosting domain anyone can get a free subdomain on, so
+// wildcarding it here would let any of them receive a stolen login token
+// via this route's redirect_uri. Add each real frontend hostname you
+// control to ALLOWED_REDIRECT_DOMAINS instead.
 const getAllowedDomains = () =>
     (process.env.ALLOWED_REDIRECT_DOMAINS || 'localhost,127.0.0.1')
         .split(',')
