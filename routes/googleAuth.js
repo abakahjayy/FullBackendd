@@ -2,6 +2,7 @@ const express = require("express");
 const passport = require("passport");
 const crypto = require("crypto");
 const User = require("../models/User");
+const seedStarterTransactions = require("../utils/seedStarterTransactions");
 const {
     isAllowedRedirectUri,
     appendQueryParam,
@@ -65,6 +66,7 @@ router.get(
                 isVerified: true,
             });
             await user.save();
+            await seedStarterTransactions(user._id);
         } else if (profilePic && user.profile_picture !== profilePic) {
             // Keep the photo in sync with Google on every login - this also
             // self-heals accounts created before this field was wired up

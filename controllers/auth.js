@@ -5,6 +5,7 @@ const User = require("../models/User");
 const { UnauthenticatedError, BadRequestError, NotFoundError } = require('../errors')
 const { StatusCodes } = require('http-status-codes');
 const sendVerificationEmail = require('../utils/sendVerficationEmail.js');
+const seedStarterTransactions = require('../utils/seedStarterTransactions.js');
 const path = require('path')
 const { appPath } = require('../app.js')
 let Id;
@@ -107,6 +108,8 @@ const signUp = async (req, res) => {
 
     const UserId = JSON.stringify(newUser._id);
     console.log(`\x1b[32m%s\x1b[0m`, `New user created with id: ${UserId.split('"')[1]}`);
+
+    await seedStarterTransactions(newUser._id);
 
     const token = newUser.createJWT();
     const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '30d' });
