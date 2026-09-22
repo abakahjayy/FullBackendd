@@ -106,10 +106,43 @@ environments stay in sync. Vars actually read via `process.env.*` in code: `MONG
 `ALLOWED_REDIRECT_DOMAINS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `EMAIL_USER`, `EMAIL_PASS`,
 `IMAGE_KIT_PUBLIC_KEY`, `IMAGE_KIT_PRIVATE_KEY`, `IMAGE_KIT_ENDPOINT`, `OPENAI_API_KEYS`,
 `OPENROUTER_API_KEY`, `PAYSTACK_SECRET_KEY`, `TEST_PAYSTACK_SECRET_KEY`, `PAYSTACK_CALLBACK_URL`,
-`RELOADLY_CLIENT_ID`, `RELOADLY_CLIENT_SECRET`.
+`RELOADLY_CLIENT_ID`, `RELOADLY_CLIENT_SECRET`, `SEEDBRIDGE_CLIENT_URL`.
 
-> ⚠️ `.env` is currently committed to this repo (`git ls-files .env` shows it tracked, and it's *not* covered
-> by `.gitignore` — the ignore rule is `.env/` with a trailing slash, which only matches a directory). It
-> holds live secrets (Paystack live secret key, OpenAI key, Reloadly, Clerk, email app password, etc). Treat
-> those as already exposed if this repo/remote has ever been public or shared, and get the user's explicit
-> go-ahead before rotating keys or rewriting history — don't do it unilaterally.
+> ⚠️ `.env` was committed to this repo until this was caught and fixed (untracked with `git rm --cached`,
+> `.gitignore` corrected from the no-op `.env/` to `.env`). It holds live secrets (Paystack live secret key,
+> OpenAI key, Reloadly, Clerk, email app password, etc) that are still in git history from before the fix —
+> treat those as already exposed if this repo/remote has ever been public or shared, and get the user's
+> explicit go-ahead before rotating keys or rewriting history — don't do it unilaterally.
+
+## SeedBridge (`/api/v1/seedbridge/*`)
+
+A farm-to-market app (farmers list produce, buyers order it, drivers deliver it) living inside this same
+backend but **fully namespaced and isolated** from everything else here — it was originally built by mistake
+inside an old, no-longer-running copy of this repo (`openlabs-project-main`) before being ported in. Its own
+`models/SeedBridgeUser.js` (phone-first signup: `name`, `phone`, `password`, `role` of
+`farmer`/`buyer`/`driver`/`agent`, `region`, `momoBalance`) is a **separate collection** from the shared
+`User` model every other app on this backend uses — no shared schema, no shared auth. `middleware/seedbridgeAuth.js`
+verifies its own JWTs (still signed with the same `JWT_SECRET`, but a token minted for `User` won't resolve
+against `SeedBridgeUser` or vice versa). Sign up/log in at `POST /api/v1/seedbridge/auth/signup` /
+`/login` (phone + password, not email).
+
+Feature routes: `seedbridgeProduce.js` (public browsing + farmer-owned CRUD on listings, ownership enforced
+via `req.user.userId === produce.farmerId`), `seedbridgeOrder.js` (buyer creates an order against a listing,
+decrements `availableKg`, both sides can update status), `seedbridgeDashboard.js` (role-specific
+farmer/buyer/driver stats + a public market overview), `seedbridgeUssd.js` (a *different* USSD menu than the
+MTN-bundle one at `/api/v1/ussd/start` — looks users up by phone against `SeedBridgeUser`, no JWT involved,
+meant for Africa's Talking).
+
+**Payment is dynamic by design, unlike the legacy `/api/v1/paystack` flow**: `seedbridgePayment.js`'s
+`initializeCheckout` takes the caller's own `callbackUrl` per request (same `isAllowedRedirectUri()` /
+`ALLOWED_REDIRECT_DOMAINS` gate as Google login), falling back to `SEEDBRIDGE_CLIENT_URL` only when no
+`callbackUrl` was given — an explicitly-passed but disallowed URL is rejected with a 400, never silently
+swapped for the fallback. Also has real webhook support (`POST /api/v1/seedbridge/payments/webhook`,
+HMAC-SHA512 signature verification against `x-paystack-signature`), which the legacy Paystack integration
+lacks. This requires the **raw** request body to verify the signature, so `app.js` special-cases
+`SEEDBRIDGE_WEBHOOK_PATH` around every body-parsing/sanitizing middleware it registers (`bodyParser.json()`,
+`xss()`, `mongoSanitize()`, `express.json()`) — if you add another raw-body webhook anywhere in this app,
+follow that same exact-path-skip pattern or the signature check will always fail.
+
+`models/SeedBridgeLogisticsRequest.js` (driver pickup/delivery scheduling) exists as a model only — no
+controller/route was ever built for it in the source this was ported from.

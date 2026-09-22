@@ -71,6 +71,12 @@ const foodordersRoutes = require("./routes/foodorders");
 
 const feedbackRoutes = require("./routes/foodFeedback");
 const portfolioRoutes = require("./routes/portfolio.js");
+const seedbridgeAuthRoutes = require("./routes/seedbridgeAuthRoutes.js");
+const seedbridgeProduceRoutes = require("./routes/seedbridgeProduce.js");
+const seedbridgeOrderRoutes = require("./routes/seedbridgeOrder.js");
+const seedbridgePaymentRoutes = require("./routes/seedbridgePayment.js");
+const seedbridgeDashboardRoutes = require("./routes/seedbridgeDashboard.js");
+const seedbridgeUssdRoutes = require("./routes/seedbridgeUssd.js");
 // console.log(ClerkExpressRequireAuth)
 
 
@@ -110,7 +116,19 @@ if (fs.existsSync(portfolioSwaggerPath)) {
 // Serve the uploaded images from the /uploads folder in code
 app.use("/api/v1/auth/", uploadRoutes);
 
-app.use(bodyParser.json());
+// IMPORTANT: must be registered BEFORE bodyParser.json()/express.json()
+// below. Paystack's webhook signature is an HMAC over the raw request
+// bytes - once a JSON parser has turned the body into a JS object, the
+// original bytes are gone and the signature can no longer be verified.
+const SEEDBRIDGE_WEBHOOK_PATH = '/api/v1/seedbridge/payments/webhook';
+app.use(SEEDBRIDGE_WEBHOOK_PATH, express.raw({ type: 'application/json' }));
+
+app.use((req, res, next) => {
+    if (req.originalUrl === SEEDBRIDGE_WEBHOOK_PATH) {
+        return next(); // already raw-parsed above; don't let this overwrite req.body
+    }
+    return bodyParser.json()(req, res, next);
+});
 app.use(logger("dev"));
 // app.use(morgan('tiny'))
 
@@ -191,15 +209,30 @@ const apiLimiter = rateLimiter({
 app.use("/api/", apiLimiter);
 
 
-app.use(xss());
-app.use(mongoSanitize());
+app.use((req, res, next) => {
+    if (req.originalUrl === SEEDBRIDGE_WEBHOOK_PATH) {
+        return next(); // req.body is a raw Buffer here - these sanitizers expect parsed objects
+    }
+    return xss()(req, res, next);
+});
+app.use((req, res, next) => {
+    if (req.originalUrl === SEEDBRIDGE_WEBHOOK_PATH) {
+        return next();
+    }
+    return mongoSanitize()(req, res, next);
+});
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(fileUpload());
 
 
 // Parse incoming JSON requests
 app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+app.use((req, res, next) => {
+    if (req.originalUrl === SEEDBRIDGE_WEBHOOK_PATH) {
+        return next();
+    }
+    return express.json()(req, res, next);
+});
 
 
 // Routes to API's
@@ -246,6 +279,16 @@ app.use("/api/v1/feedbacks", feedbackRoutes);
 // Portfolio site forms (matches frontend's fetch('api/contact') / fetch('api/order'))
 
 app.use("/api", portfolioRoutes);
+
+// SeedBridge (farm-to-market app) - fully namespaced under /api/v1/seedbridge
+// so nothing here can collide with any other app's routes on this backend.
+// Its own SeedBridgeUser model/auth is separate from the shared User model.
+app.use('/api/v1/seedbridge/auth', seedbridgeAuthRoutes);
+app.use('/api/v1/seedbridge/produce', seedbridgeProduceRoutes);
+app.use('/api/v1/seedbridge/orders', seedbridgeOrderRoutes);
+app.use('/api/v1/seedbridge/payments', seedbridgePaymentRoutes);
+app.use('/api/v1/seedbridge/dashboard', seedbridgeDashboardRoutes);
+app.use('/api/v1/seedbridge/ussd', seedbridgeUssdRoutes);
 
 
 
