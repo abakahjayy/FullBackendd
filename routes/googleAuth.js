@@ -3,7 +3,9 @@ const passport = require("passport");
 const crypto = require("crypto");
 const User = require("../models/User");
 const seedStarterTransactions = require("../utils/seedStarterTransactions");
+const { googleCallback: cleanbridgeGoogleCallback } = require("../controllers/cleanbridgeAuth");
 const {
+    isAllowedRedirectUri,
     isWellFormedHttpUrl,
     appendQueryParam,
     encodeOAuthState,
@@ -31,6 +33,24 @@ const DEFAULT_REDIRECT_URI = process.env.REDIRECT_URL
 // import below) closes that hole at the cost of requiring each real
 // frontend's domain to be added to ALLOWED_REDIRECT_DOMAINS in .env.
 router.get("/google", (req, res, next) => {
+    // CleanBridge GH signs users into its own CleanBridgeUser collection, and
+    // (unlike the open flow below) only ever sends tokens to hosts on
+    // ALLOWED_REDIRECT_DOMAINS. ?role=collector lets collectors sign up with Google.
+    if (req.query.app === "cleanbridge") {
+        const redirectUri = req.query.redirect_uri;
+        if (!isAllowedRedirectUri(redirectUri)) {
+            return res.status(400).json({
+                msg: "Missing or disallowed redirect_uri. Add its domain to ALLOWED_REDIRECT_DOMAINS in .env.",
+            });
+        }
+        const role = req.query.role === "collector" ? "collector" : "customer";
+        return passport.authenticate("google", {
+            scope: ["profile", "email"],
+            prompt: "select_account",
+            state: encodeOAuthState({ redirectUri, app: "cleanbridge", role }),
+        })(req, res, next);
+    }
+
     const redirectUri = req.query.redirect_uri || DEFAULT_REDIRECT_URI;
 
     if (!redirectUri || !isWellFormedHttpUrl(redirectUri)) {
@@ -45,10 +65,27 @@ router.get("/google", (req, res, next) => {
     })(req, res, next);
 });
 
+// CleanBridge: if the user cancels on Google's consent screen, Google calls
+// back with ?error=access_denied - send them back to the app with that error
+// instead of a bare 401 page.
+const cleanbridgeCancelled = (req, res, next) => {
+    const state = decodeOAuthState(req.query.state);
+    if (req.query.error && state?.app === "cleanbridge" && isAllowedRedirectUri(state.redirectUri)) {
+        return res.redirect(appendQueryParam(state.redirectUri, "error", "Google sign-in was cancelled."));
+    }
+    return next();
+};
+
 router.get(
     "/google/callback",
+    cleanbridgeCancelled,
     passport.authenticate("google", { session: false }),
     async (req, res) => {
+        const cleanbridgeState = decodeOAuthState(req.query.state);
+        if (cleanbridgeState?.app === "cleanbridge") {
+            return cleanbridgeGoogleCallback(req, res, cleanbridgeState);
+        }
+
         // utils/passport.js hands back { id, email, fullName, profilePic } -
         // this used to destructure a nonexistent `photoURL` field, so the
         // real Google photo was silently dropped in favor of the schema's

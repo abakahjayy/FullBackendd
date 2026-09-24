@@ -77,6 +77,18 @@ const seedbridgeOrderRoutes = require("./routes/seedbridgeOrder.js");
 const seedbridgePaymentRoutes = require("./routes/seedbridgePayment.js");
 const seedbridgeDashboardRoutes = require("./routes/seedbridgeDashboard.js");
 const seedbridgeUssdRoutes = require("./routes/seedbridgeUssd.js");
+const cleanbridgeAuthRoutes = require("./routes/cleanbridgeAuth.js");
+const cleanbridgePickupRoutes = require("./routes/cleanbridgePickup.js");
+const cleanbridgeRouteRoutes = require("./routes/cleanbridgeRoute.js");
+const cleanbridgeVehicleRoutes = require("./routes/cleanbridgeVehicle.js");
+const cleanbridgeNotificationRoutes = require("./routes/cleanbridgeNotification.js");
+const cleanbridgeSettingsRoutes = require("./routes/cleanbridgeSettings.js");
+const cleanbridgeDashboardRoutes = require("./routes/cleanbridgeDashboard.js");
+const cleanbridgeAdminRoutes = require("./routes/cleanbridgeAdmin.js");
+const cleanbridgeGeoRoutes = require("./routes/cleanbridgeGeo.js");
+const cleanbridgePaymentRoutes = require("./routes/cleanbridgePayment.js");
+const cleanbridgePayoutRoutes = require("./routes/cleanbridgePayout.js");
+const cleanbridgeEmailRoutes = require("./routes/cleanbridgeEmail.js");
 // console.log(ClerkExpressRequireAuth)
 
 
@@ -289,6 +301,21 @@ app.use('/api/v1/seedbridge/orders', seedbridgeOrderRoutes);
 app.use('/api/v1/seedbridge/payments', seedbridgePaymentRoutes);
 app.use('/api/v1/seedbridge/dashboard', seedbridgeDashboardRoutes);
 app.use('/api/v1/seedbridge/ussd', seedbridgeUssdRoutes);
+
+// CleanBridge GH (Accra waste-collection app) - fully namespaced under
+// /api/v1/cleanbridge with its own CleanBridgeUser model/auth, like SeedBridge.
+app.use('/api/v1/cleanbridge/auth', cleanbridgeAuthRoutes);
+app.use('/api/v1/cleanbridge/pickups', cleanbridgePickupRoutes);
+app.use('/api/v1/cleanbridge/routes', cleanbridgeRouteRoutes);
+app.use('/api/v1/cleanbridge/vehicles', cleanbridgeVehicleRoutes);
+app.use('/api/v1/cleanbridge/notifications', cleanbridgeNotificationRoutes);
+app.use('/api/v1/cleanbridge/settings', cleanbridgeSettingsRoutes);
+app.use('/api/v1/cleanbridge/dashboard', cleanbridgeDashboardRoutes);
+app.use('/api/v1/cleanbridge/admin', cleanbridgeAdminRoutes);
+app.use('/api/v1/cleanbridge/geo', cleanbridgeGeoRoutes);
+app.use('/api/v1/cleanbridge/payments', cleanbridgePaymentRoutes);
+app.use('/api/v1/cleanbridge/payouts', cleanbridgePayoutRoutes);
+app.use('/api/v1/cleanbridge/email', cleanbridgeEmailRoutes);
 
 
 

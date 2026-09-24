@@ -161,3 +161,50 @@ follow that same exact-path-skip pattern or the signature check will always fail
 
 `models/SeedBridgeLogisticsRequest.js` (driver pickup/delivery scheduling) exists as a model only — no
 controller/route was ever built for it in the source this was ported from.
+
+## CleanBridge GH (`/api/v1/cleanbridge/*`)
+
+Backend for the CleanBridge GH waste-collection frontend (separate repo: `Desktop/VS Projects/CleanBridge-GH`).
+It follows the same isolation pattern as SeedBridge. It has its own `models/CleanBridgeUser.js` collection (roles
+`customer`/`collector`/`admin`) and its own `middleware/cleanbridgeAuth.js`. Tokens carry an `app: "cleanbridge"` claim
+and the middleware rejects any token without it. `requireRole(...roles)` (exported from the same middleware)
+throws 403. Mounted groups are `auth`, `pickups`, `routes`, `vehicles`, `notifications`, `settings`, `dashboard`,
+`admin`, `geo`, `payments` and `payouts`, each with one `routes/cleanbridge<X>.js` and one `controllers/cleanbridge<X>.js`.
+Shared helpers are in `utils/cleanbridge.js` (DTO mappers that return `id`, never `_id`; `quotePickup`, `estimateFuel`,
+`collectorBalance`, and the atomic `nextSequence` behind `CB-1001`/`RT-0001` codes). Ghana reference data is in
+`utils/ghana.js` (service hubs, regions, phone/MoMo network detection, GhanaPost GPS and DVLA plate regexes,
+`serviceInfo(lat, lng)`). The frontend mirrors that file in `src/lib/ghana.js`, so keep the two in sync.
+
+Rules worth knowing before changing things:
+- **Return 400, not 401, for validation failures on signed-in requests.** The frontend treats any 401 as an
+  expired session and logs the user out. `UnauthenticatedError` is only for bad or missing credentials.
+- **Phones are Ghana mobiles**, normalised to `+233XXXXXXXXX` in CleanBridgeUser's `pre("validate")`. `phone` is
+  optional and sparse (Google sign-ups add it later), and `password` is optional when `googleId` is set.
+- **The price is always computed on the server.** `serviceInfo()` picks the nearest hub. The pickup is rejected if it
+  is outside every hub's `radiusKm` or outside Ghana. Road km = straight-line km × `ROAD_FACTOR`. The rules come from
+  `CleanBridgeSettings` (a singleton; `Settings.getGlobal()` creates it with defaults). `minimumFee` tops up
+  small jobs.
+- **Pickup status machine** (`TRANSITIONS` in `controllers/cleanbridgePickup.js`):
+  `requested → assigned → on_the_way → completed`, with `cancelled` allowed from any non-final state. Assignment
+  only happens via `/accept` (an atomic claim by a collector) or `/assign` (admin), and both require a **verified**
+  vehicle. On completion the earnings are snapshotted: `collectorEarning = price × payouts.collectorSharePct` and
+  `platformFee` is the rest. Cash jobs set `cashCollected` because the collector holds the money.
+- **Collector balance** (`collectorBalance()`) = earnings − cash collected − paid or requested payouts. It can go
+  negative, which means the collector owes the platform fee on cash jobs. `CleanBridgePayout` has a partial unique
+  index that allows one open request per collector. Admins record MoMo payouts manually with the transaction
+  ID; nothing is sent automatically.
+- **Customer payments** (`controllers/cleanbridgePayment.js`) use Paystack hosted checkout (MoMo + card, GHS).
+  The payment is only marked paid after `/transaction/verify` confirms the amount, currency and `metadata.pickupId`.
+  There is no webhook yet. `callbackUrl` must pass `isAllowedRedirectUri`.
+- **Google sign-in** reuses the shared `routes/googleAuth.js` callback. `/api/v1/auth/google?app=cleanbridge&role=&redirect_uri=`
+  puts `app: "cleanbridge"` in the OAuth state, and the callback hands off to `cleanbridgeAuth.googleCallback`, which upserts
+  a CleanBridgeUser (linked by `googleId`, or by email) and redirects with `?token=`. Unlike the open shared flow, the
+  CleanBridge branch **does** enforce `ALLOWED_REDIRECT_DOMAINS` (add the production frontend's host there).
+  The Google photo is saved as `googleAvatarUrl`. Uploaded avatars go to ImageKit (`PUT /auth/me/avatar`, multipart
+  field `avatar`, via express-fileupload's `req.files`) and take precedence over the Google photo.
+- **Geocoding** (`controllers/cleanbridgeGeo.js`) proxies Photon (OSM, built for autocomplete), falling back to
+  Nominatim. Both are limited to Ghana, cached in memory for 10 minutes and rate limited per IP.
+- Routes snapshot the fuel price and the vehicle's L/100km when created. Collectors' live GPS
+  (`PUT /auth/me/live-location`) counts as live for 10 minutes on the pickup page and 30 minutes on the admin map.
+- Aggregation pipelines need explicit `mongoose.Types.ObjectId(...)` casts (`find()` casts automatically,
+  `aggregate()` does not).
