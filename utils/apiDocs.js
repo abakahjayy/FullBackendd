@@ -168,11 +168,16 @@ const TAGS = [
     [/^\/api\/v1\/auth\/google/, () => "Auth · Google sign-in"],
     [/^\/api\/v1\/auth/, () => "Auth (shared users)"],
     [/^\/api\/(contact|order)/, () => "Portfolio"],
-    [/^\/api\/v1\/([^/]+)/, (m) => cap(m[1])],
+    [/^\/api\/v1\/([^/]+)/, (m) => TAG_NAMES[m[1]] || cap(m[1])],
     [/^\/api\/([^/]+)/, (m) => cap(m[1])],
     [/./, () => "Pages & misc"],
 ];
 const cap = (s) => words(s).replace(/\b\w/g, (c) => c.toUpperCase());
+// Friendlier names for cryptic mount paths. Display only - the URLs don't change.
+const TAG_NAMES = {
+    changedel: "Change Delivery",
+};
+
 const tagFor = (path) => {
     for (const [re, fn] of TAGS) { const m = path.match(re); if (m) return fn(m); }
     return "Other";
