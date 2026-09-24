@@ -2,6 +2,14 @@ const mongoose = require('mongoose');
 const Message = require('../models/Message.js');
 const { BadRequestError, NotFoundError, UnauthenticatedError } = require('../errors');
 const { StatusCodes } = require('http-status-codes');
+const { emitToUserId } = require('../utils/socket');
+const { emailNewMessage } = require('../utils/socialNotify');
+
+// Push a message event to both participants' open tabs/devices.
+const emitToBoth = (msg, event, payload) => {
+    emitToUserId(String(msg.sender), event, payload);
+    emitToUserId(String(msg.recipient), event, payload);
+};
 
 // sender is always the authenticated user, never taken from req.body -
 // otherwise any caller could send a message that appears to be from
@@ -15,7 +23,58 @@ const sendMessage = async (req, res) => {
     }
 
     const newMessage = await Message.create({ sender, recipient, message });
+    emitToUserId(String(recipient), 'receiveMessage', newMessage);
+    emailNewMessage(sender, recipient);
     res.status(StatusCodes.CREATED).json(newMessage);
+};
+
+// POST /messages/voice (multipart "audio" + recipient + duration) - voice note.
+const sendVoiceMessage = async (req, res) => {
+    const { recipient } = req.body;
+    const sender = req.user.userId;
+    if (!req.file) throw new BadRequestError('No audio was received.');
+    if (!recipient || !mongoose.Types.ObjectId.isValid(recipient)) {
+        await new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' }).delete(req.file.id).catch(() => {});
+        throw new BadRequestError('recipient is required.');
+    }
+    const duration = Math.max(0, Math.min(Number(req.body.duration) || 0, 600));
+    const newMessage = await Message.create({ sender, recipient, type: 'voice', audioFileId: req.file.id, duration });
+    // recipient + the sender's other tabs (the sending tab uses the response)
+    emitToBoth(newMessage, 'receiveMessage', newMessage);
+    emailNewMessage(sender, recipient);
+    res.status(StatusCodes.CREATED).json(newMessage);
+};
+
+// PATCH /messages/:messageId/edit - sender only, text messages only.
+const editMessage = async (req, res) => {
+    const { messageId } = req.params;
+    const text = String(req.body.message || '').trim();
+    if (!mongoose.Types.ObjectId.isValid(messageId)) throw new BadRequestError('Invalid message id.');
+    if (!text) throw new BadRequestError('Message cannot be empty.');
+    const msg = await Message.findById(messageId);
+    if (!msg) throw new NotFoundError(`No message with id ${messageId}`);
+    if (String(msg.sender) !== req.user.userId) throw new UnauthenticatedError('You can only edit your own messages.');
+    if (msg.type === 'voice') throw new BadRequestError('Voice messages cannot be edited.');
+    msg.message = text;
+    msg.editedAt = new Date();
+    await msg.save();
+    emitToBoth(msg, 'messageUpdated', msg);
+    res.status(StatusCodes.OK).json(msg);
+};
+
+// DELETE /messages/:messageId - "unsend": removes it for both people (sender only).
+const deleteMessage = async (req, res) => {
+    const { messageId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(messageId)) throw new BadRequestError('Invalid message id.');
+    const msg = await Message.findById(messageId);
+    if (!msg) throw new NotFoundError(`No message with id ${messageId}`);
+    if (String(msg.sender) !== req.user.userId) throw new UnauthenticatedError('You can only unsend your own messages.');
+    if (msg.audioFileId) {
+        await new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' }).delete(msg.audioFileId).catch(() => {});
+    }
+    await Message.deleteOne({ _id: msg._id });
+    emitToBoth(msg, 'messageDeleted', { _id: String(msg._id) });
+    res.status(StatusCodes.OK).json({ deleted: true, _id: msg._id });
 };
 
 // Only the two participants in a conversation may read it - otherwise any
@@ -110,4 +169,4 @@ const markConversationRead = async (req, res) => {
     res.status(StatusCodes.OK).json({ updated: result.nModified ?? result.modifiedCount ?? 0 });
 };
 
-module.exports = { sendMessage, getMessages, markAsRead, getConversations, markConversationRead };
+module.exports = { sendMessage, sendVoiceMessage, editMessage, deleteMessage, getMessages, markAsRead, getConversations, markConversationRead };

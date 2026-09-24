@@ -76,6 +76,8 @@ const UserSchema = new mongoose.Schema({
             default: null
         }
     ],
+    // Instagram clone activity/update emails (unsubscribe link sets this false)
+    emailNotifications: { type: Boolean, default: true },
     // Instagram "Saved" - Posts document ids (not GridFS file ids like `posts` above)
     saved: [{ type: mongoose.Schema.Types.ObjectId, ref: "Posts" }],
     tokens: [{ type: String }], // Array to store tokens

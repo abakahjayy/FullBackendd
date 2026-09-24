@@ -1,12 +1,16 @@
 const express = require('express');
 const authMiddleware = require('../middleware/auth.js');
-const { sendMessage, getMessages, markAsRead, getConversations, markConversationRead } = require('../controllers/messageController');
+const { sendMessage, editMessage, deleteMessage, getMessages, markAsRead, getConversations, markConversationRead } = require('../controllers/messageController');
 const router = express.Router();
 
 router.use(authMiddleware);
 
-// Send a new message
+// Send a new message (voice notes: routes/messageVoiceRoute.js, mounted earlier in app.js)
 router.post('/', sendMessage);
+
+// Edit / unsend your own message
+router.patch('/:messageId/edit', editMessage);
+router.delete('/:messageId', deleteMessage);
 
 // The signed-in user's inbox: one row per person, newest first
 router.get('/conversations', getConversations);

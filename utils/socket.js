@@ -25,6 +25,8 @@ const emitToUser = (io, userId, event, payload) => {
     sockets.forEach((socketId) => io.to(socketId).emit(event, payload));
 };
 
+const isUserOnline = (userId) => (userSockets.get(String(userId))?.size || 0) > 0;
+
 // Set by setupSocket so REST controllers (e.g. utils/socialNotify.js) can push events.
 let ioInstance = null;
 const emitToUserId = (userId, event, payload) => {
@@ -79,6 +81,7 @@ const setupSocket = (io) => {
             try {
                 const newMessage = await Message.create({ sender: userId, recipient, message });
                 reply({ message: newMessage });
+                require('./socialNotify').emailNewMessage(userId, recipient);
 
                 // Deliver to every tab/device the recipient has open, and
                 // sync the sender's OTHER sessions too (not this socket -
@@ -120,3 +123,4 @@ const setupSocket = (io) => {
 
 module.exports = setupSocket;
 module.exports.emitToUserId = emitToUserId;
+module.exports.isUserOnline = isUserOnline;

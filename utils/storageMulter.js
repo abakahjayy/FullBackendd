@@ -44,12 +44,13 @@ function upload(options = {}) {
 // the same MongoDB (GridFS) as everything else - Atlas free tier is 512 MB total.
 const MAX_POST_FILE_BYTES = 50 * 1024 * 1024;
 
-function postUpload(field) {
+// `accept`/`maxBytes`/`kind` let other features reuse this (voice messages accept audio).
+function postUpload(field, { accept = /^(image|video)\//, maxBytes = MAX_POST_FILE_BYTES, kind = 'image or video' } = {}) {
     const single = upload({
-        limits: { fileSize: MAX_POST_FILE_BYTES },
+        limits: { fileSize: maxBytes },
         fileFilter: (req, file, cb) => {
-            if (/^(image|video)\//.test(file.mimetype)) return cb(null, true);
-            cb(new BadRequestError('Only image or video files can be posted'));
+            if (accept.test(file.mimetype)) return cb(null, true);
+            cb(new BadRequestError(`Only ${kind} files can be uploaded here`));
         },
     }).single(field);
 
@@ -58,7 +59,7 @@ function postUpload(field) {
         if (!err) return next();
         if (err instanceof multer.MulterError) {
             const message = err.code === 'LIMIT_FILE_SIZE'
-                ? `File is too large (max ${MAX_POST_FILE_BYTES / 1024 / 1024} MB)`
+                ? `File is too large (max ${maxBytes / 1024 / 1024} MB)`
                 : err.message;
             return next(new BadRequestError(message));
         }

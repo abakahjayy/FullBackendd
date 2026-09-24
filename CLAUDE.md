@@ -122,6 +122,13 @@ because it would orphan the GridFS file. The feed groups stories by author (you 
 Views are `$addToSet` and exclude the owner, and only the owner can list viewers or delete. `GET /posts/:postId` must stay
 the last route in `postRoute.js`.
 
+**Instagram email + DM extras**:
+- `utils/instagramMail.js` `sendInstagramEmail()` follows the same rules as cleanbridgeMail: one-click unsubscribe (purpose `instagram-unsubscribe`) and links pointing at the live site, never localhost. It respects `User.emailNotifications` and never throws. `throttle` limits it to one email per recipient per kind every 15 minutes, tracked in memory.
+- `socialNotify` emails follows and comments; likes stay in-app only. `emailNewMessage` only emails when the recipient has no connected socket (`isUserOnline`).
+- `/api/v1/instagram` covers unsubscribe (a GET page, then POST), `PATCH /settings/email`, and `POST /updates` (admin broadcast, at most 90 per call because of the Gmail relay's daily limit).
+- Voice notes (`routes/messageVoiceRoute.js`) are mounted early in app.js because the global `express-fileupload` would otherwise eat the multipart body. This applies to any new upload route: `postUpload(field, { accept, maxBytes, kind })` must run before `app.use(fileUpload())`.
+- Edit and delete are sender-only. They emit `messageUpdated` and `messageDeleted` to both people, and delete also removes the audio file from GridFS.
+
 **Mongoose defaults**: write `default: Date.now` (the function), never `Date.now()`, which is evaluated once
 at startup. `models/Message.js` had that bug, which gave every message the server's start time.
 

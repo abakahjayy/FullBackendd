@@ -160,6 +160,8 @@ app.use('/api/v1/userse', userProfilePic);
 app.use('/api/v1/posts', postRoutes);
 // Instagram stories (multipart upload, so it sits with posts before the JSON body parsers)
 app.use('/api/v1/stories', require('./routes/storyRoutes'));
+// Voice notes in DMs (multipart too); the rest of /api/v1/messages is mounted later
+app.use('/api/v1/messages/voice', require('./routes/messageVoiceRoute'));
 app.use('/api/v1/ai', aiImageRoutes);
 app.use('/api/v1/ai', aiModelRoutes);
 
@@ -266,6 +268,8 @@ app.use('/api/v1/delivery', deliveryRouter)
 app.use('/api/v1/changedel', changeDelRouter)
 app.use('/api/v1/messages', messageRoutes);
 app.use('/api/v1/notifications', socialNotificationRoutes);
+// Instagram clone: email unsubscribe, email settings, admin app-update emails
+app.use('/api/v1/instagram', require('./routes/instagramRoutes'));
 app.use('/api/v1/users', userRoutes);
 
 app.use('/api/v1/comments', commentRoutes);

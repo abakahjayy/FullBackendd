@@ -11,10 +11,17 @@ const MessageSchema = new mongoose.Schema({
         ref: 'User',
         required: [true, 'Please Provide the Receiver UserId']
     },
+    // 'voice' messages carry an audio file (GridFS `uploads`, served by
+    // /api/v1/posts/media/:audioFileId) instead of text.
+    type: { type: String, enum: ['text', 'voice'], default: 'text' },
     message: {
         type: String,
-        required: [true, 'Please Provide the Message']
+        required: [function () { return this.type !== 'voice'; }, 'Please Provide the Message'],
+        default: ''
     },
+    audioFileId: { type: mongoose.Schema.Types.ObjectId },
+    duration: { type: Number, default: 0 }, // seconds, voice only
+    editedAt: { type: Date, default: null }, // set when the sender edits the text
     read: {
         type: Boolean,
         default: false
