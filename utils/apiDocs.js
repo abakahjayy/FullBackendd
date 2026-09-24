@@ -169,13 +169,32 @@ const TAGS = [
     [/^\/api\/v1\/auth/, () => "Auth (shared users)"],
     [/^\/api\/(contact|order)/, () => "Portfolio"],
     [/^\/api\/v1\/([^/]+)/, (m) => TAG_NAMES[m[1]] || cap(m[1])],
-    [/^\/api\/([^/]+)/, (m) => cap(m[1])],
+    [/^\/api\/([^/]+)/, (m) => TAG_NAMES[m[1]] || cap(m[1])],
     [/./, () => "Pages & misc"],
 ];
 const cap = (s) => words(s).replace(/\b\w/g, (c) => c.toUpperCase());
 // Friendlier names for cryptic mount paths. Display only - the URLs don't change.
 const TAG_NAMES = {
     changedel: "Change Delivery",
+    userse: "User Profile Picture",
+    uploadFiles: "File Uploads",
+    ussd: "USSD Menu",
+    ussds: "USSD Sessions",
+    ordersdata: "MTN Data Bundle Orders",
+    afa: "MTN AFA Registration",
+    uniserve: "UniServe (University Programme Finder)",
+    muviin: "Muviin Data Bundle Purchase",
+    bundles: "Data Bundle Prices",
+    bundle: "Data Bundle Web Pages",
+    buydata: "Data Bundle Web Pages",
+    reloadly: "Airtime Top-up (Reloadly)",
+    export: "Export to Excel",
+    delivery: "Delivery Options",
+    foodorders: "Food Orders",
+    feedbacks: "Food Feedback",
+    paystack: "Paystack Payments",
+    ai: "AI Chat",
+    chat: "Chatbot (legacy)",
 };
 
 const tagFor = (path) => {
