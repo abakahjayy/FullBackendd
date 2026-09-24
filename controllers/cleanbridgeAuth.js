@@ -304,6 +304,42 @@ const googleCallback = async (req, res, state) => {
     res.redirect(appendQueryParam(redirectUri, "token", user.createJWT()));
 };
 
+// =========================
+// DELETE /auth/me   { confirm: "DELETE" }
+// Required by Google Play and the App Store: users can delete their account
+// in-app. Personal data is removed; pickup/payout records are kept (with the
+// person anonymised) because they are financial records.
+// =========================
+const deleteAccount = async (req, res) => {
+    if (req.body?.confirm !== "DELETE") throw new BadRequestError("Type DELETE to confirm");
+    const Pickup = require("../models/CleanBridgePickup.js");
+    const Vehicle = require("../models/CleanBridgeVehicle.js");
+    const Notification = require("../models/CleanBridgeNotification.js");
+    const user = await CleanBridgeUser.findById(req.user.userId);
+
+    if (user.role === "admin") {
+        throw new BadRequestError("Admin accounts can't be deleted from the app. Ask another admin to suspend it.");
+    }
+    const open = await Pickup.countDocuments({
+        $or: [{ customerId: user._id }, { collectorId: user._id }],
+        status: { $in: ["requested", "assigned", "on_the_way"] },
+    });
+    if (open) throw new BadRequestError("Finish or cancel your open pickups before deleting your account");
+
+    await Promise.all([
+        Pickup.updateMany({ customerId: user._id }, { customerName: "Deleted user", customerPhone: null, gateNote: null }),
+        Pickup.updateMany({ collectorId: user._id }, { collectorName: "Deleted collector", collectorPhone: null }),
+        Vehicle.deleteOne({ collectorId: user._id }),
+        Notification.deleteMany({ userId: user._id }),
+    ]);
+    if (user.avatarSource === "upload" && user.avatarFileId && imagekit) {
+        imagekit.deleteFile(user.avatarFileId).catch(() => {});
+    }
+    await CleanBridgeUser.deleteOne({ _id: user._id });
+
+    res.status(StatusCodes.OK).json({ deleted: true });
+};
+
 module.exports = {
     signUp,
     login,
@@ -313,4 +349,5 @@ module.exports = {
     removeAvatar,
     updateLiveLocation,
     googleCallback,
+    deleteAccount,
 };

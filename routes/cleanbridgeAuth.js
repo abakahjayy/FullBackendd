@@ -10,6 +10,7 @@ const {
     uploadAvatar,
     removeAvatar,
     updateLiveLocation,
+    deleteAccount,
 } = require("../controllers/cleanbridgeAuth.js");
 
 // Google sign-in lives on the shared /api/v1/auth/google route with ?app=cleanbridge
@@ -18,6 +19,7 @@ router.post("/signup", signUp);
 router.post("/login", login);
 router.get("/me", cleanbridgeAuth, getCurrentUser);
 router.patch("/me", cleanbridgeAuth, updateCurrentUser);
+router.delete("/me", cleanbridgeAuth, deleteAccount);
 router.put("/me/avatar", cleanbridgeAuth, uploadAvatar);
 router.delete("/me/avatar", cleanbridgeAuth, removeAvatar);
 router.put("/me/live-location", cleanbridgeAuth, requireRole("collector"), updateLiveLocation);
