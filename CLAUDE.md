@@ -129,6 +129,13 @@ environments stay in sync. Vars actually read via `process.env.*` in code: `MONG
 > treat those as already exposed if this repo/remote has ever been public or shared, and get the user's
 > explicit go-ahead before rotating keys or rewriting history — don't do it unilaterally.
 
+## Email delivery (every app)
+
+All mail goes through `utils/mailTransport.js` `deliver()` (used by `utils/sendEmail.js` and `utils/cleanbridgeMail.js`).
+Render's free plan blocks outbound SMTP (Gmail SMTP fails with "Connection timeout"), so the provider is picked by env:
+`MAIL_RELAY_URL` + `MAIL_RELAY_SECRET` (Google Apps Script relay in `scripts/gmailRelay.gs`, sends from your Gmail over HTTPS),
+then `BREVO_API_KEY` (+ `BREVO_SENDER_EMAIL`), then `EMAIL_USER`/`EMAIL_PASS` SMTP (fine locally).
+
 ## Forgot / reset password (every app)
 
 `utils/passwordReset.js` `createPasswordReset({ Model, appKey, appName, send, ... })` gives any user collection the

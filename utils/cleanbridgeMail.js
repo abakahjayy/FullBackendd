@@ -1,31 +1,20 @@
-const nodemailer = require("nodemailer");
+const { deliver, emailProvider } = require("./mailTransport");
 const jwt = require("jsonwebtoken");
 
 // Transactional email for CleanBridge GH (pickup updates, payments, payouts).
 //
 // Deliverability (keeping mail out of spam):
-// - Sent through Gmail SMTP as EMAIL_USER itself, so Google signs it (SPF/DKIM
-//   pass and align with the From address). Never spoof another From domain.
+// - Sent as EMAIL_USER itself (utils/mailTransport.js: Gmail relay on Render,
+//   SMTP locally), so Google signs it and SPF/DKIM align with the From address.
+//   Never spoof another From domain.
 // - Every message has a plain-text part as well as simple HTML (no images, no
 //   link shorteners, no ALL-CAPS/"free money" style wording).
 // - RFC 8058 one-click unsubscribe headers (Gmail/Yahoo require these for
 //   senders to be trusted), plus a visible unsubscribe link.
-// - Pooled, rate-limited connection so bursts don't look like bulk spam.
 // Gmail accounts can send ~500 messages/day; move to a domain + provider
 // (e.g. Brevo, Postmark) with your own SPF/DKIM/DMARC before scaling up.
 const FROM_NAME = "CleanBridge GH";
-const enabled = Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
-
-const transporter = enabled
-    ? nodemailer.createTransport({
-        service: "gmail",
-        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-        pool: true,
-        maxConnections: 2,
-        rateDelta: 1000,
-        rateLimit: 3,
-    })
-    : null;
+const enabled = Boolean(emailProvider);
 
 const clientUrl = (path = "") =>
     `${(process.env.CLEANBRIDGE_CLIENT_URL || "http://localhost:5173").replace(/\/$/, "")}${path}`;
@@ -94,8 +83,8 @@ const sendCleanbridgeEmail = async (user, { title, message, cta, force = false }
     const { text, html } = render({ name: user.name, title, message, cta, unsubscribeUrl });
 
     try {
-        await transporter.sendMail({
-            from: { name: FROM_NAME, address: process.env.EMAIL_USER },
+        await deliver({
+            fromName: FROM_NAME,
             replyTo: process.env.EMAIL_USER,
             to: { name: user.name, address: user.email },
             subject: title,
