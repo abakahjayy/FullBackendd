@@ -6,6 +6,7 @@ const seedStarterTransactions = require("../utils/seedStarterTransactions");
 const { googleCallback: cleanbridgeGoogleCallback } = require("../controllers/cleanbridgeAuth");
 const {
     isAllowedRedirectUri,
+    isAllowedCleanbridgeRedirect,
     isWellFormedHttpUrl,
     appendQueryParam,
     encodeOAuthState,
@@ -38,7 +39,7 @@ router.get("/google", (req, res, next) => {
     // ALLOWED_REDIRECT_DOMAINS. ?role=collector lets collectors sign up with Google.
     if (req.query.app === "cleanbridge") {
         const redirectUri = req.query.redirect_uri;
-        if (!isAllowedRedirectUri(redirectUri)) {
+        if (!isAllowedCleanbridgeRedirect(redirectUri)) {
             return res.status(400).json({
                 msg: "Missing or disallowed redirect_uri. Add its domain to ALLOWED_REDIRECT_DOMAINS in .env.",
             });
@@ -70,7 +71,7 @@ router.get("/google", (req, res, next) => {
 // instead of a bare 401 page.
 const cleanbridgeCancelled = (req, res, next) => {
     const state = decodeOAuthState(req.query.state);
-    if (req.query.error && state?.app === "cleanbridge" && isAllowedRedirectUri(state.redirectUri)) {
+    if (req.query.error && state?.app === "cleanbridge" && isAllowedCleanbridgeRedirect(state.redirectUri)) {
         return res.redirect(appendQueryParam(state.redirectUri, "error", "Google sign-in was cancelled."));
     }
     return next();

@@ -199,7 +199,7 @@ Rules worth knowing before changing things:
 - **Google sign-in** reuses the shared `routes/googleAuth.js` callback. `/api/v1/auth/google?app=cleanbridge&role=&redirect_uri=`
   puts `app: "cleanbridge"` in the OAuth state, and the callback hands off to `cleanbridgeAuth.googleCallback`, which upserts
   a CleanBridgeUser (linked by `googleId`, or by email) and redirects with `?token=`. Unlike the open shared flow, the
-  CleanBridge branch **does** enforce `ALLOWED_REDIRECT_DOMAINS` (add the production frontend's host there).
+  CleanBridge branch **does** enforce an allowlist: `ALLOWED_REDIRECT_DOMAINS` plus the host of `CLEANBRIDGE_CLIENT_URL` (`isAllowedCleanbridgeRedirect`).
   The Google photo is saved as `googleAvatarUrl`. Uploaded avatars go to ImageKit (`PUT /auth/me/avatar`, multipart
   field `avatar`, via express-fileupload's `req.files`) and take precedence over the Google photo.
 - **Geocoding** (`controllers/cleanbridgeGeo.js`) proxies Photon (OSM, built for autocomplete), falling back to

@@ -4,7 +4,7 @@ const CleanBridgeUser = require("../models/CleanBridgeUser.js");
 const { notify } = require("../utils/cleanbridgeNotify.js");
 const { BadRequestError, NotFoundError, UnauthorizedError } = require("../errors");
 const { StatusCodes } = require("http-status-codes");
-const { isAllowedRedirectUri } = require("../utils/oauthRedirect.js");
+const { isAllowedCleanbridgeRedirect } = require("../utils/oauthRedirect.js");
 const { toPickupDTO } = require("../utils/cleanbridge.js");
 
 // Customer pays for a pickup with Mobile Money (or card) through Paystack's
@@ -46,7 +46,7 @@ const describeChannel = (data) => {
 // =========================
 const initializePickupPayment = async (req, res) => {
     const { callbackUrl } = req.body;
-    if (!isAllowedRedirectUri(callbackUrl)) {
+    if (!isAllowedCleanbridgeRedirect(callbackUrl)) {
         throw new BadRequestError("Missing or disallowed callbackUrl. Add its domain to ALLOWED_REDIRECT_DOMAINS in .env.");
     }
     if (!PAYSTACK_SECRET_KEY) {

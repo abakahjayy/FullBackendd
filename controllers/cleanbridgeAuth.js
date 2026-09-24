@@ -6,7 +6,7 @@ const { toUserDTO } = require("../utils/cleanbridge.js");
 const {
     REGIONS, normalizeGhanaPhone, detectNetwork, normalizeGhanaPostGps, isInGhana,
 } = require("../utils/ghana.js");
-const { appendQueryParam, isAllowedRedirectUri } = require("../utils/oauthRedirect.js");
+const { appendQueryParam, isAllowedCleanbridgeRedirect } = require("../utils/oauthRedirect.js");
 const { notify } = require("../utils/cleanbridgeNotify.js");
 
 const welcome = (user) => notify(user._id, "Welcome to CleanBridge GH",
@@ -265,7 +265,7 @@ const googleCallback = async (req, res, state) => {
     const redirectUri = state.redirectUri;
     // Re-checked here: this token must never be sent to a host that isn't
     // on ALLOWED_REDIRECT_DOMAINS.
-    if (!isAllowedRedirectUri(redirectUri)) {
+    if (!isAllowedCleanbridgeRedirect(redirectUri)) {
         return res.status(400).json({ msg: "redirect_uri is not an allowed CleanBridge domain." });
     }
 

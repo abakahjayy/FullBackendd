@@ -80,8 +80,23 @@ const decodeOAuthState = (state) => {
     }
 };
 
+// CleanBridge GH redirects (Google sign-in, Paystack): anything on
+// ALLOWED_REDIRECT_DOMAINS, plus the CleanBridge frontend itself
+// (CLEANBRIDGE_CLIENT_URL) so deploying it needs no allowlist edit.
+const isAllowedCleanbridgeRedirect = (redirectUri) => {
+    if (isAllowedRedirectUri(redirectUri)) return true;
+    try {
+        const client = new URL(process.env.CLEANBRIDGE_CLIENT_URL);
+        const target = new URL(redirectUri);
+        return target.protocol === client.protocol && target.host === client.host;
+    } catch {
+        return false;
+    }
+};
+
 module.exports = {
     isAllowedRedirectUri,
+    isAllowedCleanbridgeRedirect,
     isWellFormedHttpUrl,
     appendQueryParam,
     encodeOAuthState,
