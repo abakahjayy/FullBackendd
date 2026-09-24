@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Message = require('../models/Message.js');
 const { BadRequestError, NotFoundError, UnauthenticatedError } = require('../errors');
 const { StatusCodes } = require('http-status-codes');
@@ -57,4 +58,55 @@ const markAsRead = async (req, res) => {
     res.status(StatusCodes.OK).json(message);
 };
 
-module.exports = { sendMessage, getMessages, markAsRead };
+// One entry per person the signed-in user has messaged with: their public
+// profile fields, the latest message and how many of theirs are unread.
+const getConversations = async (req, res) => {
+    const me = new mongoose.Types.ObjectId(req.user.userId);
+
+    const conversations = await Message.aggregate([
+        { $match: { $or: [{ sender: me }, { recipient: me }] } },
+        { $sort: { timestamp: -1 } },
+        {
+            $group: {
+                _id: { $cond: [{ $eq: ['$sender', me] }, '$recipient', '$sender'] },
+                lastMessage: { $first: '$$ROOT' },
+                unread: {
+                    $sum: { $cond: [{ $and: [{ $eq: ['$recipient', me] }, { $eq: ['$read', false] }] }, 1, 0] },
+                },
+            },
+        },
+        { $sort: { 'lastMessage.timestamp': -1 } },
+        { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
+        { $unwind: '$user' },
+        {
+            $project: {
+                _id: 0,
+                lastMessage: 1,
+                unread: 1,
+                user: {
+                    _id: '$user._id',
+                    username: '$user.username',
+                    firstName: '$user.firstName',
+                    lastName: '$user.lastName',
+                    profile_picture_id: '$user.profile_picture_id',
+                },
+            },
+        },
+    ]);
+
+    res.status(StatusCodes.OK).json({ conversations });
+};
+
+const markConversationRead = async (req, res) => {
+    const { otherUserId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(otherUserId)) {
+        throw new BadRequestError('Please provide a valid user id.');
+    }
+    const result = await Message.updateMany(
+        { sender: otherUserId, recipient: req.user.userId, read: false },
+        { $set: { read: true } }
+    );
+    res.status(StatusCodes.OK).json({ updated: result.nModified ?? result.modifiedCount ?? 0 });
+};
+
+module.exports = { sendMessage, getMessages, markAsRead, getConversations, markConversationRead };

@@ -61,12 +61,17 @@ const setupSocket = (io) => {
         // sender is always the authenticated socket's own userId - never
         // taken from the client payload, or any connected client could
         // send messages that appear to be from someone else.
-        socket.on('sendMessage', async ({ recipient, message }) => {
+        // `ack` is optional: clients that pass a callback get the saved
+        // message (with its real _id/timestamp) or an error back.
+        socket.on('sendMessage', async ({ recipient, message } = {}, ack) => {
+            const reply = typeof ack === 'function' ? ack : () => {};
             if (!recipient || !message) {
+                reply({ error: 'recipient and message are required.' });
                 return socket.emit('messageError', { error: 'recipient and message are required.' });
             }
             try {
                 const newMessage = await Message.create({ sender: userId, recipient, message });
+                reply({ message: newMessage });
 
                 // Deliver to every tab/device the recipient has open, and
                 // sync the sender's OTHER sessions too (not this socket -
@@ -81,6 +86,7 @@ const setupSocket = (io) => {
                 }
             } catch (error) {
                 console.warn('Error sending message:', error.message);
+                reply({ error: 'Failed to send message.' });
                 socket.emit('messageError', { error: 'Failed to send message.' });
             }
         });

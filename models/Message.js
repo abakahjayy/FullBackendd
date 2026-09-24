@@ -21,9 +21,13 @@ const MessageSchema = new mongoose.Schema({
     },
     timestamp: {
         type: Date,
-        default: Date.now()
+        // Function, not Date.now() - that would stamp every message with the server start time.
+        default: Date.now
     },
 });
+
+MessageSchema.index({ sender: 1, recipient: 1, timestamp: -1 });
+MessageSchema.index({ recipient: 1, sender: 1, timestamp: -1 });
 
 const Message = mongoose.model('Message', MessageSchema);
 module.exports = Message;

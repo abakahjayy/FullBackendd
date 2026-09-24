@@ -25,6 +25,7 @@ exports.createPost = async (req, res) => {
     const newPost = new Post({
       caption,
       postId: req.file.id, // Save GridFS file ID
+      mediaType: req.file.mimetype.startsWith('video/') ? 'video' : 'image',
       createdBy: userId,
       created: new Date(),
     });
@@ -79,6 +80,50 @@ exports.getImage = async (req, res) => {
     res.set("Content-Disposition", `attachment; filename=${file[0].filename}`);
 
     await gfs.openDownloadStream(new ObjectId(id)).pipe(res);
+};
+
+// Like getImage, but served inline and with HTTP Range support. Browsers need
+// 206 partial responses to seek a <video> (Safari won't play it at all without).
+exports.getMedia = async (req, res) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new BadRequestError('Please provide a valid media id')
+    }
+    const fileId = new mongoose.Types.ObjectId(id);
+    const gfs = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
+    const [file] = await gfs.find({ _id: fileId }).toArray();
+    if (!file) {
+      throw new NotFoundError(`No media found with id: ${id}`)
+    }
+
+    const size = file.length;
+    res.set({
+      'Content-Type': file.contentType || 'application/octet-stream',
+      'Accept-Ranges': 'bytes',
+      // GridFS files never change, so let browsers and CDNs keep them.
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    });
+
+    const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+    if (!range || (!range[1] && !range[2])) {
+      res.set('Content-Length', size);
+      return gfs.openDownloadStream(fileId).on('error', () => res.end()).pipe(res);
+    }
+
+    // "bytes=start-end", "bytes=start-" or the suffix form "bytes=-count"
+    const start = range[1] ? Number(range[1]) : Math.max(size - Number(range[2]), 0);
+    const end =range[1] && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+    if (start >= size || start > end) {
+      res.set('Content-Range', `bytes */${size}`);
+      return res.status(416).end();
+    }
+
+    res.status(206).set({
+      'Content-Range': `bytes ${start}-${end}/${size}`,
+      'Content-Length': end - start + 1,
+    });
+    // GridFS `end` is exclusive, HTTP's is inclusive.
+    gfs.openDownloadStream(fileId, { start, end: end + 1 }).on('error', () => res.end()).pipe(res);
 };
 
 exports.deletePost = async (req, res) => {

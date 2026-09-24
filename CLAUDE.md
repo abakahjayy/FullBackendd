@@ -88,11 +88,25 @@ with multiple tabs/devices gets delivery to all of them, and disconnecting one t
 still-live tab's registration. `typing` events are emitted only to the named recipient's sockets, not
 broadcast to everyone connected. The REST endpoints in `routes/messageRoutes.js` require the same
 `authMiddleware` as everything else and independently enforce the same rule — `getMessages`/`markAsRead` 401
-for anyone who isn't a participant in that conversation. **No frontend in this workspace currently talks to
-this** — `ChatAppDemo.jsx` (present in both `GHGPT-main` and `React-products-master/Instagram`, identical
-file) is the one place that attempts a real socket.io-client connection, but it's never mounted (commented
-out in `App.jsx`); the live "Messages" UI in both of those apps (`MessagesPage.jsx`, `messagesModal.jsx`) is
-hardcoded mock data with no backend calls at all.
+for anyone who isn't a participant in that conversation. The socket's `sendMessage` accepts an optional
+ack callback, which receives `{ message }` (the saved doc) or `{ error }`. `GET /api/v1/messages/conversations`
+returns the caller's inbox: one row per other user with their public fields, the last message and an unread
+count. `PATCH /api/v1/messages/conversations/:otherUserId/read` marks that conversation as read.
+`React-products-master/Instagram` is the frontend that uses all of this (`useChat`/`useConversations`).
+`ChatAppDemo.jsx` in `GHGPT-main` is still an old, unauthenticated mock.
+
+**Post media (GridFS)**: posts store an image or video in the `uploads` GridFS bucket. `Posts.mediaType` is
+`'image'` or `'video'` and is set from the upload's mimetype. `POST /api/v1/posts` goes through
+`postUpload('file')` (`utils/storageMulter.js`), which only accepts image or video files, caps them at 50 MB,
+and turns multer errors into 400s. `GET /api/v1/posts/media/:id` streams files inline with HTTP Range / 206
+support, which `<video>` needs for seeking; the older `/posts/image/:id` has no Range support.
+`storageMulter.js` overrides `storage._removeFile`, because multer-gridfs-storage calls
+`bucket.delete(id, cb)` and the mongodb v5 driver pinned in `resolutions` ignores callbacks. Without the
+override, any aborted upload hangs the request forever and leaves the partial file behind. Keep the override
+if you touch that file.
+
+**Mongoose defaults**: write `default: Date.now` (the function), never `Date.now()`, which is evaluated once
+at startup. `models/Message.js` had that bug, which gave every message the server's start time.
 
 **AI/chatbot**: Two separate integrations exist side by side — (1) `utils/openaiService.js` /
 `utils/askAi.js` call OpenAI/OpenRouter directly from Node for `routes/chatAi.js` and `routes/aiModel.js`; (2)

@@ -12,6 +12,8 @@ const PostSchema = new mongoose.Schema({
                 default:null,
             }
         ],
+        // What postId points at in GridFS - decides <img> vs <video> on the client.
+        mediaType: {type:String, enum:['image','video'], default:'image'},
         caption: {type:String,default:''},
         comments: [
             {
