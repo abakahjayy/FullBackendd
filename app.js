@@ -1,6 +1,7 @@
 require('dotenv').config();
 const fs = require('fs');
 require('express-async-errors');
+require('./utils/keepOriginalHandlers'); // for the API docs
 
 
 //This is just saving the path into a variable and exporting it to use elsewhere
@@ -106,24 +107,25 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));//This allows connections from other ports
-// Serve the generated OpenAPI JSON and Swagger UI
-const openApiPath = path.join(__dirname, 'oas-docs', 'openapi.json');
-if (fs.existsSync(openApiPath)) {
-    const openApiSpec = JSON.parse(fs.readFileSync(openApiPath));
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
-} else {
-    console.warn('⚠️ Swagger UI not available yet. Make some API requests to generate openapi.json');
-}
-
-// Serve the hand-written swagger.yaml (includes the portfolio /contact and
-// /order endpoints) as its own Swagger UI page, separate from the
-// auto-generated docs above.
+// The hand-written swagger.yaml (portfolio /contact and /order) keeps its own
+// page. Mounted before /api-docs so that route doesn't swallow it.
 const YAML = require('yamljs');
 const portfolioSwaggerPath = path.join(__dirname, 'swagger.yaml');
 if (fs.existsSync(portfolioSwaggerPath)) {
     const portfolioSwaggerSpec = YAML.load(portfolioSwaggerPath);
-    app.use('/api-docs/portfolio', swaggerUi.serve, swaggerUi.setup(portfolioSwaggerSpec));
+    app.use('/api-docs/portfolio', swaggerUi.serveFiles(portfolioSwaggerSpec), swaggerUi.setup(portfolioSwaggerSpec));
 }
+
+// API docs for EVERY route, built live from the Express router on first view
+// (utils/apiDocs.js), so they never go stale. Labels and examples live in
+// docs/apiAnnotations.js. Raw spec: /api-docs.json.
+const { getSpec } = require('./utils/apiDocs');
+const apiDocsUi = {
+    customSiteTitle: 'FullBackendd API docs',
+    swaggerOptions: { url: '/api-docs.json', docExpansion: 'none', filter: true, persistAuthorization: true, displayRequestDuration: true },
+};
+app.get('/api-docs.json', (req, res) => res.json(getSpec(app)));
+app.use('/api-docs', swaggerUi.serveFiles(null, apiDocsUi), swaggerUi.setup(null, apiDocsUi));
 
 
 // Serve the uploaded images from the /uploads folder in code
@@ -412,18 +414,11 @@ const start = async () => {
     try {
         //Connect the Database
         //We must always include our connect database method in the server application
-        console.log(process.env.MONGO_URI)
         await connectDB(process.env.MONGO_URI).then(() => {
             console.log('\x1b[36m%s\x1b[0m', '🔄Connected to MongoDB...')
-            console.log('\x1b[36m%s\x1b[0m', '🔌 Connecting to:', process.env.MONGO_URI);
-
+            // Host only: the full URI contains the database password.
+            console.log('\x1b[36m%s\x1b[0m', '🔌 Connected to:', String(process.env.MONGO_URI).replace(/\/\/[^@/]*@/, '//***@').split('?')[0]);
         })
-        await expressOasGenerator.handleResponses(app, {
-            specOutputPath: path.join(__dirname, 'oas-docs', 'openapi.json'),
-            alwaysServeDocs: true,
-            serveDocs: true,
-            swaggerUiServePath: '/api-docs',
-        });
 
         server.listen(port, console.log('\x1b[42m%s\x1b[0m', `🚀 Server Running on === http://localhost:${port}`));
         // https.createServer(sslOptions, app).listen(port, () => {

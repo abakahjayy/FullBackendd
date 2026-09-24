@@ -231,14 +231,17 @@ const changePassword = async (req, res) => {
     console.warn("Password Correct:", isPasswordCorrect);  // Log result of password check
     //If not throw an error
     if (!isPasswordCorrect) {
-        throw new UnauthenticatedError(`The old password: ${oldPassword} is incorrect`);
+        throw new UnauthenticatedError("The old password is incorrect");
     }
 
     user.password = newPassword;
 
     await user.save()
 
-    res.status(StatusCodes.OK).json({ message: `Successfully changed the password from: ${oldPassword}  to  ${newPassword}`, user });
+    // Never echo passwords (or the hash) back - responses end up in logs and browser tools.
+    const safeUser = user.toObject();
+    delete safeUser.password;
+    res.status(StatusCodes.OK).json({ message: "Password changed successfully", user: safeUser });
 }
 
 

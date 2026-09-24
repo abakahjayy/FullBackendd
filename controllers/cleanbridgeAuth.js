@@ -127,6 +127,11 @@ const updateCurrentUser = async (req, res) => {
             throw new BadRequestError("Enter a valid Ghana mobile number, e.g. 024 123 4567");
         }
         user.phone = body.phone;
+        // A collector's phone doubles as their payout number until they set one.
+        if (user.role === "collector" && !user.momoNumber && detectNetwork(body.phone)) {
+            user.momoNumber = body.phone;
+            user.momoNetwork = detectNetwork(body.phone);
+        }
     }
 
     if (body.region !== undefined) {

@@ -1,0 +1,2475 @@
+{
+  "POST /api/v1/cleanbridge/auth/signup": {
+    "status": 201,
+    "body": {
+      "name": "Customer Example",
+      "email": "customer.example@example.com",
+      "phone": "0243121132",
+      "password": "Secret123!",
+      "role": "customer",
+      "area": "East Legon",
+      "address": "12 Lagos Ave, East Legon"
+    },
+    "response": {
+      "message": "Account created successfully!",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "user": {
+        "id": "6ab5666155135b3eccf88a9e",
+        "name": "Customer Example",
+        "email": "customer.example@example.com",
+        "phone": "+233243121132",
+        "phoneNetwork": "MTN",
+        "role": "customer",
+        "avatarUrl": null,
+        "avatarSource": null,
+        "googleLinked": false,
+        "hasPassword": true,
+        "area": "East Legon",
+        "address": "12 Lagos Ave, East Legon",
+        "region": null,
+        "ghanaPostGps": null,
+        "location": null,
+        "rating": null,
+        "ratingCount": 0,
+        "isActive": true,
+        "emailNotifications": true,
+        "profileComplete": true,
+        "createdAt": "2026-09-24T18:05:21.200Z"
+      }
+    }
+  },
+  "POST /api/v1/cleanbridge/auth/login": {
+    "status": 200,
+    "body": {
+      "identifier": "customer.example@example.com",
+      "password": "Secret123!"
+    },
+    "response": {
+      "message": "Login successful!",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "user": {
+        "id": "6ab5666155135b3eccf88a9e",
+        "name": "Customer Example",
+        "email": "customer.example@example.com",
+        "phone": "+233243121132",
+        "phoneNetwork": "MTN",
+        "role": "customer",
+        "avatarUrl": null,
+        "avatarSource": null,
+        "googleLinked": false,
+        "hasPassword": true,
+        "area": "East Legon",
+        "address": "12 Lagos Ave, East Legon",
+        "region": null,
+        "ghanaPostGps": null,
+        "location": null,
+        "rating": null,
+        "ratingCount": 0,
+        "isActive": true,
+        "emailNotifications": true,
+        "profileComplete": true,
+        "createdAt": "2026-09-24T18:05:21.200Z"
+      }
+    }
+  },
+  "GET /api/v1/cleanbridge/auth/me": {
+    "status": 200,
+    "response": {
+      "user": {
+        "id": "6ab5666155135b3eccf88a9e",
+        "name": "Customer Example",
+        "email": "customer.example@example.com",
+        "phone": "+233243121132",
+        "phoneNetwork": "MTN",
+        "role": "customer",
+        "avatarUrl": null,
+        "avatarSource": null,
+        "googleLinked": false,
+        "hasPassword": false,
+        "area": "East Legon",
+        "address": "12 Lagos Ave, East Legon",
+        "region": null,
+        "ghanaPostGps": null,
+        "location": null,
+        "rating": null,
+        "ratingCount": 0,
+        "isActive": true,
+        "emailNotifications": true,
+        "profileComplete": true,
+        "createdAt": "2026-09-24T18:05:21.200Z"
+      }
+    }
+  },
+  "PATCH /api/v1/cleanbridge/auth/me": {
+    "status": 200,
+    "body": {
+      "address": "12 Lagos Ave, East Legon",
+      "region": "Greater Accra",
+      "ghanaPostGps": "GA-183-8164",
+      "location": {
+        "lat": 5.6363,
+        "lng": -0.1614
+      }
+    },
+    "response": {
+      "user": {
+        "id": "6ab5666155135b3eccf88a9e",
+        "name": "Customer Example",
+        "email": "customer.example@example.com",
+        "phone": "+233243121132",
+        "phoneNetwork": "MTN",
+        "role": "customer",
+        "avatarUrl": null,
+        "avatarSource": null,
+        "googleLinked": false,
+        "hasPassword": true,
+        "area": "East Legon",
+        "address": "12 Lagos Ave, East Legon",
+        "region": "Greater Accra",
+        "ghanaPostGps": "GA-183-8164",
+        "location": {
+          "lat": 5.6363,
+          "lng": -0.1614
+        },
+        "rating": null,
+        "ratingCount": 0,
+        "isActive": true,
+        "emailNotifications": true,
+        "profileComplete": true,
+        "createdAt": "2026-09-24T18:05:21.200Z"
+      }
+    }
+  },
+  "PUT /api/v1/cleanbridge/auth/me/live-location": {
+    "status": 200,
+    "body": {
+      "lat": 5.6301,
+      "lng": -0.1702
+    },
+    "response": {
+      "ok": true
+    }
+  },
+  "POST /api/v1/cleanbridge/auth/forgot-password": {
+    "status": 200,
+    "body": {
+      "email": "kofi.mensah@example.com",
+      "redirect_uri": "https://cleanbridge-gh.onrender.com/reset-password"
+    },
+    "response": {
+      "message": "If an account exists for that email, a password reset link has been sent."
+    }
+  },
+  "GET /api/v1/cleanbridge/settings": {
+    "status": 200,
+    "response": {
+      "pricing": {
+        "baseFee": 15,
+        "distanceFeePerKm": 1.5,
+        "perBagFee": 5,
+        "urgencyFee": 12,
+        "weekendFee": 5,
+        "minimumFee": 25,
+        "wasteTypeFees": {
+          "Household mix": 0,
+          "Recyclables": 0,
+          "Organic / food waste": 2,
+          "Garden waste": 3,
+          "Bulky items": 15,
+          "E-waste": 10,
+          "Construction debris": 25,
+          "Large waste bin": 10
+        }
+      },
+      "vehicleFees": {
+        "Motor tricycle (Aboboyaa)": 0,
+        "Mini truck": 10,
+        "Light truck": 20,
+        "Tipper truck": 45,
+        "Compactor truck": 60
+      },
+      "tax": {
+        "enabled": true,
+        "vatPct": 15,
+        "nhilPct": 2.5,
+        "getFundPct": 2.5,
+        "covidLevyPct": 0
+      },
+      "payouts": {
+        "collectorSharePct": 70,
+        "minimumPayout": 20
+      },
+      "fuel": {
+        "fuelType": "Diesel",
+        "currentPrice": 14.86,
+        "previousPrice": 14.41,
+        "effectiveDate": "2026-09-24T18:05:21.842Z"
+      },
+      "updatedAt": "2026-09-24T18:05:21.846Z"
+    }
+  },
+  "GET /api/v1/cleanbridge/geo/hubs": {
+    "status": 200,
+    "response": {
+      "hubs": [
+        {
+          "id": "accra-central",
+          "name": "Accra Central",
+          "region": "Greater Accra",
+          "lat": 5.56,
+          "lng": -0.2057,
+          "radiusKm": 20
+        },
+        {
+          "id": "madina",
+          "name": "Madina / Adenta",
+          "region": "Greater Accra",
+          "lat": 5.669,
+          "lng": -0.165,
+          "radiusKm": 15
+        },
+        {
+          "id": "tema",
+          "name": "Tema",
+          "region": "Greater Accra",
+          "lat": 5.6698,
+          "lng": -0.0166,
+          "radiusKm": 20
+        },
+        {
+          "id": "kasoa",
+          "name": "Kasoa",
+          "region": "Central",
+          "lat": 5.5342,
+          "lng": -0.4244,
+          "radiusKm": 15
+        }
+      ]
+    }
+  },
+  "GET /api/v1/cleanbridge/geo/search": {
+    "status": 200,
+    "query": {
+      "q": "Accra Mall",
+      "lat": "5.6037",
+      "lng": "-0.187"
+    },
+    "response": {
+      "results": [
+        {
+          "id": "R8418096",
+          "name": "Accra Mall",
+          "label": "Accra Mall, Spintex Road, La-Dade-Kotopon Municipal District, Greater Accra",
+          "secondary": "La-Dade-Kotopon Municipal District, Greater Accra",
+          "area": "La-Dade-Kotopon Municipal District",
+          "city": "La-Dade-Kotopon Municipal District",
+          "region": "Greater Accra",
+          "postcode": "GD-110-6313",
+          "lat": 5.6221843,
+          "lng": -0.1729361,
+          "service": {
+            "serviceable": true,
+            "reason": null,
+            "hub": {
+              "id": "madina",
+              "name": "Madina / Adenta",
+              "region": "Greater Accra"
+            },
+            "distanceKm": 7.1
+          }
+        },
+        {
+          "id": "N4992365322",
+          "name": "Accra Mall Roundabout",
+          "label": "Accra Mall Roundabout, Spintex Road, La-Dade-Kotopon Municipal District, Greater Accra",
+          "secondary": "La-Dade-Kotopon Municipal District, Greater Accra",
+          "area": "La-Dade-Kotopon Municipal District",
+          "city": "La-Dade-Kotopon Municipal District",
+          "region": "Greater Accra",
+          "postcode": "GD-110-6313",
+          "lat": 5.6210472,
+          "lng": -0.1740645,
+          "service": {
+            "serviceable": true,
+            "reason": null,
+            "hub": {
+              "id": "madina",
+              "name": "Madina / Adenta",
+              "region": "Greater Accra"
+            },
+            "distanceKm": 7.3
+          }
+        },
+        {
+          "id": "W136036026",
+          "name": "Accra Mall Food Court",
+          "label": "Accra Mall Food Court, Tetteh Quarshie Road, La-Dade-Kotopon Municipal District, Greater Accra",
+          "secondary": "La-Dade-Kotopon Municipal District, Greater Accra",
+          "area": "La-Dade-Kotopon Municipal District",
+          "city": "La-Dade-Kotopon Municipal District",
+          "region": "Greater Accra",
+          "postcode": "GD-110-6313",
+          "lat": 5.6223225,
+          "lng": -0.1733643,
+          "service": {
+            "serviceable": true,
+            "reason": null,
+            "hub": {
+              "id": "madina",
+              "name": "Madina / Adenta",
+              "region": "Greater Accra"
+            },
+            "distanceKm": 7.1
+          }
+        },
+        {
+          "id": "W300519834",
+          "name": "Accra Mall Bus Terminal",
+          "label": "Accra Mall Bus Terminal, Spintex Road, La-Dade-Kotopon Municipal District, Greater Accra",
+          "secondary": "La-Dade-Kotopon Municipal District, Greater Accra",
+          "area": "La-Dade-Kotopon Municipal District",
+          "city": "La-Dade-Kotopon Municipal District",
+          "region": "Greater Accra",
+          "postcode": "GD-110-6313",
+          "lat": 5.6199791,
+          "lng": -0.1731861,
+          "service": {
+            "serviceable": true,
+            "reason": null,
+            "hub": {
+              "id": "madina",
+              "name": "Madina / Adenta",
+              "region": "Greater Accra"
+            },
+            "distanceKm": 7.5
+          }
+        }
+      ]
+    }
+  },
+  "GET /api/v1/cleanbridge/geo/reverse": {
+    "status": 200,
+    "query": {
+      "lat": "5.6363",
+      "lng": "-0.1614"
+    },
+    "response": {
+      "place": {
+        "id": "W786943766",
+        "name": "International Homeopatic Clinic",
+        "label": "International Homeopatic Clinic, Djanie Ashie Street, East Legon, Ayawaso West Municipal District, Greater Accra",
+        "secondary": "East Legon, Ayawaso West Municipal District, Greater Accra",
+        "area": "East Legon",
+        "city": "Ayawaso West Municipal District",
+        "region": "Greater Accra",
+        "postcode": "GD-110-6313",
+        "lat": 5.6363,
+        "lng": -0.1614
+      },
+      "service": {
+        "serviceable": true,
+        "reason": null,
+        "hub": {
+          "id": "madina",
+          "name": "Madina / Adenta",
+          "region": "Greater Accra"
+        },
+        "distanceKm": 4.9
+      }
+    }
+  },
+  "PUT /api/v1/cleanbridge/vehicles/me": {
+    "status": 201,
+    "body": {
+      "label": "Blue aboboyaa",
+      "type": "Motor tricycle (Aboboyaa)",
+      "make": "Apsonic",
+      "model": "Cargo 200",
+      "registration": "GR 1234-24",
+      "fuelType": "Petrol",
+      "fuelEconomyLPer100Km": 4.5,
+      "capacityTonnes": 0.5
+    },
+    "response": {
+      "vehicle": {
+        "id": "6ab5666555135b3eccf88abc",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "label": "Blue aboboyaa",
+        "type": "Motor tricycle (Aboboyaa)",
+        "make": "Apsonic",
+        "model": "Cargo 200",
+        "registration": "GR 1234-24",
+        "fuelType": "Petrol",
+        "fuelEconomyLPer100Km": 4.5,
+        "capacityTonnes": 0.5,
+        "verificationStatus": "pending",
+        "createdAt": "2026-09-24T18:05:25.590Z",
+        "updatedAt": "2026-09-24T18:05:25.590Z"
+      }
+    }
+  },
+  "GET /api/v1/cleanbridge/vehicles/me": {
+    "status": 200,
+    "response": {
+      "vehicle": {
+        "id": "6ab5666555135b3eccf88abc",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "label": "Blue aboboyaa",
+        "type": "Motor tricycle (Aboboyaa)",
+        "make": "Apsonic",
+        "model": "Cargo 200",
+        "registration": "GR 1234-24",
+        "fuelType": "Petrol",
+        "fuelEconomyLPer100Km": 4.5,
+        "capacityTonnes": 0.5,
+        "verificationStatus": "pending",
+        "createdAt": "2026-09-24T18:05:25.590Z",
+        "updatedAt": "2026-09-24T18:05:25.590Z"
+      }
+    }
+  },
+  "GET /api/v1/cleanbridge/vehicles": {
+    "status": 200,
+    "query": {
+      "verificationStatus": "pending"
+    },
+    "response": {
+      "vehicles": [
+        {
+          "id": "6ab5666555135b3eccf88abc",
+          "collectorId": "6ab5666155135b3eccf88aa3",
+          "label": "Blue aboboyaa",
+          "type": "Motor tricycle (Aboboyaa)",
+          "make": "Apsonic",
+          "model": "Cargo 200",
+          "registration": "GR 1234-24",
+          "fuelType": "Petrol",
+          "fuelEconomyLPer100Km": 4.5,
+          "capacityTonnes": 0.5,
+          "verificationStatus": "pending",
+          "createdAt": "2026-09-24T18:05:25.590Z",
+          "updatedAt": "2026-09-24T18:05:25.590Z"
+        }
+      ]
+    }
+  },
+  "PATCH /api/v1/cleanbridge/vehicles/:id/verification": {
+    "status": 200,
+    "body": {
+      "verificationStatus": "verified"
+    },
+    "response": {
+      "vehicle": {
+        "id": "6ab5666555135b3eccf88abc",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "label": "Blue aboboyaa",
+        "type": "Motor tricycle (Aboboyaa)",
+        "make": "Apsonic",
+        "model": "Cargo 200",
+        "registration": "GR 1234-24",
+        "fuelType": "Petrol",
+        "fuelEconomyLPer100Km": 4.5,
+        "capacityTonnes": 0.5,
+        "verificationStatus": "verified",
+        "createdAt": "2026-09-24T18:05:25.590Z",
+        "updatedAt": "2026-09-24T18:05:25.640Z"
+      }
+    }
+  },
+  "GET /api/v1/cleanbridge/pickups/vehicle-options": {
+    "status": 200,
+    "query": {
+      "lat": "5.6363",
+      "lng": "-0.1614",
+      "bags": "3",
+      "wasteType": "Household mix"
+    },
+    "response": {
+      "options": [
+        {
+          "type": "Motor tricycle (Aboboyaa)",
+          "fee": 0,
+          "capacityBags": 8,
+          "description": "Small household loads on narrow streets",
+          "available": 1,
+          "nearestKm": 1.6,
+          "fits": true,
+          "recommended": true
+        },
+        {
+          "type": "Mini truck",
+          "fee": 10,
+          "capacityBags": 20,
+          "description": "Most household and small shop pickups",
+          "available": 0,
+          "nearestKm": null,
+          "fits": true,
+          "recommended": false
+        },
+        {
+          "type": "Light truck",
+          "fee": 20,
+          "capacityBags": 45,
+          "description": "Large households, compounds and bulky items",
+          "available": 0,
+          "nearestKm": null,
+          "fits": true,
+          "recommended": false
+        },
+        {
+          "type": "Tipper truck",
+          "fee": 45,
+          "capacityBags": 120,
+          "description": "Construction debris and heavy loads",
+          "available": 0,
+          "nearestKm": null,
+          "fits": true,
+          "recommended": false
+        }
+      ],
+      "recommended": "Motor tricycle (Aboboyaa)"
+    }
+  },
+  "POST /api/v1/cleanbridge/pickups/quote": {
+    "status": 200,
+    "body": {
+      "location": {
+        "lat": 5.6363,
+        "lng": -0.1614
+      },
+      "wasteType": "Household mix",
+      "bags": 3,
+      "urgent": false,
+      "vehicleType": "Motor tricycle (Aboboyaa)",
+      "scheduledDate": "2026-09-25"
+    },
+    "response": {
+      "currency": "GHS",
+      "subtotal": 37.35,
+      "taxes": [
+        {
+          "code": "nhil",
+          "label": "NHIL",
+          "pct": 2.5,
+          "amount": 0.93
+        },
+        {
+          "code": "getfund",
+          "label": "GETFund levy",
+          "pct": 2.5,
+          "amount": 0.93
+        },
+        {
+          "code": "vat",
+          "label": "VAT",
+          "pct": 15,
+          "amount": 5.6
+        }
+      ],
+      "taxTotal": 7.46,
+      "total": 44.81,
+      "distanceKm": 4.9,
+      "vehicleType": "Motor tricycle (Aboboyaa)",
+      "breakdown": {
+        "baseFee": 15,
+        "distanceFee": 7.35,
+        "quantityFee": 15,
+        "wasteTypeFee": 0,
+        "urgencyFee": 0,
+        "weekendFee": 0,
+        "vehicleFee": 0
+      },
+      "split": {
+        "collector": 26.15,
+        "collectorSharePct": 70,
+        "platform": 11.2,
+        "tax": 7.46
+      },
+      "hub": {
+        "id": "madina",
+        "name": "Madina / Adenta",
+        "region": "Greater Accra"
+      }
+    }
+  },
+  "POST /api/v1/cleanbridge/pickups": {
+    "status": 201,
+    "body": {
+      "area": "East Legon",
+      "address": "12 Lagos Ave, East Legon",
+      "gateNote": "Blue gate, call on arrival",
+      "wasteType": "Household mix",
+      "bags": 3,
+      "scheduledDate": "2026-09-25",
+      "timeWindow": "Morning (7:00 – 10:00)",
+      "urgent": false,
+      "location": {
+        "lat": 5.6363,
+        "lng": -0.1614
+      },
+      "region": "Greater Accra",
+      "ghanaPostGps": "GA-183-8164",
+      "paymentMethod": "cash",
+      "vehicleType": "Motor tricycle (Aboboyaa)"
+    },
+    "response": {
+      "pickup": {
+        "id": "6ab5666555135b3eccf88acf",
+        "code": "CB-1001",
+        "customerId": "6ab5666155135b3eccf88a9e",
+        "customerName": "Customer Example",
+        "customerPhone": "+233243121132",
+        "area": "East Legon",
+        "address": "12 Lagos Ave, East Legon",
+        "region": "Greater Accra",
+        "ghanaPostGps": "GA-183-8164",
+        "location": {
+          "lat": 5.6363,
+          "lng": -0.1614
+        },
+        "hubName": "Madina / Adenta",
+        "gateNote": "Blue gate, call on arrival",
+        "wasteType": "Household mix",
+        "bags": 3,
+        "scheduledDate": "2026-09-25T00:00:00.000Z",
+        "timeWindow": "Morning (7:00 – 10:00)",
+        "urgent": false,
+        "distanceKm": 4.9,
+        "estimatedPrice": 44.81,
+        "priceBreakdown": {
+          "baseFee": 15,
+          "distanceFee": 7.35,
+          "quantityFee": 15,
+          "wasteTypeFee": 0,
+          "urgencyFee": 0,
+          "weekendFee": 0,
+          "vehicleFee": 0
+        },
+        "subtotal": 37.35,
+        "taxes": [
+          {
+            "code": "nhil",
+            "label": "NHIL",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "getfund",
+            "label": "GETFund levy",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "vat",
+            "label": "VAT",
+            "pct": 15,
+            "amount": 5.6
+          }
+        ],
+        "taxAmount": 7.46,
+        "vehicleType": "Motor tricycle (Aboboyaa)",
+        "paymentMethod": "cash",
+        "paymentStatus": "unpaid",
+        "paymentChannel": null,
+        "paymentChannelLabel": null,
+        "cashCollected": false,
+        "paidAt": null,
+        "collectorEarning": null,
+        "platformFee": null,
+        "status": "requested",
+        "collectorId": null,
+        "collectorName": null,
+        "collectorPhone": null,
+        "vehicleLabel": null,
+        "routeId": null,
+        "etaMinutes": null,
+        "customerRating": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "completedAt": null,
+        "cancelledAt": null,
+        "createdAt": "2026-09-24T18:05:25.777Z",
+        "updatedAt": "2026-09-24T18:05:25.777Z"
+      },
+      "quote": {
+        "currency": "GHS",
+        "subtotal": 37.35,
+        "taxes": [
+          {
+            "code": "nhil",
+            "label": "NHIL",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "getfund",
+            "label": "GETFund levy",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "vat",
+            "label": "VAT",
+            "pct": 15,
+            "amount": 5.6
+          }
+        ],
+        "taxTotal": 7.46,
+        "total": 44.81,
+        "distanceKm": 4.9,
+        "vehicleType": "Motor tricycle (Aboboyaa)",
+        "breakdown": {
+          "baseFee": 15,
+          "distanceFee": 7.35,
+          "quantityFee": 15,
+          "wasteTypeFee": 0,
+          "urgencyFee": 0,
+          "weekendFee": 0,
+          "vehicleFee": 0
+        },
+        "split": {
+          "collector": 26.15,
+          "collectorSharePct": 70,
+          "platform": 11.2,
+          "tax": 7.46
+        }
+      }
+    }
+  },
+  "GET /api/v1/cleanbridge/pickups": {
+    "status": 200,
+    "query": {
+      "limit": "5"
+    },
+    "response": {
+      "pickups": [
+        {
+          "id": "6ab5666555135b3eccf88acf",
+          "code": "CB-1001",
+          "customerId": "6ab5666155135b3eccf88a9e",
+          "customerName": "Customer Example",
+          "customerPhone": "+233243121132",
+          "area": "East Legon",
+          "address": "12 Lagos Ave, East Legon",
+          "region": "Greater Accra",
+          "ghanaPostGps": "GA-183-8164",
+          "location": {
+            "lat": 5.6363,
+            "lng": -0.1614
+          },
+          "hubName": "Madina / Adenta",
+          "gateNote": "Blue gate, call on arrival",
+          "wasteType": "Household mix",
+          "bags": 3,
+          "scheduledDate": "2026-09-25T00:00:00.000Z",
+          "timeWindow": "Morning (7:00 – 10:00)",
+          "urgent": false,
+          "distanceKm": 4.9,
+          "estimatedPrice": 44.81,
+          "priceBreakdown": {
+            "baseFee": 15,
+            "distanceFee": 7.35,
+            "quantityFee": 15,
+            "wasteTypeFee": 0,
+            "urgencyFee": 0,
+            "weekendFee": 0,
+            "vehicleFee": 0
+          },
+          "subtotal": 37.35,
+          "taxes": [
+            {
+              "code": "nhil",
+              "label": "NHIL",
+              "pct": 2.5,
+              "amount": 0.93
+            },
+            {
+              "code": "getfund",
+              "label": "GETFund levy",
+              "pct": 2.5,
+              "amount": 0.93
+            },
+            {
+              "code": "vat",
+              "label": "VAT",
+              "pct": 15,
+              "amount": 5.6
+            }
+          ],
+          "taxAmount": 7.46,
+          "vehicleType": "Motor tricycle (Aboboyaa)",
+          "paymentMethod": "cash",
+          "paymentStatus": "unpaid",
+          "paymentChannel": null,
+          "paymentChannelLabel": null,
+          "cashCollected": false,
+          "paidAt": null,
+          "collectorEarning": null,
+          "platformFee": null,
+          "status": "requested",
+          "collectorId": null,
+          "collectorName": null,
+          "collectorPhone": null,
+          "vehicleLabel": null,
+          "routeId": null,
+          "etaMinutes": null,
+          "customerRating": null,
+          "assignedAt": null,
+          "startedAt": null,
+          "completedAt": null,
+          "cancelledAt": null,
+          "createdAt": "2026-09-24T18:05:25.777Z",
+          "updatedAt": "2026-09-24T18:05:25.777Z"
+        }
+      ],
+      "total": 1,
+      "page": 1,
+      "limit": 5
+    }
+  },
+  "GET /api/v1/cleanbridge/pickups/available": {
+    "status": 200,
+    "response": {
+      "pickups": [
+        {
+          "id": "6ab5666555135b3eccf88acf",
+          "code": "CB-1001",
+          "customerId": "6ab5666155135b3eccf88a9e",
+          "customerName": "Customer Example",
+          "customerPhone": "+233243121132",
+          "area": "East Legon",
+          "address": "12 Lagos Ave, East Legon",
+          "region": "Greater Accra",
+          "ghanaPostGps": "GA-183-8164",
+          "location": {
+            "lat": 5.6363,
+            "lng": -0.1614
+          },
+          "hubName": "Madina / Adenta",
+          "gateNote": "Blue gate, call on arrival",
+          "wasteType": "Household mix",
+          "bags": 3,
+          "scheduledDate": "2026-09-25T00:00:00.000Z",
+          "timeWindow": "Morning (7:00 – 10:00)",
+          "urgent": false,
+          "distanceKm": 4.9,
+          "estimatedPrice": 44.81,
+          "priceBreakdown": {
+            "baseFee": 15,
+            "distanceFee": 7.35,
+            "quantityFee": 15,
+            "wasteTypeFee": 0,
+            "urgencyFee": 0,
+            "weekendFee": 0,
+            "vehicleFee": 0
+          },
+          "subtotal": 37.35,
+          "taxes": [
+            {
+              "code": "nhil",
+              "label": "NHIL",
+              "pct": 2.5,
+              "amount": 0.93
+            },
+            {
+              "code": "getfund",
+              "label": "GETFund levy",
+              "pct": 2.5,
+              "amount": 0.93
+            },
+            {
+              "code": "vat",
+              "label": "VAT",
+              "pct": 15,
+              "amount": 5.6
+            }
+          ],
+          "taxAmount": 7.46,
+          "vehicleType": "Motor tricycle (Aboboyaa)",
+          "paymentMethod": "cash",
+          "paymentStatus": "unpaid",
+          "paymentChannel": null,
+          "paymentChannelLabel": null,
+          "cashCollected": false,
+          "paidAt": null,
+          "collectorEarning": null,
+          "platformFee": null,
+          "status": "requested",
+          "collectorId": null,
+          "collectorName": null,
+          "collectorPhone": null,
+          "vehicleLabel": null,
+          "routeId": null,
+          "etaMinutes": null,
+          "customerRating": null,
+          "assignedAt": null,
+          "startedAt": null,
+          "completedAt": null,
+          "cancelledAt": null,
+          "createdAt": "2026-09-24T18:05:25.777Z",
+          "updatedAt": "2026-09-24T18:05:25.777Z",
+          "estimatedEarning": 26.15,
+          "distanceFromYouKm": null
+        }
+      ]
+    }
+  },
+  "GET /api/v1/cleanbridge/pickups/:id": {
+    "status": 200,
+    "response": {
+      "pickup": {
+        "id": "6ab5666555135b3eccf88acf",
+        "code": "CB-1001",
+        "customerId": "6ab5666155135b3eccf88a9e",
+        "customerName": "Customer Example",
+        "customerPhone": "+233243121132",
+        "area": "East Legon",
+        "address": "12 Lagos Ave, East Legon",
+        "region": "Greater Accra",
+        "ghanaPostGps": "GA-183-8164",
+        "location": {
+          "lat": 5.6363,
+          "lng": -0.1614
+        },
+        "hubName": "Madina / Adenta",
+        "gateNote": "Blue gate, call on arrival",
+        "wasteType": "Household mix",
+        "bags": 3,
+        "scheduledDate": "2026-09-25T00:00:00.000Z",
+        "timeWindow": "Morning (7:00 – 10:00)",
+        "urgent": false,
+        "distanceKm": 4.9,
+        "estimatedPrice": 44.81,
+        "priceBreakdown": {
+          "baseFee": 15,
+          "distanceFee": 7.35,
+          "quantityFee": 15,
+          "wasteTypeFee": 0,
+          "urgencyFee": 0,
+          "weekendFee": 0,
+          "vehicleFee": 0
+        },
+        "subtotal": 37.35,
+        "taxes": [
+          {
+            "code": "nhil",
+            "label": "NHIL",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "getfund",
+            "label": "GETFund levy",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "vat",
+            "label": "VAT",
+            "pct": 15,
+            "amount": 5.6
+          }
+        ],
+        "taxAmount": 7.46,
+        "vehicleType": "Motor tricycle (Aboboyaa)",
+        "paymentMethod": "cash",
+        "paymentStatus": "unpaid",
+        "paymentChannel": null,
+        "paymentChannelLabel": null,
+        "cashCollected": false,
+        "paidAt": null,
+        "collectorEarning": null,
+        "platformFee": null,
+        "status": "requested",
+        "collectorId": null,
+        "collectorName": null,
+        "collectorPhone": null,
+        "vehicleLabel": null,
+        "routeId": null,
+        "etaMinutes": null,
+        "customerRating": null,
+        "assignedAt": null,
+        "startedAt": null,
+        "completedAt": null,
+        "cancelledAt": null,
+        "createdAt": "2026-09-24T18:05:25.777Z",
+        "updatedAt": "2026-09-24T18:05:25.777Z"
+      },
+      "collectorLocation": null,
+      "liveEtaMinutes": null
+    }
+  },
+  "PATCH /api/v1/cleanbridge/pickups/:id/accept": {
+    "status": 200,
+    "response": {
+      "pickup": {
+        "id": "6ab5666555135b3eccf88acf",
+        "code": "CB-1001",
+        "customerId": "6ab5666155135b3eccf88a9e",
+        "customerName": "Customer Example",
+        "customerPhone": "+233243121132",
+        "area": "East Legon",
+        "address": "12 Lagos Ave, East Legon",
+        "region": "Greater Accra",
+        "ghanaPostGps": "GA-183-8164",
+        "location": {
+          "lat": 5.6363,
+          "lng": -0.1614
+        },
+        "hubName": "Madina / Adenta",
+        "gateNote": "Blue gate, call on arrival",
+        "wasteType": "Household mix",
+        "bags": 3,
+        "scheduledDate": "2026-09-25T00:00:00.000Z",
+        "timeWindow": "Morning (7:00 – 10:00)",
+        "urgent": false,
+        "distanceKm": 4.9,
+        "estimatedPrice": 44.81,
+        "priceBreakdown": {
+          "baseFee": 15,
+          "distanceFee": 7.35,
+          "quantityFee": 15,
+          "wasteTypeFee": 0,
+          "urgencyFee": 0,
+          "weekendFee": 0,
+          "vehicleFee": 0
+        },
+        "subtotal": 37.35,
+        "taxes": [
+          {
+            "code": "nhil",
+            "label": "NHIL",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "getfund",
+            "label": "GETFund levy",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "vat",
+            "label": "VAT",
+            "pct": 15,
+            "amount": 5.6
+          }
+        ],
+        "taxAmount": 7.46,
+        "vehicleType": "Motor tricycle (Aboboyaa)",
+        "paymentMethod": "cash",
+        "paymentStatus": "unpaid",
+        "paymentChannel": null,
+        "paymentChannelLabel": null,
+        "cashCollected": false,
+        "paidAt": null,
+        "collectorEarning": null,
+        "platformFee": null,
+        "status": "assigned",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "collectorName": "Collector Example",
+        "collectorPhone": "+233553121349",
+        "vehicleLabel": "Blue aboboyaa · Apsonic Cargo 200",
+        "routeId": null,
+        "etaMinutes": null,
+        "customerRating": null,
+        "assignedAt": "2026-09-24T18:05:25.928Z",
+        "startedAt": null,
+        "completedAt": null,
+        "cancelledAt": null,
+        "createdAt": "2026-09-24T18:05:25.777Z",
+        "updatedAt": "2026-09-24T18:05:25.928Z"
+      }
+    }
+  },
+  "POST /api/v1/cleanbridge/routes": {
+    "status": 201,
+    "body": {
+      "date": "2026-09-24",
+      "stops": [
+        "6ab5666555135b3eccf88acf"
+      ],
+      "distanceKm": 6.4
+    },
+    "response": {
+      "route": {
+        "id": "6ab5666555135b3eccf88af0",
+        "code": "RT-0001",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "collectorName": "Collector Example",
+        "date": "2026-09-24T00:00:00.000Z",
+        "stops": [
+          {
+            "id": "6ab5666555135b3eccf88acf",
+            "code": "CB-1001",
+            "customerId": "6ab5666155135b3eccf88a9e",
+            "customerName": "Customer Example",
+            "customerPhone": "+233243121132",
+            "area": "East Legon",
+            "address": "12 Lagos Ave, East Legon",
+            "region": "Greater Accra",
+            "ghanaPostGps": "GA-183-8164",
+            "location": {
+              "lat": 5.6363,
+              "lng": -0.1614
+            },
+            "hubName": "Madina / Adenta",
+            "gateNote": "Blue gate, call on arrival",
+            "wasteType": "Household mix",
+            "bags": 3,
+            "scheduledDate": "2026-09-25T00:00:00.000Z",
+            "timeWindow": "Morning (7:00 – 10:00)",
+            "urgent": false,
+            "distanceKm": 4.9,
+            "estimatedPrice": 44.81,
+            "priceBreakdown": {
+              "baseFee": 15,
+              "distanceFee": 7.35,
+              "quantityFee": 15,
+              "wasteTypeFee": 0,
+              "urgencyFee": 0,
+              "weekendFee": 0,
+              "vehicleFee": 0
+            },
+            "subtotal": 37.35,
+            "taxes": [
+              {
+                "code": "nhil",
+                "label": "NHIL",
+                "pct": 2.5,
+                "amount": 0.93
+              },
+              {
+                "code": "getfund",
+                "label": "GETFund levy",
+                "pct": 2.5,
+                "amount": 0.93
+              },
+              {
+                "code": "vat",
+                "label": "VAT",
+                "pct": 15,
+                "amount": 5.6
+              }
+            ],
+            "taxAmount": 7.46,
+            "vehicleType": "Motor tricycle (Aboboyaa)",
+            "paymentMethod": "cash",
+            "paymentStatus": "unpaid",
+            "paymentChannel": null,
+            "paymentChannelLabel": null,
+            "cashCollected": false,
+            "paidAt": null,
+            "collectorEarning": null,
+            "platformFee": null,
+            "status": "assigned",
+            "collectorId": "6ab5666155135b3eccf88aa3",
+            "collectorName": "Collector Example",
+            "collectorPhone": "+233553121349",
+            "vehicleLabel": "Blue aboboyaa · Apsonic Cargo 200",
+            "routeId": "6ab5666555135b3eccf88af0",
+            "etaMinutes": null,
+            "customerRating": null,
+            "assignedAt": "2026-09-24T18:05:25.928Z",
+            "startedAt": null,
+            "completedAt": null,
+            "cancelledAt": null,
+            "createdAt": "2026-09-24T18:05:25.777Z",
+            "updatedAt": "2026-09-24T18:05:25.988Z"
+          }
+        ],
+        "stopCount": 1,
+        "distanceKm": 6.4,
+        "fuelPricePerLitre": 14.86,
+        "estimatedFuelLitres": 0.29,
+        "estimatedFuelCost": 4.31,
+        "status": "planned",
+        "startedAt": null,
+        "completedAt": null,
+        "createdAt": "2026-09-24T18:05:25.980Z"
+      }
+    }
+  },
+  "GET /api/v1/cleanbridge/routes/today": {
+    "status": 200,
+    "response": {
+      "route": {
+        "id": "6ab5666555135b3eccf88af0",
+        "code": "RT-0001",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "collectorName": "Collector Example",
+        "date": "2026-09-24T00:00:00.000Z",
+        "stops": [
+          {
+            "id": "6ab5666555135b3eccf88acf",
+            "code": "CB-1001",
+            "customerId": "6ab5666155135b3eccf88a9e",
+            "customerName": "Customer Example",
+            "customerPhone": "+233243121132",
+            "area": "East Legon",
+            "address": "12 Lagos Ave, East Legon",
+            "region": "Greater Accra",
+            "ghanaPostGps": "GA-183-8164",
+            "location": {
+              "lat": 5.6363,
+              "lng": -0.1614
+            },
+            "hubName": "Madina / Adenta",
+            "gateNote": "Blue gate, call on arrival",
+            "wasteType": "Household mix",
+            "bags": 3,
+            "scheduledDate": "2026-09-25T00:00:00.000Z",
+            "timeWindow": "Morning (7:00 – 10:00)",
+            "urgent": false,
+            "distanceKm": 4.9,
+            "estimatedPrice": 44.81,
+            "priceBreakdown": {
+              "baseFee": 15,
+              "distanceFee": 7.35,
+              "quantityFee": 15,
+              "wasteTypeFee": 0,
+              "urgencyFee": 0,
+              "weekendFee": 0,
+              "vehicleFee": 0
+            },
+            "subtotal": 37.35,
+            "taxes": [
+              {
+                "code": "nhil",
+                "label": "NHIL",
+                "pct": 2.5,
+                "amount": 0.93
+              },
+              {
+                "code": "getfund",
+                "label": "GETFund levy",
+                "pct": 2.5,
+                "amount": 0.93
+              },
+              {
+                "code": "vat",
+                "label": "VAT",
+                "pct": 15,
+                "amount": 5.6
+              }
+            ],
+            "taxAmount": 7.46,
+            "vehicleType": "Motor tricycle (Aboboyaa)",
+            "paymentMethod": "cash",
+            "paymentStatus": "unpaid",
+            "paymentChannel": null,
+            "paymentChannelLabel": null,
+            "cashCollected": false,
+            "paidAt": null,
+            "collectorEarning": null,
+            "platformFee": null,
+            "status": "assigned",
+            "collectorId": "6ab5666155135b3eccf88aa3",
+            "collectorName": "Collector Example",
+            "collectorPhone": "+233553121349",
+            "vehicleLabel": "Blue aboboyaa · Apsonic Cargo 200",
+            "routeId": "6ab5666555135b3eccf88af0",
+            "etaMinutes": null,
+            "customerRating": null,
+            "assignedAt": "2026-09-24T18:05:25.928Z",
+            "startedAt": null,
+            "completedAt": null,
+            "cancelledAt": null,
+            "createdAt": "2026-09-24T18:05:25.777Z",
+            "updatedAt": "2026-09-24T18:05:25.988Z"
+          }
+        ],
+        "stopCount": 1,
+        "distanceKm": 6.4,
+        "fuelPricePerLitre": 14.86,
+        "estimatedFuelLitres": 0.29,
+        "estimatedFuelCost": 4.31,
+        "status": "planned",
+        "startedAt": null,
+        "completedAt": null,
+        "createdAt": "2026-09-24T18:05:25.980Z"
+      }
+    }
+  },
+  "GET /api/v1/cleanbridge/routes": {
+    "status": 200,
+    "response": {
+      "routes": [
+        {
+          "id": "6ab5666555135b3eccf88af0",
+          "code": "RT-0001",
+          "collectorId": "6ab5666155135b3eccf88aa3",
+          "collectorName": "Collector Example",
+          "date": "2026-09-24T00:00:00.000Z",
+          "stops": [
+            "6ab5666555135b3eccf88acf"
+          ],
+          "stopCount": 1,
+          "distanceKm": 6.4,
+          "fuelPricePerLitre": 14.86,
+          "estimatedFuelLitres": 0.29,
+          "estimatedFuelCost": 4.31,
+          "status": "planned",
+          "startedAt": null,
+          "completedAt": null,
+          "createdAt": "2026-09-24T18:05:25.980Z"
+        }
+      ]
+    }
+  },
+  "GET /api/v1/cleanbridge/routes/:id": {
+    "status": 200,
+    "response": {
+      "route": {
+        "id": "6ab5666555135b3eccf88af0",
+        "code": "RT-0001",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "collectorName": "Collector Example",
+        "date": "2026-09-24T00:00:00.000Z",
+        "stops": [
+          {
+            "id": "6ab5666555135b3eccf88acf",
+            "code": "CB-1001",
+            "customerId": "6ab5666155135b3eccf88a9e",
+            "customerName": "Customer Example",
+            "customerPhone": "+233243121132",
+            "area": "East Legon",
+            "address": "12 Lagos Ave, East Legon",
+            "region": "Greater Accra",
+            "ghanaPostGps": "GA-183-8164",
+            "location": {
+              "lat": 5.6363,
+              "lng": -0.1614
+            },
+            "hubName": "Madina / Adenta",
+            "gateNote": "Blue gate, call on arrival",
+            "wasteType": "Household mix",
+            "bags": 3,
+            "scheduledDate": "2026-09-25T00:00:00.000Z",
+            "timeWindow": "Morning (7:00 – 10:00)",
+            "urgent": false,
+            "distanceKm": 4.9,
+            "estimatedPrice": 44.81,
+            "priceBreakdown": {
+              "baseFee": 15,
+              "distanceFee": 7.35,
+              "quantityFee": 15,
+              "wasteTypeFee": 0,
+              "urgencyFee": 0,
+              "weekendFee": 0,
+              "vehicleFee": 0
+            },
+            "subtotal": 37.35,
+            "taxes": [
+              {
+                "code": "nhil",
+                "label": "NHIL",
+                "pct": 2.5,
+                "amount": 0.93
+              },
+              {
+                "code": "getfund",
+                "label": "GETFund levy",
+                "pct": 2.5,
+                "amount": 0.93
+              },
+              {
+                "code": "vat",
+                "label": "VAT",
+                "pct": 15,
+                "amount": 5.6
+              }
+            ],
+            "taxAmount": 7.46,
+            "vehicleType": "Motor tricycle (Aboboyaa)",
+            "paymentMethod": "cash",
+            "paymentStatus": "unpaid",
+            "paymentChannel": null,
+            "paymentChannelLabel": null,
+            "cashCollected": false,
+            "paidAt": null,
+            "collectorEarning": null,
+            "platformFee": null,
+            "status": "assigned",
+            "collectorId": "6ab5666155135b3eccf88aa3",
+            "collectorName": "Collector Example",
+            "collectorPhone": "+233553121349",
+            "vehicleLabel": "Blue aboboyaa · Apsonic Cargo 200",
+            "routeId": "6ab5666555135b3eccf88af0",
+            "etaMinutes": null,
+            "customerRating": null,
+            "assignedAt": "2026-09-24T18:05:25.928Z",
+            "startedAt": null,
+            "completedAt": null,
+            "cancelledAt": null,
+            "createdAt": "2026-09-24T18:05:25.777Z",
+            "updatedAt": "2026-09-24T18:05:25.988Z"
+          }
+        ],
+        "stopCount": 1,
+        "distanceKm": 6.4,
+        "fuelPricePerLitre": 14.86,
+        "estimatedFuelLitres": 0.29,
+        "estimatedFuelCost": 4.31,
+        "status": "planned",
+        "startedAt": null,
+        "completedAt": null,
+        "createdAt": "2026-09-24T18:05:25.980Z"
+      }
+    }
+  },
+  "PATCH /api/v1/cleanbridge/routes/:id/status": {
+    "status": 200,
+    "body": {
+      "status": "in_progress"
+    },
+    "response": {
+      "route": {
+        "id": "6ab5666555135b3eccf88af0",
+        "code": "RT-0001",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "collectorName": "Collector Example",
+        "date": "2026-09-24T00:00:00.000Z",
+        "stops": [
+          {
+            "id": "6ab5666555135b3eccf88acf",
+            "code": "CB-1001",
+            "customerId": "6ab5666155135b3eccf88a9e",
+            "customerName": "Customer Example",
+            "customerPhone": "+233243121132",
+            "area": "East Legon",
+            "address": "12 Lagos Ave, East Legon",
+            "region": "Greater Accra",
+            "ghanaPostGps": "GA-183-8164",
+            "location": {
+              "lat": 5.6363,
+              "lng": -0.1614
+            },
+            "hubName": "Madina / Adenta",
+            "gateNote": "Blue gate, call on arrival",
+            "wasteType": "Household mix",
+            "bags": 3,
+            "scheduledDate": "2026-09-25T00:00:00.000Z",
+            "timeWindow": "Morning (7:00 – 10:00)",
+            "urgent": false,
+            "distanceKm": 4.9,
+            "estimatedPrice": 44.81,
+            "priceBreakdown": {
+              "baseFee": 15,
+              "distanceFee": 7.35,
+              "quantityFee": 15,
+              "wasteTypeFee": 0,
+              "urgencyFee": 0,
+              "weekendFee": 0,
+              "vehicleFee": 0
+            },
+            "subtotal": 37.35,
+            "taxes": [
+              {
+                "code": "nhil",
+                "label": "NHIL",
+                "pct": 2.5,
+                "amount": 0.93
+              },
+              {
+                "code": "getfund",
+                "label": "GETFund levy",
+                "pct": 2.5,
+                "amount": 0.93
+              },
+              {
+                "code": "vat",
+                "label": "VAT",
+                "pct": 15,
+                "amount": 5.6
+              }
+            ],
+            "taxAmount": 7.46,
+            "vehicleType": "Motor tricycle (Aboboyaa)",
+            "paymentMethod": "cash",
+            "paymentStatus": "unpaid",
+            "paymentChannel": null,
+            "paymentChannelLabel": null,
+            "cashCollected": false,
+            "paidAt": null,
+            "collectorEarning": null,
+            "platformFee": null,
+            "status": "assigned",
+            "collectorId": "6ab5666155135b3eccf88aa3",
+            "collectorName": "Collector Example",
+            "collectorPhone": "+233553121349",
+            "vehicleLabel": "Blue aboboyaa · Apsonic Cargo 200",
+            "routeId": "6ab5666555135b3eccf88af0",
+            "etaMinutes": null,
+            "customerRating": null,
+            "assignedAt": "2026-09-24T18:05:25.928Z",
+            "startedAt": null,
+            "completedAt": null,
+            "cancelledAt": null,
+            "createdAt": "2026-09-24T18:05:25.777Z",
+            "updatedAt": "2026-09-24T18:05:25.988Z"
+          }
+        ],
+        "stopCount": 1,
+        "distanceKm": 6.4,
+        "fuelPricePerLitre": 14.86,
+        "estimatedFuelLitres": 0.29,
+        "estimatedFuelCost": 4.31,
+        "status": "in_progress",
+        "startedAt": "2026-09-24T18:05:26.104Z",
+        "completedAt": null,
+        "createdAt": "2026-09-24T18:05:25.980Z"
+      }
+    }
+  },
+  "PATCH /api/v1/cleanbridge/pickups/:id/status": {
+    "status": 200,
+    "body": {
+      "status": "on_the_way",
+      "etaMinutes": 15
+    },
+    "response": {
+      "pickup": {
+        "id": "6ab5666555135b3eccf88acf",
+        "code": "CB-1001",
+        "customerId": "6ab5666155135b3eccf88a9e",
+        "customerName": "Customer Example",
+        "customerPhone": "+233243121132",
+        "area": "East Legon",
+        "address": "12 Lagos Ave, East Legon",
+        "region": "Greater Accra",
+        "ghanaPostGps": "GA-183-8164",
+        "location": {
+          "lat": 5.6363,
+          "lng": -0.1614
+        },
+        "hubName": "Madina / Adenta",
+        "gateNote": "Blue gate, call on arrival",
+        "wasteType": "Household mix",
+        "bags": 3,
+        "scheduledDate": "2026-09-25T00:00:00.000Z",
+        "timeWindow": "Morning (7:00 – 10:00)",
+        "urgent": false,
+        "distanceKm": 4.9,
+        "estimatedPrice": 44.81,
+        "priceBreakdown": {
+          "baseFee": 15,
+          "distanceFee": 7.35,
+          "quantityFee": 15,
+          "wasteTypeFee": 0,
+          "urgencyFee": 0,
+          "weekendFee": 0,
+          "vehicleFee": 0
+        },
+        "subtotal": 37.35,
+        "taxes": [
+          {
+            "code": "nhil",
+            "label": "NHIL",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "getfund",
+            "label": "GETFund levy",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "vat",
+            "label": "VAT",
+            "pct": 15,
+            "amount": 5.6
+          }
+        ],
+        "taxAmount": 7.46,
+        "vehicleType": "Motor tricycle (Aboboyaa)",
+        "paymentMethod": "cash",
+        "paymentStatus": "unpaid",
+        "paymentChannel": null,
+        "paymentChannelLabel": null,
+        "cashCollected": false,
+        "paidAt": null,
+        "collectorEarning": null,
+        "platformFee": null,
+        "status": "on_the_way",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "collectorName": "Collector Example",
+        "collectorPhone": "+233553121349",
+        "vehicleLabel": "Blue aboboyaa · Apsonic Cargo 200",
+        "routeId": "6ab5666555135b3eccf88af0",
+        "etaMinutes": 15,
+        "customerRating": null,
+        "assignedAt": "2026-09-24T18:05:25.928Z",
+        "startedAt": "2026-09-24T18:05:26.145Z",
+        "completedAt": null,
+        "cancelledAt": null,
+        "createdAt": "2026-09-24T18:05:25.777Z",
+        "updatedAt": "2026-09-24T18:05:26.151Z"
+      }
+    }
+  },
+  "PATCH /api/v1/cleanbridge/pickups/:id/status (completed)": {
+    "status": 200,
+    "body": {
+      "status": "completed"
+    },
+    "response": {
+      "pickup": {
+        "id": "6ab5666555135b3eccf88acf",
+        "code": "CB-1001",
+        "customerId": "6ab5666155135b3eccf88a9e",
+        "customerName": "Customer Example",
+        "customerPhone": "+233243121132",
+        "area": "East Legon",
+        "address": "12 Lagos Ave, East Legon",
+        "region": "Greater Accra",
+        "ghanaPostGps": "GA-183-8164",
+        "location": {
+          "lat": 5.6363,
+          "lng": -0.1614
+        },
+        "hubName": "Madina / Adenta",
+        "gateNote": "Blue gate, call on arrival",
+        "wasteType": "Household mix",
+        "bags": 3,
+        "scheduledDate": "2026-09-25T00:00:00.000Z",
+        "timeWindow": "Morning (7:00 – 10:00)",
+        "urgent": false,
+        "distanceKm": 4.9,
+        "estimatedPrice": 44.81,
+        "priceBreakdown": {
+          "baseFee": 15,
+          "distanceFee": 7.35,
+          "quantityFee": 15,
+          "wasteTypeFee": 0,
+          "urgencyFee": 0,
+          "weekendFee": 0,
+          "vehicleFee": 0
+        },
+        "subtotal": 37.35,
+        "taxes": [
+          {
+            "code": "nhil",
+            "label": "NHIL",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "getfund",
+            "label": "GETFund levy",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "vat",
+            "label": "VAT",
+            "pct": 15,
+            "amount": 5.6
+          }
+        ],
+        "taxAmount": 7.46,
+        "vehicleType": "Motor tricycle (Aboboyaa)",
+        "paymentMethod": "cash",
+        "paymentStatus": "paid",
+        "paymentChannel": null,
+        "paymentChannelLabel": null,
+        "cashCollected": true,
+        "paidAt": "2026-09-24T18:05:26.182Z",
+        "collectorEarning": 26.15,
+        "platformFee": 11.2,
+        "status": "completed",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "collectorName": "Collector Example",
+        "collectorPhone": "+233553121349",
+        "vehicleLabel": "Blue aboboyaa · Apsonic Cargo 200",
+        "routeId": "6ab5666555135b3eccf88af0",
+        "etaMinutes": 15,
+        "customerRating": null,
+        "assignedAt": "2026-09-24T18:05:25.928Z",
+        "startedAt": "2026-09-24T18:05:26.145Z",
+        "completedAt": "2026-09-24T18:05:26.182Z",
+        "cancelledAt": null,
+        "createdAt": "2026-09-24T18:05:25.777Z",
+        "updatedAt": "2026-09-24T18:05:26.184Z"
+      }
+    }
+  },
+  "POST /api/v1/cleanbridge/pickups/:id/rate": {
+    "status": 200,
+    "body": {
+      "rating": 5
+    },
+    "response": {
+      "pickup": {
+        "id": "6ab5666555135b3eccf88acf",
+        "code": "CB-1001",
+        "customerId": "6ab5666155135b3eccf88a9e",
+        "customerName": "Customer Example",
+        "customerPhone": "+233243121132",
+        "area": "East Legon",
+        "address": "12 Lagos Ave, East Legon",
+        "region": "Greater Accra",
+        "ghanaPostGps": "GA-183-8164",
+        "location": {
+          "lat": 5.6363,
+          "lng": -0.1614
+        },
+        "hubName": "Madina / Adenta",
+        "gateNote": "Blue gate, call on arrival",
+        "wasteType": "Household mix",
+        "bags": 3,
+        "scheduledDate": "2026-09-25T00:00:00.000Z",
+        "timeWindow": "Morning (7:00 – 10:00)",
+        "urgent": false,
+        "distanceKm": 4.9,
+        "estimatedPrice": 44.81,
+        "priceBreakdown": {
+          "baseFee": 15,
+          "distanceFee": 7.35,
+          "quantityFee": 15,
+          "wasteTypeFee": 0,
+          "urgencyFee": 0,
+          "weekendFee": 0,
+          "vehicleFee": 0
+        },
+        "subtotal": 37.35,
+        "taxes": [
+          {
+            "code": "nhil",
+            "label": "NHIL",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "getfund",
+            "label": "GETFund levy",
+            "pct": 2.5,
+            "amount": 0.93
+          },
+          {
+            "code": "vat",
+            "label": "VAT",
+            "pct": 15,
+            "amount": 5.6
+          }
+        ],
+        "taxAmount": 7.46,
+        "vehicleType": "Motor tricycle (Aboboyaa)",
+        "paymentMethod": "cash",
+        "paymentStatus": "paid",
+        "paymentChannel": null,
+        "paymentChannelLabel": null,
+        "cashCollected": true,
+        "paidAt": "2026-09-24T18:05:26.182Z",
+        "collectorEarning": 26.15,
+        "platformFee": 11.2,
+        "status": "completed",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "collectorName": "Collector Example",
+        "collectorPhone": "+233553121349",
+        "vehicleLabel": "Blue aboboyaa · Apsonic Cargo 200",
+        "routeId": "6ab5666555135b3eccf88af0",
+        "etaMinutes": 15,
+        "customerRating": 5,
+        "assignedAt": "2026-09-24T18:05:25.928Z",
+        "startedAt": "2026-09-24T18:05:26.145Z",
+        "completedAt": "2026-09-24T18:05:26.182Z",
+        "cancelledAt": null,
+        "createdAt": "2026-09-24T18:05:25.777Z",
+        "updatedAt": "2026-09-24T18:05:26.206Z"
+      }
+    }
+  },
+  "GET /api/v1/cleanbridge/notifications": {
+    "status": 200,
+    "response": {
+      "notifications": [
+        {
+          "id": "6ab5666655135b3eccf88b0d",
+          "title": "Pickup completed",
+          "message": "Your pickup CB-1001 was completed. Thank you for keeping Ghana clean!",
+          "pickupId": "6ab5666555135b3eccf88acf",
+          "read": false,
+          "createdAt": "2026-09-24T18:05:26.188Z"
+        },
+        {
+          "id": "6ab5666655135b3eccf88b06",
+          "title": "Your collector is on the way",
+          "message": "Collector Example is heading to East Legon - about 15 min away.",
+          "pickupId": "6ab5666555135b3eccf88acf",
+          "read": false,
+          "createdAt": "2026-09-24T18:05:26.154Z"
+        },
+        {
+          "id": "6ab5666555135b3eccf88ae8",
+          "title": "Collector assigned",
+          "message": "Collector Example will handle your pickup CB-1001.",
+          "pickupId": "6ab5666555135b3eccf88acf",
+          "read": false,
+          "createdAt": "2026-09-24T18:05:25.936Z"
+        },
+        {
+          "id": "6ab5666555135b3eccf88ad2",
+          "title": "Pickup requested",
+          "message": "Your household mix pickup CB-1001 is booked for Morning (7:00 – 10:00).",
+          "pickupId": "6ab5666555135b3eccf88acf",
+          "read": false,
+          "createdAt": "2026-09-24T18:05:25.803Z"
+        }
+      ],
+      "unreadCount": 5
+    }
+  },
+  "PATCH /api/v1/cleanbridge/notifications/:id/read": {
+    "status": 200,
+    "response": {
+      "notification": {
+        "id": "6ab5666655135b3eccf88b0d",
+        "title": "Pickup completed",
+        "message": "Your pickup CB-1001 was completed. Thank you for keeping Ghana clean!",
+        "pickupId": "6ab5666555135b3eccf88acf",
+        "read": true,
+        "createdAt": "2026-09-24T18:05:26.188Z"
+      }
+    }
+  },
+  "PATCH /api/v1/cleanbridge/notifications/read-all": {
+    "status": 200,
+    "response": {
+      "updated": 4
+    }
+  },
+  "GET /api/v1/cleanbridge/dashboard/customer": {
+    "status": 200,
+    "response": {
+      "nextPickup": null,
+      "recentPickups": [
+        {
+          "id": "6ab5666555135b3eccf88acf",
+          "code": "CB-1001",
+          "customerId": "6ab5666155135b3eccf88a9e",
+          "customerName": "Customer Example",
+          "customerPhone": "+233243121132",
+          "area": "East Legon",
+          "address": "12 Lagos Ave, East Legon",
+          "region": "Greater Accra",
+          "ghanaPostGps": "GA-183-8164",
+          "location": {
+            "lat": 5.6363,
+            "lng": -0.1614
+          },
+          "hubName": "Madina / Adenta",
+          "gateNote": "Blue gate, call on arrival",
+          "wasteType": "Household mix",
+          "bags": 3,
+          "scheduledDate": "2026-09-25T00:00:00.000Z",
+          "timeWindow": "Morning (7:00 – 10:00)",
+          "urgent": false,
+          "distanceKm": 4.9,
+          "estimatedPrice": 44.81,
+          "priceBreakdown": {
+            "baseFee": 15,
+            "distanceFee": 7.35,
+            "quantityFee": 15,
+            "wasteTypeFee": 0,
+            "urgencyFee": 0,
+            "weekendFee": 0,
+            "vehicleFee": 0
+          },
+          "subtotal": 37.35,
+          "taxes": [
+            {
+              "code": "nhil",
+              "label": "NHIL",
+              "pct": 2.5,
+              "amount": 0.93
+            },
+            {
+              "code": "getfund",
+              "label": "GETFund levy",
+              "pct": 2.5,
+              "amount": 0.93
+            },
+            {
+              "code": "vat",
+              "label": "VAT",
+              "pct": 15,
+              "amount": 5.6
+            }
+          ],
+          "taxAmount": 7.46,
+          "vehicleType": "Motor tricycle (Aboboyaa)",
+          "paymentMethod": "cash",
+          "paymentStatus": "paid",
+          "paymentChannel": null,
+          "paymentChannelLabel": null,
+          "cashCollected": true,
+          "paidAt": "2026-09-24T18:05:26.182Z",
+          "collectorEarning": 26.15,
+          "platformFee": 11.2,
+          "status": "completed",
+          "collectorId": "6ab5666155135b3eccf88aa3",
+          "collectorName": "Collector Example",
+          "collectorPhone": "+233553121349",
+          "vehicleLabel": "Blue aboboyaa · Apsonic Cargo 200",
+          "routeId": "6ab5666555135b3eccf88af0",
+          "etaMinutes": 15,
+          "customerRating": 5,
+          "assignedAt": "2026-09-24T18:05:25.928Z",
+          "startedAt": "2026-09-24T18:05:26.145Z",
+          "completedAt": "2026-09-24T18:05:26.182Z",
+          "cancelledAt": null,
+          "createdAt": "2026-09-24T18:05:25.777Z",
+          "updatedAt": "2026-09-24T18:05:26.206Z"
+        }
+      ],
+      "completedPickups": 1,
+      "totalSpent": 44.81,
+      "bagsCollected": 3,
+      "unreadNotifications": 0
+    }
+  },
+  "GET /api/v1/cleanbridge/dashboard/collector": {
+    "status": 200,
+    "response": {
+      "collector": {
+        "id": "6ab5666155135b3eccf88aa3",
+        "name": "Collector Example",
+        "email": "collector.example@example.com",
+        "phone": "+233553121349",
+        "phoneNetwork": "MTN",
+        "role": "collector",
+        "avatarUrl": null,
+        "avatarSource": null,
+        "googleLinked": false,
+        "hasPassword": true,
+        "area": null,
+        "address": null,
+        "region": null,
+        "ghanaPostGps": null,
+        "location": null,
+        "collectorStatus": "on_route",
+        "momoNumber": "+233553121349",
+        "momoNetwork": "MTN",
+        "rating": 5,
+        "ratingCount": 1,
+        "isActive": true,
+        "emailNotifications": true,
+        "profileComplete": true,
+        "createdAt": "2026-09-24T18:05:21.357Z"
+      },
+      "vehicle": {
+        "id": "6ab5666555135b3eccf88abc",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "label": "Blue aboboyaa",
+        "type": "Motor tricycle (Aboboyaa)",
+        "make": "Apsonic",
+        "model": "Cargo 200",
+        "registration": "GR 1234-24",
+        "fuelType": "Petrol",
+        "fuelEconomyLPer100Km": 4.5,
+        "capacityTonnes": 0.5,
+        "verificationStatus": "verified",
+        "createdAt": "2026-09-24T18:05:25.590Z",
+        "updatedAt": "2026-09-24T18:05:25.640Z"
+      },
+      "activeJobs": [],
+      "completedJobs": 1,
+      "totalEarnings": 26.15,
+      "monthJobs": 1,
+      "monthEarnings": 26.15,
+      "averagePerJob": 26.15,
+      "weeklyEarnings": [
+        {
+          "date": "2026-09-18",
+          "earnings": 0
+        },
+        {
+          "date": "2026-09-19",
+          "earnings": 0
+        },
+        {
+          "date": "2026-09-20",
+          "earnings": 0
+        },
+        {
+          "date": "2026-09-21",
+          "earnings": 0
+        }
+      ],
+      "todayRoute": {
+        "id": "6ab5666555135b3eccf88af0",
+        "code": "RT-0001",
+        "collectorId": "6ab5666155135b3eccf88aa3",
+        "collectorName": "Collector Example",
+        "date": "2026-09-24T00:00:00.000Z",
+        "stops": [
+          {
+            "id": "6ab5666555135b3eccf88acf",
+            "code": "CB-1001",
+            "customerId": "6ab5666155135b3eccf88a9e",
+            "customerName": "Customer Example",
+            "customerPhone": "+233243121132",
+            "area": "East Legon",
+            "address": "12 Lagos Ave, East Legon",
+            "region": "Greater Accra",
+            "ghanaPostGps": "GA-183-8164",
+            "location": {
+              "lat": 5.6363,
+              "lng": -0.1614
+            },
+            "hubName": "Madina / Adenta",
+            "gateNote": "Blue gate, call on arrival",
+            "wasteType": "Household mix",
+            "bags": 3,
+            "scheduledDate": "2026-09-25T00:00:00.000Z",
+            "timeWindow": "Morning (7:00 – 10:00)",
+            "urgent": false,
+            "distanceKm": 4.9,
+            "estimatedPrice": 44.81,
+            "priceBreakdown": {
+              "baseFee": 15,
+              "distanceFee": 7.35,
+              "quantityFee": 15,
+              "wasteTypeFee": 0,
+              "urgencyFee": 0,
+              "weekendFee": 0,
+              "vehicleFee": 0
+            },
+            "subtotal": 37.35,
+            "taxes": [
+              {
+                "code": "nhil",
+                "label": "NHIL",
+                "pct": 2.5,
+                "amount": 0.93
+              },
+              {
+                "code": "getfund",
+                "label": "GETFund levy",
+                "pct": 2.5,
+                "amount": 0.93
+              },
+              {
+                "code": "vat",
+                "label": "VAT",
+                "pct": 15,
+                "amount": 5.6
+              }
+            ],
+            "taxAmount": 7.46,
+            "vehicleType": "Motor tricycle (Aboboyaa)",
+            "paymentMethod": "cash",
+            "paymentStatus": "paid",
+            "paymentChannel": null,
+            "paymentChannelLabel": null,
+            "cashCollected": true,
+            "paidAt": "2026-09-24T18:05:26.182Z",
+            "collectorEarning": 26.15,
+            "platformFee": 11.2,
+            "status": "completed",
+            "collectorId": "6ab5666155135b3eccf88aa3",
+            "collectorName": "Collector Example",
+            "collectorPhone": "+233553121349",
+            "vehicleLabel": "Blue aboboyaa · Apsonic Cargo 200",
+            "routeId": "6ab5666555135b3eccf88af0",
+            "etaMinutes": 15,
+            "customerRating": 5,
+            "assignedAt": "2026-09-24T18:05:25.928Z",
+            "startedAt": "2026-09-24T18:05:26.145Z",
+            "completedAt": "2026-09-24T18:05:26.182Z",
+            "cancelledAt": null,
+            "createdAt": "2026-09-24T18:05:25.777Z",
+            "updatedAt": "2026-09-24T18:05:26.206Z"
+          }
+        ],
+        "stopCount": 1,
+        "distanceKm": 6.4,
+        "fuelPricePerLitre": 14.86,
+        "estimatedFuelLitres": 0.29,
+        "estimatedFuelCost": 4.31,
+        "status": "in_progress",
+        "startedAt": "2026-09-24T18:05:26.104Z",
+        "completedAt": null,
+        "createdAt": "2026-09-24T18:05:25.980Z"
+      },
+      "routeCompletion": 100,
+      "availableRequests": 0,
+      "balance": {
+        "completedJobs": 1,
+        "earned": 26.15,
+        "cashCollected": 44.81,
+        "paidOut": 0,
+        "pendingPayout": 0,
+        "available": -18.66
+      },
+      "monthFuelCost": 4.31,
+      "monthFuelLitres": 0.29,
+      "monthNetAfterFuel": 21.84
+    }
+  },
+  "GET /api/v1/cleanbridge/dashboard/admin": {
+    "status": 200,
+    "response": {
+      "pickupsToday": 0,
+      "pickupsChangeVsLastWeekPct": null,
+      "completedToday": 0,
+      "onTimeRate7dPct": null,
+      "activeCollectors": 1,
+      "revenueToday": 0,
+      "needsAttention": {
+        "unassignedPickups": [],
+        "vehiclesAwaitingVerification": 0,
+        "payoutRequests": 0,
+        "payoutRequestsTotal": 0,
+        "fuelPriceUpdatedAt": "2026-09-24T18:05:21.842Z"
+      }
+    }
+  },
+  "GET /api/v1/cleanbridge/dashboard/analytics": {
+    "status": 200,
+    "query": {
+      "days": "30"
+    },
+    "response": {
+      "days": 30,
+      "money": {
+        "grossRevenue": 44.81,
+        "collectorEarnings": 26.15,
+        "platformRevenue": 11.2,
+        "taxCollected": 7.46,
+        "momoJobs": 0,
+        "cashJobs": 1
+      },
+      "since": "2026-08-26T00:00:00.000Z",
+      "byDay": [
+        {
+          "date": "2026-09-25",
+          "pickups": 1,
+          "completed": 1,
+          "revenue": 44.81
+        }
+      ],
+      "byWasteType": [
+        {
+          "wasteType": "Household mix",
+          "pickups": 1,
+          "bags": 3
+        }
+      ],
+      "byArea": [
+        {
+          "area": "East Legon",
+          "pickups": 1,
+          "revenue": 44.81
+        }
+      ],
+      "byStatus": {
+        "completed": 1
+      },
+      "fuel": {
+        "routes": 1,
+        "distanceKm": 6.4,
+        "fuelLitres": 0.29,
+        "fuelCost": 4.31
+      }
+    }
+  },
+  "GET /api/v1/cleanbridge/payouts/balance": {
+    "status": 200,
+    "response": {
+      "completedJobs": 1,
+      "earned": 26.15,
+      "cashCollected": 44.81,
+      "paidOut": 0,
+      "pendingPayout": 0,
+      "available": -18.66,
+      "collectorSharePct": 70,
+      "minimumPayout": 20
+    }
+  },
+  "GET /api/v1/cleanbridge/payouts": {
+    "status": 200,
+    "response": {
+      "payouts": []
+    }
+  },
+  "GET /api/v1/cleanbridge/admin/customers": {
+    "status": 200,
+    "query": {
+      "q": "example"
+    },
+    "response": {
+      "customers": [
+        {
+          "id": "6ab5666155135b3eccf88a9e",
+          "name": "Customer Example",
+          "email": "customer.example@example.com",
+          "phone": "+233243121132",
+          "phoneNetwork": "MTN",
+          "role": "customer",
+          "avatarUrl": null,
+          "avatarSource": null,
+          "googleLinked": false,
+          "hasPassword": true,
+          "area": "East Legon",
+          "address": "12 Lagos Ave, East Legon",
+          "region": "Greater Accra",
+          "ghanaPostGps": "GA-183-8164",
+          "location": {
+            "lat": 5.6363,
+            "lng": -0.1614
+          },
+          "rating": null,
+          "ratingCount": 0,
+          "isActive": true,
+          "emailNotifications": true,
+          "profileComplete": true,
+          "createdAt": "2026-09-24T18:05:21.200Z",
+          "pickups": 1,
+          "lastPickup": "2026-09-25T00:00:00.000Z",
+          "totalSpent": 44.81
+        }
+      ]
+    }
+  },
+  "GET /api/v1/cleanbridge/admin/collectors": {
+    "status": 200,
+    "response": {
+      "collectors": [
+        {
+          "id": "6ab5666155135b3eccf88aa3",
+          "name": "Collector Example",
+          "email": "collector.example@example.com",
+          "phone": "+233553121349",
+          "phoneNetwork": "MTN",
+          "role": "collector",
+          "avatarUrl": null,
+          "avatarSource": null,
+          "googleLinked": false,
+          "hasPassword": true,
+          "area": null,
+          "address": null,
+          "region": null,
+          "ghanaPostGps": null,
+          "location": null,
+          "collectorStatus": "on_route",
+          "momoNumber": "+233553121349",
+          "momoNetwork": "MTN",
+          "rating": 5,
+          "ratingCount": 1,
+          "isActive": true,
+          "emailNotifications": true,
+          "profileComplete": true,
+          "createdAt": "2026-09-24T18:05:21.357Z",
+          "completedJobs": 1,
+          "totalEarnings": 26.15,
+          "balance": -18.66,
+          "vehicle": {
+            "id": "6ab5666555135b3eccf88abc",
+            "collectorId": "6ab5666155135b3eccf88aa3",
+            "label": "Blue aboboyaa",
+            "type": "Motor tricycle (Aboboyaa)",
+            "make": "Apsonic",
+            "model": "Cargo 200",
+            "registration": "GR 1234-24",
+            "fuelType": "Petrol",
+            "fuelEconomyLPer100Km": 4.5,
+            "capacityTonnes": 0.5,
+            "verificationStatus": "verified",
+            "createdAt": "2026-09-24T18:05:25.590Z",
+            "updatedAt": "2026-09-24T18:05:25.640Z"
+          }
+        }
+      ]
+    }
+  },
+  "GET /api/v1/cleanbridge/admin/live": {
+    "status": 200,
+    "response": {
+      "hubs": [
+        {
+          "id": "accra-central",
+          "name": "Accra Central",
+          "region": "Greater Accra",
+          "lat": 5.56,
+          "lng": -0.2057,
+          "radiusKm": 20
+        },
+        {
+          "id": "madina",
+          "name": "Madina / Adenta",
+          "region": "Greater Accra",
+          "lat": 5.669,
+          "lng": -0.165,
+          "radiusKm": 15
+        },
+        {
+          "id": "tema",
+          "name": "Tema",
+          "region": "Greater Accra",
+          "lat": 5.6698,
+          "lng": -0.0166,
+          "radiusKm": 20
+        },
+        {
+          "id": "kasoa",
+          "name": "Kasoa",
+          "region": "Central",
+          "lat": 5.5342,
+          "lng": -0.4244,
+          "radiusKm": 15
+        }
+      ],
+      "pickups": [],
+      "collectors": [
+        {
+          "id": "6ab5666155135b3eccf88aa3",
+          "name": "Collector Example",
+          "phone": "+233553121349",
+          "collectorStatus": "on_route",
+          "location": {
+            "lat": 5.6301,
+            "lng": -0.1702
+          },
+          "updatedAt": "2026-09-24T18:05:21.790Z"
+        }
+      ]
+    }
+  },
+  "POST /api/v1/cleanbridge/admin/users": {
+    "status": 201,
+    "body": {
+      "name": "Yaw Example",
+      "email": "yaw.example@example.com",
+      "phone": "0263126545",
+      "password": "Secret123!",
+      "role": "collector",
+      "area": "Madina"
+    },
+    "response": {
+      "user": {
+        "id": "6ab5666655135b3eccf88b5f",
+        "name": "Yaw Example",
+        "email": "yaw.example@example.com",
+        "phone": "+233263126545",
+        "phoneNetwork": "AirtelTigo",
+        "role": "collector",
+        "avatarUrl": null,
+        "avatarSource": null,
+        "googleLinked": false,
+        "hasPassword": true,
+        "area": "Madina",
+        "address": null,
+        "region": null,
+        "ghanaPostGps": null,
+        "location": null,
+        "collectorStatus": "off_duty",
+        "momoNumber": "+233263126545",
+        "momoNetwork": "AirtelTigo",
+        "rating": null,
+        "ratingCount": 0,
+        "isActive": true,
+        "emailNotifications": true,
+        "profileComplete": true,
+        "createdAt": "2026-09-24T18:05:26.569Z"
+      }
+    }
+  },
+  "PATCH /api/v1/cleanbridge/admin/users/:id/active": {
+    "status": 200,
+    "body": {
+      "isActive": false
+    },
+    "response": {
+      "user": {
+        "id": "6ab5666655135b3eccf88b5f",
+        "name": "Yaw Example",
+        "email": "yaw.example@example.com",
+        "phone": "+233263126545",
+        "phoneNetwork": "AirtelTigo",
+        "role": "collector",
+        "avatarUrl": null,
+        "avatarSource": null,
+        "googleLinked": false,
+        "hasPassword": true,
+        "area": "Madina",
+        "address": null,
+        "region": null,
+        "ghanaPostGps": null,
+        "location": null,
+        "collectorStatus": "off_duty",
+        "momoNumber": "+233263126545",
+        "momoNetwork": "AirtelTigo",
+        "rating": null,
+        "ratingCount": 0,
+        "isActive": false,
+        "emailNotifications": true,
+        "profileComplete": true,
+        "createdAt": "2026-09-24T18:05:26.569Z"
+      }
+    }
+  },
+  "PUT /api/v1/cleanbridge/settings/payouts": {
+    "status": 200,
+    "body": {
+      "collectorSharePct": 70,
+      "minimumPayout": 20
+    },
+    "response": {
+      "pricing": {
+        "baseFee": 15,
+        "distanceFeePerKm": 1.5,
+        "perBagFee": 5,
+        "urgencyFee": 12,
+        "weekendFee": 5,
+        "minimumFee": 25,
+        "wasteTypeFees": {
+          "Household mix": 0,
+          "Recyclables": 0,
+          "Organic / food waste": 2,
+          "Garden waste": 3,
+          "Bulky items": 15,
+          "E-waste": 10,
+          "Construction debris": 25,
+          "Large waste bin": 10
+        }
+      },
+      "vehicleFees": {
+        "Motor tricycle (Aboboyaa)": 0,
+        "Mini truck": 10,
+        "Light truck": 20,
+        "Tipper truck": 45,
+        "Compactor truck": 60
+      },
+      "tax": {
+        "enabled": true,
+        "vatPct": 15,
+        "nhilPct": 2.5,
+        "getFundPct": 2.5,
+        "covidLevyPct": 0
+      },
+      "payouts": {
+        "collectorSharePct": 70,
+        "minimumPayout": 20
+      },
+      "fuel": {
+        "fuelType": "Diesel",
+        "currentPrice": 14.86,
+        "previousPrice": 14.41,
+        "effectiveDate": "2026-09-24T18:05:21.842Z"
+      },
+      "updatedAt": "2026-09-24T18:05:26.734Z"
+    }
+  },
+  "DELETE /api/v1/cleanbridge/auth/me": {
+    "status": 200,
+    "body": {
+      "confirm": "DELETE"
+    },
+    "response": {
+      "deleted": true
+    }
+  }
+}

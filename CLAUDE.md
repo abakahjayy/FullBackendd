@@ -20,8 +20,8 @@ Socket.IO), a portfolio-site contact/order form, and several static HTML "mini a
   (`PORT` env var). If the port is stuck: `npx kill-port 7004`.
 - Run the AI FastAPI microservice (separate from the Node server, used by `chatbot/aiModel.js`):
   `cd chatbot && uvicorn serveai_fastapi:app --host 0.0.0.0 --port 5001 --reload`.
-- Generate the Markdown API reference from the OpenAPI spec: `npm run docs` (runs widdershins against
-  `oas-docs/openapi.json`, writes `API.md`).
+- Regenerate the Markdown API reference: `npm run docs` while the server runs (saves `/api-docs.json` to
+  `oas-docs/openapi.json`, then widdershins writes `API.md`).
 - There is no working automated test suite — `npm test` is a stub (`package.json` scripts.test just exits 1).
   `jest` and `cypress` are listed as dependencies but there is no jest/cypress config or spec files; `test/`
   contains standalone Python scripts (`main.py`, `myphone.py`), not an integration test harness. Don't assume
@@ -101,13 +101,15 @@ run as its own process (see Commands above) and is called out to from `chatbot/a
 has a legacy `/api/chat` route that `spawn()`s a hardcoded local Python interpreter path to run
 `chatbot/respond.py` — this is environment-specific and likely broken outside the original dev machine.
 
-**API docs**: Two independent Swagger/OpenAPI setups run at once — `express-oas-generator` auto-captures live
-request/response traffic into `oas-docs/openapi.json` and serves it at `/api-docs` (the `expressOasGenerator.init`
-call is currently commented out in `app.js`, but `expressOasGenerator.handleResponses(...)` still runs at
-startup and regenerates the spec file); and a hand-written `swagger.yaml` is served separately at
-`/api-docs/portfolio` for the portfolio contact/order endpoints. `API.md`/`README.md` are generated output
-from widdershins (`npm run docs`) — don't hand-edit the generated API-reference sections in those files;
-edit `oas-docs/openapi.json` / `swagger.yaml` (or the routes themselves) and regenerate instead.
+**API docs**: `/api-docs` (Swagger UI) and `/api-docs.json` list EVERY route, built live from the Express router
+on first request by `utils/apiDocs.js` - nothing to regenerate when routes change. It reads each route's auth
+middleware (`requireRole` guards carry `.roles`) and the controller's source for body/query fields.
+`utils/keepOriginalHandlers.js` (required right after `express-async-errors`) keeps the original handler on
+`handler.original`, because express-async-errors wraps every handler in an anonymous `newFn`. Labels,
+descriptions and examples go in `docs/apiAnnotations.js` (key `"METHOD /full/path"`); real CleanBridge
+examples are recorded into `docs/apiExamples.json` by `scripts/captureApiExamples.js`, which must run against a
+throwaway `*_docs_tmp` database (see the file header) so no real user data reaches the public docs. The
+hand-written `swagger.yaml` is still served at `/api-docs/portfolio`.
 
 **Static/legacy front-ends**: `static/` and `public/` contain several plain HTML/CSS/JS mini-apps (MTN data
 bundle dashboard/login/buydata pages, success/reset-password pages) served directly by Express routes in
@@ -135,6 +137,9 @@ All mail goes through `utils/mailTransport.js` `deliver()` (used by `utils/sendE
 Render's free plan blocks outbound SMTP (Gmail SMTP fails with "Connection timeout"), so the provider is picked by env:
 `MAIL_RELAY_URL` + `MAIL_RELAY_SECRET` (Google Apps Script relay in `scripts/gmailRelay.gs`, sends from your Gmail over HTTPS),
 then `BREVO_API_KEY` (+ `BREVO_SENDER_EMAIL`), then `EMAIL_USER`/`EMAIL_PASS` SMTP (fine locally).
+CleanBridge email links use `emailUrl()` (`utils/cleanbridgeMail.js`): when `CLEANBRIDGE_CLIENT_URL` is a localhost
+address they point at the live site instead (override with `CLEANBRIDGE_PUBLIC_URL`); unsubscribe links always hit the
+server that sent the email.
 
 ## Forgot / reset password (every app)
 

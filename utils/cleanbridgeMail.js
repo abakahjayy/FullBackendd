@@ -18,6 +18,16 @@ const enabled = Boolean(emailProvider);
 
 const clientUrl = (path = "") =>
     `${(process.env.CLEANBRIDGE_CLIENT_URL || "http://localhost:5173").replace(/\/$/, "")}${path}`;
+// Links inside emails are opened on phones and other computers, where a
+// localhost address is useless - so when this server runs locally, emails link
+// to the live site instead. Override with CLEANBRIDGE_PUBLIC_URL.
+const LIVE_SITE = "https://cleanbridge-gh.onrender.com";
+const isLocal = (url) => !url || /^https?:\/\/(localhost|127\.|0\.0\.0\.0|192\.168\.|10\.)/i.test(url);
+const publicBase = (override, configured, live) =>
+    (override || (isLocal(configured) ? live : configured)).replace(/\/$/, "");
+const emailUrl = (path = "") =>
+    `${publicBase(process.env.CLEANBRIDGE_PUBLIC_URL, process.env.CLEANBRIDGE_CLIENT_URL, LIVE_SITE)}${path}`;
+// The unsubscribe link must hit the server (and database) that sent the email.
 const apiUrl = (path = "") =>
     `${(process.env.ORIGIN || "http://localhost:7004").replace(/\/$/, "")}${path}`;
 
@@ -102,4 +112,4 @@ const sendCleanbridgeEmail = async (user, { title, message, cta, force = false }
     }
 };
 
-module.exports = { sendCleanbridgeEmail, verifyUnsubscribeToken, clientUrl, emailEnabled: enabled };
+module.exports = { sendCleanbridgeEmail, verifyUnsubscribeToken, clientUrl, emailUrl, emailEnabled: enabled };

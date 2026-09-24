@@ -1,6 +1,6 @@
 const Notification = require("../models/CleanBridgeNotification.js");
 const CleanBridgeUser = require("../models/CleanBridgeUser.js");
-const { sendCleanbridgeEmail, clientUrl } = require("./cleanbridgeMail.js");
+const { sendCleanbridgeEmail, emailUrl } = require("./cleanbridgeMail.js");
 const { publish } = require("./cleanbridgeEvents.js");
 const { toNotificationDTO } = require("./cleanbridge.js");
 
@@ -24,7 +24,7 @@ const notify = async (userId, title, message, { pickupId = null, ctaLabel, ctaPa
             await sendCleanbridgeEmail(user, {
                 title,
                 message,
-                cta: { label: ctaLabel || (pickupId ? "View pickup" : "Open CleanBridge"), url: clientUrl(path) },
+                cta: { label: ctaLabel || (pickupId ? "View pickup" : "Open CleanBridge"), url: emailUrl(path) },
             });
         });
     }

@@ -3,7 +3,7 @@ const Pickup = require("../models/CleanBridgePickup.js");
 const Vehicle = require("../models/CleanBridgeVehicle.js");
 const Notification = require("../models/CleanBridgeNotification.js");
 const { notify } = require("../utils/cleanbridgeNotify.js");
-const { sendCleanbridgeEmail, clientUrl } = require("../utils/cleanbridgeMail.js");
+const { sendCleanbridgeEmail, emailUrl } = require("../utils/cleanbridgeMail.js");
 const { BadRequestError, NotFoundError } = require("../errors");
 const { StatusCodes } = require("http-status-codes");
 const { toUserDTO, toVehicleDTO, toPickupDTO, collectorBalance, round2 } = require("../utils/cleanbridge.js");
@@ -137,7 +137,7 @@ const broadcast = async (req, res) => {
         setImmediate(async () => {
             for (const u of recipients) {
                 // Sequential on purpose: the pooled transport rate-limits sends.
-                await sendCleanbridgeEmail(u, { title: title.trim(), message: message.trim(), cta: { label: "Open CleanBridge", url: clientUrl("/notifications") } });
+                await sendCleanbridgeEmail(u, { title: title.trim(), message: message.trim(), cta: { label: "Open CleanBridge", url: emailUrl("/notifications") } });
             }
         });
     }

@@ -175,7 +175,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon --env-file .env app.js",
-    "docs": "npx widdershins oas-docs/openapi.json -o API.md"
+    "docs": "curl -s http://localhost:7004/api-docs.json -o oas-docs/openapi.json && npx widdershins oas-docs/openapi.json -o API.md"
   },
   "keywords": [],
   "author": "",

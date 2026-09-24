@@ -48,11 +48,15 @@ const cleanbridgeAuthMiddleware = async (req, res, next) => {
 };
 
 // Usage: router.get('/x', cleanbridgeAuth, requireRole('admin'), handler)
-const requireRole = (...roles) => (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-        throw new UnauthorizedError(`Access denied. Requires role: ${roles.join(" or ")}`);
-    }
-    next();
+const requireRole = (...roles) => {
+    const guard = (req, res, next) => {
+        if (!req.user || !roles.includes(req.user.role)) {
+            throw new UnauthorizedError(`Access denied. Requires role: ${roles.join(" or ")}`);
+        }
+        next();
+    };
+    guard.roles = roles; // shown in the API docs (utils/apiDocs.js)
+    return guard;
 };
 
 module.exports = cleanbridgeAuthMiddleware;
