@@ -1,7 +1,8 @@
 const SocialNotification = require('../models/SocialNotification');
 const { emitToUserId } = require('./socket');
 
-const ACTOR_FIELDS = 'username firstName lastName profile_picture_id';
+// profile_picture is the Google photo URL for Google sign-in accounts
+const ACTOR_FIELDS = 'username firstName lastName profile_picture_id profile_picture';
 
 // Records a notification and pushes it to the recipient's open tabs over socket.io.
 // Never throws: a failed notification must not fail the like/comment/follow itself.

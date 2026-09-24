@@ -89,6 +89,7 @@ const getConversations = async (req, res) => {
                     firstName: '$user.firstName',
                     lastName: '$user.lastName',
                     profile_picture_id: '$user.profile_picture_id',
+                    profile_picture: '$user.profile_picture',
                 },
             },
         },

@@ -117,7 +117,7 @@ exports.searchUsers = async (req, res) => {
     }
     const pattern = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
     const users = await User.find({ $or: [{ username: pattern }, { firstName: pattern }, { lastName: pattern }] })
-      .select('username firstName lastName profile_picture_id followers')
+      .select('username firstName lastName profile_picture_id profile_picture followers')
       .limit(20);
     res.status(StatusCodes.OK).json({ nbHits: users.length, users });
 };
