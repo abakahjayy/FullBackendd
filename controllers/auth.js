@@ -20,78 +20,20 @@ let Id;
 // };
 
 
-const crypto = require('crypto'); // For secure token generation
-const sendResetPasswordEmail = require('../utils/sendResetPasswordEmail.js'); // You already have this
 
-// Forgot Password - sends email
-const forgotPassword = async (req, res) => {
-    const { email } = req.body;
-    if (!email) throw new BadRequestError("Please provide email");
-
-    const user = await User.findOne({ email });
-    if (!user) throw new NotFoundError("No user found with that email");
-    //   console.log(user)
-
-    // generate token
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const tokenExpiration = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = tokenExpiration;
-
-    await user.save();
-
-    const origin = process.env.ORIGIN || "http://localhost:7004";
-
-    await sendResetPasswordEmail({
-        name: user.username,
-        email: user.email,
-        token: resetToken,
-        origin,
-    });
-
-    res.status(StatusCodes.OK).json({
-        message: "Password reset link sent to your email address",
-    });
-};
-
-// Reset Password using token
-const resetPassword = async (req, res) => {
-    const { email } = req.query;
-    const { token } = req.params;
-    const { newPassword } = req.body;
-
-    if (!token) {
-        throw new BadRequestError("Please provide token");
-    }
-    if (!email) {
-        throw new BadRequestError("Please provide email");
-    }
-    if (!newPassword) {
-        throw new BadRequestError("Please provide new password");
-    }
-    const user = await User.findOne({
-        email,
-        resetPasswordToken: token,
-        resetPasswordExpires: { $gt: Date.now() },
-    });
-
-    if (!user) throw new UnauthenticatedError("Invalid or expired reset token");
-
-    if (await user.comparePasswords(newPassword)) {
-        throw new BadRequestError("New password must be different from the old one");
-    }
-
-    user.password = newPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-
-    await user.save();
-
-    res.status(StatusCodes.OK).json({
-        message: "Password has been successfully reset",
-    });
-};
+// Forgot / reset password - shared by every app that uses the User model.
+// Apps pass their own redirect_uri to get the link on their own reset page;
+// without one, the link opens this backend's hosted page (/resetPassword).
+// See utils/passwordReset.js.
+const sendEmail = require('../utils/sendEmail');
+const { createPasswordReset } = require('../utils/passwordReset.js');
+const { forgotPassword, resetPassword } = createPasswordReset({
+    Model: User,
+    appKey: 'openlabs',
+    appName: 'your',
+    displayName: (u) => u.firstName || u.username,
+    send: ({ email, subject, text, html }) => sendEmail({ to: email, subject, text, html }),
+});
 
 
 // Signup Route

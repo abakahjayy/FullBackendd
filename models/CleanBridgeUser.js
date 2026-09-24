@@ -73,6 +73,8 @@ const CleanBridgeUserSchema = new mongoose.Schema(
         // Email updates (pickup status, payments, payouts). Turned off by the
         // unsubscribe link or the profile toggle.
         emailNotifications: { type: Boolean, default: true },
+        resetPasswordToken: { type: String },
+        resetPasswordExpires: { type: Date },
     },
     { timestamps: true }
 );

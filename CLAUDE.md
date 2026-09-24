@@ -129,6 +129,23 @@ environments stay in sync. Vars actually read via `process.env.*` in code: `MONG
 > treat those as already exposed if this repo/remote has ever been public or shared, and get the user's
 > explicit go-ahead before rotating keys or rewriting history — don't do it unilaterally.
 
+## Forgot / reset password (every app)
+
+`utils/passwordReset.js` `createPasswordReset({ Model, appKey, appName, send, ... })` gives any user collection the
+same automatic flow. It is mounted for the shared `User` (`/api/v1/auth`), SeedBridge (`/api/v1/seedbridge/auth`) and
+CleanBridge (`/api/v1/cleanbridge/auth`):
+- `POST <base>/forgot-password { email, redirect_uri? }` emails a link immediately. With `redirect_uri` the link opens the
+  calling app's own reset page (`?token=&email=` appended). Without it, the link opens this backend's hosted page
+  `/resetPassword?app=<appKey>` (`static/resetPassword.html`, which picks the right API from `app`). `redirect_uri` must pass
+  `isAllowedRedirectUri` (ALLOWED_REDIRECT_DOMAINS). This is unlike Google login, because the reset link carries a secret.
+  CleanBridge defaults to its own `/reset-password` page and also trusts CLEANBRIDGE_CLIENT_URL.
+- `POST <base>/reset-password/:token?email= { newPassword }`. The token and email may also be sent in the body.
+- Tokens are 32 random bytes, stored only as SHA-256 hashes, and expire after 30 minutes; each can be used once.
+  The forgot endpoint gives the same answer for unknown emails, so it can't be used to find accounts. Errors are 400, never 401.
+- Rate limited per IP per app (`middleware/passwordResetLimiter.js`): 5 forgot and 20 reset attempts per 15 minutes.
+- To add another app: add `resetPasswordToken`/`resetPasswordExpires` to its model, create the handlers with its model
+  and mailer, and mount both routes with the limiters.
+
 ## SeedBridge (`/api/v1/seedbridge/*`)
 
 A farm-to-market app (farmers list produce, buyers order it, drivers deliver it) living inside this same

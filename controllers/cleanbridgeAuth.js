@@ -352,7 +352,32 @@ const deleteAccount = async (req, res) => {
     res.status(StatusCodes.OK).json({ deleted: true });
 };
 
+// =========================
+// POST /auth/forgot-password  { email, redirect_uri? }
+// POST /auth/reset-password/:token?email=  { newPassword }
+// Links go to the CleanBridge app's /reset-password page by default.
+// Works for Google-only accounts too (it sets their first password).
+// =========================
+const { createPasswordReset } = require("../utils/passwordReset.js");
+const { sendCleanbridgeEmail, clientUrl } = require("../utils/cleanbridgeMail.js");
+const { forgotPassword, resetPassword } = createPasswordReset({
+    Model: CleanBridgeUser,
+    appKey: "cleanbridge",
+    appName: "CleanBridge GH",
+    isAllowedRedirect: isAllowedCleanbridgeRedirect,
+    defaultRedirect: () => clientUrl("/reset-password"),
+    // Security email: sent even if the user turned off update emails.
+    send: ({ user, link }) => sendCleanbridgeEmail(user, {
+        title: "Reset your CleanBridge GH password",
+        message: "We received a request to reset your password. This link works for 30 minutes and can be used once. If you didn't ask for this, ignore this email - your password won't change.",
+        cta: { label: "Choose a new password", url: link },
+        force: true,
+    }),
+});
+
 module.exports = {
+    forgotPassword,
+    resetPassword,
     signUp,
     login,
     getCurrentUser,

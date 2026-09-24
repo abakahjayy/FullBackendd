@@ -69,4 +69,14 @@ const getCurrentUser = async (req, res) => {
     res.status(StatusCodes.OK).json({ user: toUserDTO(user) });
 };
 
-module.exports = { signUp, login, getCurrentUser };
+// Forgot / reset password (by email; phone-only accounts need an email on file).
+const sendEmail = require("../utils/sendEmail");
+const { createPasswordReset } = require("../utils/passwordReset.js");
+const { forgotPassword, resetPassword } = createPasswordReset({
+    Model: SeedBridgeUser,
+    appKey: "seedbridge",
+    appName: "SeedBridge",
+    send: ({ email, subject, text, html }) => sendEmail({ to: email, subject, text, html }),
+});
+
+module.exports = { signUp, login, getCurrentUser, forgotPassword, resetPassword };

@@ -24,8 +24,10 @@ const {
 
 
 
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password/:token", resetPassword);
+const { forgotLimiter, resetLimiter } = require("../middleware/passwordResetLimiter.js");
+router.post("/forgot-password", forgotLimiter, forgotPassword);
+router.post("/reset-password/:token", resetLimiter, resetPassword);
+router.post("/reset-password", resetLimiter, resetPassword);
 
 router.route("/signup").post(signUp)
 router.route("/login").post(login);
