@@ -1,5 +1,5 @@
 const express = require('express');
-const { createPost, getPosts, getImage, getMedia ,deletePost,getUserPosts,likePosts,unlikePosts,getLikedPosts,getSavedPosts,toggleSavePost} = require('../controllers/postController');
+const { createPost, getPosts, getImage, getMedia ,deletePost,getUserPosts,likePosts,unlikePosts,getLikedPosts,getSavedPosts,toggleSavePost,getPost} = require('../controllers/postController');
 const {postUpload} = require('../utils/storageMulter');
 const authMiddleware = require('../middleware/auth');
 
@@ -17,5 +17,7 @@ router.delete('/image/:fileId', deletePost);
 router.patch('/:postId/like', likePosts);
 router.patch('/:postId/unlike', unlikePosts);
 router.patch('/:postId/save', authMiddleware, toggleSavePost);
+// Single post (share links /p/:postId). Keep last: '/:postId' would shadow '/saved'.
+router.get('/:postId', getPost);
 
 module.exports = router;

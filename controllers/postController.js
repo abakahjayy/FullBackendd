@@ -83,6 +83,19 @@ exports.getImage = async (req, res) => {
     await gfs.openDownloadStream(new ObjectId(id)).pipe(res);
 };
 
+// One post by its Posts _id (share links).
+exports.getPost = async (req, res) => {
+    const { postId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      throw new NotFoundError(`No Post found with id:${postId}`)
+    }
+    const post = await Post.findById(postId).populate('comments');
+    if (!post) {
+      throw new NotFoundError(`No Post found with id:${postId}`)
+    }
+    res.status(StatusCodes.OK).json({ post });
+};
+
 // Posts the given user has liked (profile "Likes" tab).
 exports.getLikedPosts = async (req, res) => {
     const { id } = req.params;

@@ -158,6 +158,8 @@ app.use('/api/v1/userse', userProfilePic);
 //This is for posts
 
 app.use('/api/v1/posts', postRoutes);
+// Instagram stories (multipart upload, so it sits with posts before the JSON body parsers)
+app.use('/api/v1/stories', require('./routes/storyRoutes'));
 app.use('/api/v1/ai', aiImageRoutes);
 app.use('/api/v1/ai', aiModelRoutes);
 

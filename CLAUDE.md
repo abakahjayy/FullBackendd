@@ -115,6 +115,13 @@ holds GridFS file ids). `getUser`, `getUserByName` and `getAllUsers` strip passw
 including on populated followers and following. `scripts/backfillPostMediaType.js` repairs `Posts.mediaType` for
 posts uploaded before it was recorded.
 
+**Instagram stories** (`/api/v1/stories`, all auth, mounted next to posts because uploads are multipart): stories go into the
+same `uploads` GridFS bucket through `postUpload` and are served by `/posts/media/:fileId`. They expire after 24h.
+`purgeExpired()` runs on every feed read and deletes the Story doc and its file. A TTL index was deliberately not used,
+because it would orphan the GridFS file. The feed groups stories by author (you first, then unseen, then most recent).
+Views are `$addToSet` and exclude the owner, and only the owner can list viewers or delete. `GET /posts/:postId` must stay
+the last route in `postRoute.js`.
+
 **Mongoose defaults**: write `default: Date.now` (the function), never `Date.now()`, which is evaluated once
 at startup. `models/Message.js` had that bug, which gave every message the server's start time.
 
