@@ -4,6 +4,7 @@ const cleanbridgeAuth = require("../middleware/cleanbridgeAuth.js");
 const { requireRole } = require("../middleware/cleanbridgeAuth.js");
 const {
     getQuote,
+    vehicleOptions,
     createPickup,
     listPickups,
     listAvailablePickups,
@@ -16,6 +17,7 @@ const {
 } = require("../controllers/cleanbridgePickup.js");
 
 router.post("/quote", getQuote);
+router.get("/vehicle-options", vehicleOptions);
 router.get("/", cleanbridgeAuth, listPickups);
 router.post("/", cleanbridgeAuth, requireRole("customer"), createPickup);
 router.get("/available", cleanbridgeAuth, requireRole("collector", "admin"), listAvailablePickups);

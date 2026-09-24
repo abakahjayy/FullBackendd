@@ -34,6 +34,12 @@ const CleanBridgePickupSchema = new mongoose.Schema(
         distanceKm: { type: Number, default: 0 }, // road km from nearest hub
         estimatedPrice: { type: Number, required: true }, // GH₵
         priceBreakdown: { type: Object, default: null },
+        // Pre-tax amount; collector share and platform fee are taken from this.
+        subtotal: { type: Number, default: null },
+        taxes: { type: Array, default: [] }, // [{ code, label, pct, amount }]
+        taxAmount: { type: Number, default: 0 },
+        // Vehicle the customer chose; only collectors with this type get the job.
+        vehicleType: { type: String, default: null },
         // --- payment ---
         paymentMethod: { type: String, enum: ["cash", "momo"], default: "cash" },
         paymentStatus: { type: String, enum: ["unpaid", "paid", "refunded"], default: "unpaid" },

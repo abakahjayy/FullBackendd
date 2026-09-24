@@ -89,6 +89,7 @@ const cleanbridgeGeoRoutes = require("./routes/cleanbridgeGeo.js");
 const cleanbridgePaymentRoutes = require("./routes/cleanbridgePayment.js");
 const cleanbridgePayoutRoutes = require("./routes/cleanbridgePayout.js");
 const cleanbridgeEmailRoutes = require("./routes/cleanbridgeEmail.js");
+const cleanbridgeEventRoutes = require("./routes/cleanbridgeEvents.js");
 // console.log(ClerkExpressRequireAuth)
 
 
@@ -141,7 +142,8 @@ app.use((req, res, next) => {
     }
     return bodyParser.json()(req, res, next);
 });
-app.use(logger("dev"));
+// The CleanBridge live stream carries its token in the query string - keep it out of the logs.
+app.use(logger("dev", { skip: (req) => req.originalUrl.startsWith("/api/v1/cleanbridge/events") }));
 // app.use(morgan('tiny'))
 
 
@@ -316,6 +318,7 @@ app.use('/api/v1/cleanbridge/geo', cleanbridgeGeoRoutes);
 app.use('/api/v1/cleanbridge/payments', cleanbridgePaymentRoutes);
 app.use('/api/v1/cleanbridge/payouts', cleanbridgePayoutRoutes);
 app.use('/api/v1/cleanbridge/email', cleanbridgeEmailRoutes);
+app.use('/api/v1/cleanbridge/events', cleanbridgeEventRoutes);
 
 
 

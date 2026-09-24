@@ -42,6 +42,27 @@ const updatePricing = async (req, res) => {
         });
     }
 
+    if (req.body.vehicleFees !== undefined) {
+        const { VEHICLE_TYPES } = require("../utils/ghana.js");
+        Object.entries(req.body.vehicleFees).forEach(([type, fee]) => {
+            if (!VEHICLE_TYPES.includes(type)) throw new BadRequestError(`Unknown vehicle type "${type}"`);
+            requireNonNegative(fee, `vehicleFees.${type}`);
+            settings.vehicleFees.set(type, fee);
+        });
+    }
+
+    if (req.body.tax !== undefined) {
+        const t = req.body.tax;
+        if (t.enabled !== undefined) settings.tax.enabled = Boolean(t.enabled);
+        ["vatPct", "nhilPct", "getFundPct", "covidLevyPct"].forEach((k) => {
+            if (t[k] !== undefined) {
+                requireNonNegative(t[k], `tax.${k}`);
+                if (t[k] > 100) throw new BadRequestError(`tax.${k} cannot exceed 100`);
+                settings.tax[k] = t[k];
+            }
+        });
+    }
+
     await settings.save();
     return res.status(StatusCodes.OK).json(toSettingsDTO(settings));
 };

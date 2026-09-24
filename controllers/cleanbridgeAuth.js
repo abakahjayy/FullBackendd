@@ -274,12 +274,18 @@ const googleCallback = async (req, res, state) => {
 
     let user = await CleanBridgeUser.findOne({ $or: [{ googleId }, { email: String(email).toLowerCase() }] });
 
+    // Owner/admin bootstrap: emails listed in CLEANBRIDGE_ADMIN_EMAILS become
+    // admins - only through Google sign-in, which proves they own the address.
+    const adminEmails = (process.env.CLEANBRIDGE_ADMIN_EMAILS || "")
+        .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+    const isOwnerAdmin = adminEmails.includes(String(email).toLowerCase());
+
     if (user && !user.isActive) {
         return res.redirect(appendQueryParam(redirectUri, "error", "This account has been suspended. Contact CleanBridge support."));
     }
 
     if (!user) {
-        const role = state.role === "collector" ? "collector" : "customer";
+        const role = isOwnerAdmin ? "admin" : state.role === "collector" ? "collector" : "customer";
         user = await CleanBridgeUser.create({
             name: fullName || email.split("@")[0],
             email,
@@ -291,6 +297,12 @@ const googleCallback = async (req, res, state) => {
         });
         await welcome(user);
     } else {
+        if (isOwnerAdmin && user.role !== "admin") {
+            // If someone registered this email with a password before the real
+            // owner signed in with Google, that password must not keep access.
+            if (!user.googleId) user.password = undefined;
+            user.role = "admin";
+        }
         user.googleId = user.googleId || googleId;
         user.googleAvatarUrl = photo;
         // Keep the Google photo fresh unless they uploaded their own.

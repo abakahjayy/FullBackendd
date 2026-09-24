@@ -7,7 +7,7 @@ const { notify } = require("../utils/cleanbridgeNotify.js");
 const { BadRequestError, NotFoundError, UnauthorizedError } = require("../errors");
 const { StatusCodes } = require("http-status-codes");
 const { quotePickup, toPickupDTO, vehicleLabel, round2 } = require("../utils/cleanbridge.js");
-const { serviceInfo, haversineKm, ROAD_FACTOR, normalizeGhanaPostGps } = require("../utils/ghana.js");
+const { serviceInfo, haversineKm, ROAD_FACTOR, normalizeGhanaPostGps, VEHICLE_TYPES, VEHICLE_INFO, recommendVehicle, SERVICE_HUBS } = require("../utils/ghana.js");
 
 // Average urban speed for a loaded collection vehicle in Ghanaian traffic.
 const AVG_SPEED_KMH = 22;
@@ -70,14 +70,74 @@ const etaMinutesBetween = (from, to) =>
 // POST /pickups/quote   (public - price preview on the request form)
 // { wasteType, bags, scheduledDate, urgent, location: { lat, lng } }
 // =========================
+const validateVehicle = (vehicleType) => {
+    if (vehicleType && !VEHICLE_TYPES.includes(vehicleType)) {
+        throw new BadRequestError(`vehicleType must be one of: ${VEHICLE_TYPES.join(", ")}`);
+    }
+};
+
 const getQuote = async (req, res) => {
     validatePickupInput(req.body);
+    validateVehicle(req.body.vehicleType);
     const service = resolveService(req.body.location);
     const settings = await Settings.getGlobal();
     return res.status(StatusCodes.OK).json({
-        ...quotePickup(settings.pricing, { ...req.body, distanceKm: service.distanceKm }),
+        ...quotePickup(settings, { ...req.body, distanceKm: service.distanceKm }),
         hub: service.hub,
     });
+};
+
+// Collectors who can take a job right now: active, on duty, verified vehicle
+// (optionally of one type), based near the pickup's hub if we know where they are.
+const readyCollectors = async ({ vehicleType, near } = {}) => {
+    const vehicleFilter = { verificationStatus: "verified" };
+    if (vehicleType) vehicleFilter.type = vehicleType;
+    const vehicles = await Vehicle.find(vehicleFilter).select("collectorId type");
+    const byCollector = new Map(vehicles.map((v) => [String(v.collectorId), v.type]));
+    const collectors = await CleanBridgeUser.find({
+        _id: { $in: [...byCollector.keys()] },
+        role: "collector",
+        isActive: true,
+        collectorStatus: { $ne: "off_duty" },
+    }).select("name lastLocation location");
+    const RADIUS_KM = 30;
+    return collectors
+        .map((c) => {
+            const where = c.lastLocation?.lat != null ? c.lastLocation : c.location;
+            const km = near && where?.lat != null ? haversineKm(where, near) : null;
+            return { id: c._id, name: c.name, vehicleType: byCollector.get(String(c._id)), km };
+        })
+        .filter((c) => c.km == null || c.km <= RADIUS_KM);
+};
+
+// =========================
+// GET /pickups/vehicle-options?lat=&lng=&wasteType=&bags=   (public)
+// Vehicle types with fee, capacity and how many are available near the pickup.
+// =========================
+const vehicleOptions = async (req, res) => {
+    const lat = Number(req.query.lat);
+    const lng = Number(req.query.lng);
+    const near = Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null;
+    const bags = Number(req.query.bags) || 1;
+    const [settings, ready] = await Promise.all([Settings.getGlobal(), readyCollectors({ near })]);
+    const fees = settings.vehicleFees instanceof Map ? Object.fromEntries(settings.vehicleFees) : (settings.vehicleFees || {});
+    const recommended = recommendVehicle(req.query.wasteType, bags);
+
+    const options = VEHICLE_TYPES.map((type) => {
+        const here = ready.filter((c) => c.vehicleType === type);
+        const nearest = here.filter((c) => c.km != null).sort((a, b) => a.km - b.km)[0];
+        return {
+            type,
+            fee: fees[type] || 0,
+            capacityBags: VEHICLE_INFO[type].capacityBags,
+            description: VEHICLE_INFO[type].description,
+            available: here.length,
+            nearestKm: nearest ? Math.round(nearest.km * ROAD_FACTOR * 10) / 10 : null,
+            fits: VEHICLE_INFO[type].capacityBags >= bags,
+            recommended: type === recommended,
+        };
+    });
+    return res.status(StatusCodes.OK).json({ options, recommended });
 };
 
 // =========================
@@ -88,6 +148,7 @@ const createPickup = async (req, res) => {
         area, address, gateNote, wasteType, bags, scheduledDate, timeWindow, urgent,
         location, region, ghanaPostGps, paymentMethod = "cash",
     } = req.body;
+    const vehicleType = req.body.vehicleType || recommendVehicle(wasteType, bags);
 
     if (!address || !timeWindow) {
         throw new BadRequestError("Please provide the address and a time window");
@@ -96,6 +157,7 @@ const createPickup = async (req, res) => {
         throw new BadRequestError("paymentMethod must be cash or momo");
     }
     validatePickupInput(req.body);
+    validateVehicle(vehicleType);
     const service = resolveService(location);
 
     const gps = normalizeGhanaPostGps(ghanaPostGps);
@@ -114,7 +176,7 @@ const createPickup = async (req, res) => {
     }
     const settings = await Settings.getGlobal();
     // Price is always computed server-side - never trusted from the client.
-    const quote = quotePickup(settings.pricing, { wasteType, bags, distanceKm: service.distanceKm, urgent, scheduledDate });
+    const quote = quotePickup(settings, { wasteType, bags, distanceKm: service.distanceKm, urgent, scheduledDate, vehicleType });
 
     const pickup = await Pickup.create({
         customerId: customer._id,
@@ -136,6 +198,10 @@ const createPickup = async (req, res) => {
         distanceKm: service.distanceKm,
         estimatedPrice: quote.total,
         priceBreakdown: quote.breakdown,
+        subtotal: quote.subtotal,
+        taxes: quote.taxes,
+        taxAmount: quote.taxTotal,
+        vehicleType,
         paymentMethod,
     });
 
@@ -149,6 +215,13 @@ const createPickup = async (req, res) => {
 
     await notify(customer._id, "Pickup requested",
         `Your ${wasteType.toLowerCase()} pickup ${pickup.code} is booked for ${timeWindow}.`, { pickupId: pickup._id });
+
+    // Alert matching collectors straight away (in-app + live push, no email).
+    const share = (settings.payouts?.collectorSharePct ?? 70) / 100;
+    const ready = await readyCollectors({ vehicleType, near: pickup.location });
+    await Promise.all(ready.slice(0, 50).map((c) => notify(c.id, "New pickup request",
+        `${pickup.area} · ${wasteType}, ${bags} bag${Number(bags) === 1 ? "" : "s"} · ${timeWindow}${c.km != null ? ` · ${(c.km * ROAD_FACTOR).toFixed(1)} km away` : ""} · earn GH₵ ${(quote.subtotal * share).toFixed(2)}`,
+        { pickupId: pickup._id, email: false, kind: "new_request", ctaPath: "/collector/jobs?tab=available" })));
 
     return res.status(StatusCodes.CREATED).json({ pickup: toPickupDTO(pickup), quote });
 };
@@ -192,6 +265,11 @@ const listPickups = async (req, res) => {
 // =========================
 const listAvailablePickups = async (req, res) => {
     const filter = { status: "requested", collectorId: null };
+    if (req.user.role === "collector") {
+        const mine = await Vehicle.findOne({ collectorId: req.user.userId }).select("type");
+        // Only jobs that asked for this collector's vehicle (or any vehicle).
+        filter.vehicleType = { $in: [mine?.type || "__none__", null] };
+    }
     if (req.query.area) filter.area = req.query.area;
 
     const pickups = await Pickup.find(filter).sort({ urgent: -1, scheduledDate: 1 }).limit(100);
@@ -204,7 +282,7 @@ const listAvailablePickups = async (req, res) => {
 
     const result = pickups.map((p) => ({
         ...toPickupDTO(p),
-        estimatedEarning: round2(p.estimatedPrice * share),
+        estimatedEarning: round2((p.subtotal ?? p.estimatedPrice) * share),
         distanceFromYouKm: here && p.location?.lat != null
             ? Math.round(haversineKm(here, p.location) * ROAD_FACTOR * 10) / 10 : null,
     }));
@@ -251,10 +329,16 @@ const assignTo = async (pickupId, collector, extraFilter = {}) => {
     );
 };
 
-const requireReadyCollector = async (collectorId) => {
+const requireReadyCollector = async (collectorId, pickupId) => {
     const vehicle = await Vehicle.findOne({ collectorId });
     if (!vehicle || vehicle.verificationStatus !== "verified") {
         throw new BadRequestError("A verified vehicle is required before taking jobs. Register it on the Vehicle page.");
+    }
+    if (pickupId) {
+        const pickup = await Pickup.findById(pickupId).select("vehicleType");
+        if (pickup?.vehicleType && pickup.vehicleType !== vehicle.type) {
+            throw new BadRequestError(`This pickup needs a ${pickup.vehicleType}`);
+        }
     }
 };
 
@@ -263,7 +347,7 @@ const requireReadyCollector = async (collectorId) => {
 // =========================
 const acceptPickup = async (req, res) => {
     const collector = await CleanBridgeUser.findById(req.user.userId);
-    await requireReadyCollector(collector._id);
+    await requireReadyCollector(collector._id, req.params.id);
     // Atomic: only succeeds if nobody else has claimed it in the meantime.
     const pickup = await assignTo(req.params.id, collector, { status: "requested", collectorId: null });
     if (!pickup) {
@@ -289,7 +373,7 @@ const assignPickup = async (req, res) => {
 
     const collector = await CleanBridgeUser.findOne({ _id: collectorId, role: "collector", isActive: true });
     if (!collector) throw new NotFoundError(`No active collector with id: ${collectorId}`);
-    await requireReadyCollector(collector._id);
+    await requireReadyCollector(collector._id, req.params.id);
 
     const pickup = await assignTo(req.params.id, collector);
     if (!pickup) {
@@ -361,8 +445,10 @@ const updatePickupStatus = async (req, res) => {
         const settings = await Settings.getGlobal();
         const sharePct = settings.payouts?.collectorSharePct ?? 70;
         pickup.completedAt = new Date();
-        pickup.collectorEarning = round2(pickup.estimatedPrice * sharePct / 100);
-        pickup.platformFee = round2(pickup.estimatedPrice - pickup.collectorEarning);
+        // Taxes go to GRA; the collector/platform split is on the pre-tax amount.
+        const net = pickup.subtotal ?? pickup.estimatedPrice;
+        pickup.collectorEarning = round2(net * sharePct / 100);
+        pickup.platformFee = round2(net - pickup.collectorEarning);
         // Cash jobs: the collector takes the money at the gate.
         if (pickup.paymentMethod === "cash" && pickup.paymentStatus === "unpaid") {
             pickup.cashCollected = true;
@@ -441,6 +527,7 @@ const markRefunded = async (req, res) => {
 };
 
 module.exports = {
+    vehicleOptions,
     getQuote,
     createPickup,
     listPickups,

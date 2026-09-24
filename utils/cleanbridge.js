@@ -29,7 +29,20 @@ const round2 = (n) => Math.round(n * 100) / 100;
 
 // Returns the itemised quote so the frontend can show the breakdown.
 // `distanceKm` must come from serviceInfo() (server-side), never the client.
-const quotePickup = (pricing, { wasteType, bags, distanceKm = 0, urgent = false, scheduledDate }) => {
+const TAX_LINES = [
+    ["nhil", "NHIL", "nhilPct"],
+    ["getfund", "GETFund levy", "getFundPct"],
+    ["covid", "COVID-19 levy", "covidLevyPct"],
+    ["vat", "VAT", "vatPct"],
+];
+
+const mapToObject = (m) => (m instanceof Map ? Object.fromEntries(m) : (m || {}));
+
+// settings: the whole CleanBridgeSettings doc (pricing, vehicleFees, tax, payouts).
+// Returns fee lines (breakdown), subtotal, tax lines, total and how the money
+// is split between the collector, CleanBridge and GRA.
+const quotePickup = (settings, { wasteType, bags, distanceKm = 0, urgent = false, scheduledDate, vehicleType }) => {
+    const pricing = settings.pricing;
     const day = new Date(scheduledDate).getDay();
     const isWeekend = day === 0 || day === 6;
     const wasteTypeFees = pricing.wasteTypeFees instanceof Map
@@ -43,13 +56,36 @@ const quotePickup = (pricing, { wasteType, bags, distanceKm = 0, urgent = false,
         wasteTypeFee: wasteTypeFees[wasteType] || 0,
         urgencyFee: urgent ? pricing.urgencyFee : 0,
         weekendFee: isWeekend ? pricing.weekendFee : 0,
+        vehicleFee: vehicleType ? (mapToObject(settings.vehicleFees)[vehicleType] || 0) : 0,
     };
     const subtotal = round2(Object.values(breakdown).reduce((sum, v) => sum + v, 0));
     const minimumFee = pricing.minimumFee || 0;
     const minimumTopUp = subtotal < minimumFee ? round2(minimumFee - subtotal) : 0;
     if (minimumTopUp) breakdown.minimumTopUp = minimumTopUp;
 
-    return { currency: "GHS", total: round2(subtotal + minimumTopUp), distanceKm: Number(distanceKm) || 0, breakdown };
+    const net = round2(subtotal + minimumTopUp);
+
+    const tax = settings.tax || {};
+    const taxes = tax.enabled === false ? [] : TAX_LINES
+        .map(([code, label, key]) => ({ code, label, pct: Number(tax[key]) || 0 }))
+        .filter((t) => t.pct > 0)
+        .map((t) => ({ ...t, amount: round2(net * t.pct / 100) }));
+    const taxTotal = round2(taxes.reduce((sum, t) => sum + t.amount, 0));
+
+    const sharePct = settings.payouts?.collectorSharePct ?? 70;
+    const collector = round2(net * sharePct / 100);
+
+    return {
+        currency: "GHS",
+        subtotal: net,
+        taxes,
+        taxTotal,
+        total: round2(net + taxTotal),
+        distanceKm: Number(distanceKm) || 0,
+        vehicleType: vehicleType || null,
+        breakdown,
+        split: { collector, collectorSharePct: sharePct, platform: round2(net - collector), tax: taxTotal },
+    };
 };
 
 const estimateFuel = ({ distanceKm, fuelEconomyLPer100Km, fuelPricePerLitre }) => {
@@ -154,6 +190,10 @@ const toPickupDTO = (p) => ({
     distanceKm: p.distanceKm,
     estimatedPrice: p.estimatedPrice,
     priceBreakdown: p.priceBreakdown,
+    subtotal: p.subtotal ?? p.estimatedPrice,
+    taxes: p.taxes || [],
+    taxAmount: p.taxAmount || 0,
+    vehicleType: p.vehicleType || null,
     paymentMethod: p.paymentMethod,
     paymentStatus: p.paymentStatus,
     paymentChannel: p.paymentChannel,
@@ -246,6 +286,14 @@ const toSettingsDTO = (s) => ({
         weekendFee: s.pricing.weekendFee,
         minimumFee: s.pricing.minimumFee,
         wasteTypeFees: Object.fromEntries(s.pricing.wasteTypeFees || []),
+    },
+    vehicleFees: Object.fromEntries(s.vehicleFees || []),
+    tax: {
+        enabled: s.tax?.enabled !== false,
+        vatPct: s.tax?.vatPct ?? 15,
+        nhilPct: s.tax?.nhilPct ?? 2.5,
+        getFundPct: s.tax?.getFundPct ?? 2.5,
+        covidLevyPct: s.tax?.covidLevyPct ?? 0,
     },
     payouts: {
         collectorSharePct: s.payouts?.collectorSharePct ?? 70,

@@ -48,6 +48,25 @@ const VEHICLE_TYPES = [
     "Motor tricycle (Aboboyaa)", "Mini truck", "Light truck", "Tipper truck", "Compactor truck",
 ];
 
+// What each vehicle type is good for. capacityBags is a rough guide for a
+// standard 50 L bag; used to recommend a vehicle and warn when a load is big.
+const VEHICLE_INFO = {
+    "Motor tricycle (Aboboyaa)": { capacityBags: 8, description: "Small household loads on narrow streets" },
+    "Mini truck": { capacityBags: 20, description: "Most household and small shop pickups" },
+    "Light truck": { capacityBags: 45, description: "Large households, compounds and bulky items" },
+    "Tipper truck": { capacityBags: 120, description: "Construction debris and heavy loads" },
+    "Compactor truck": { capacityBags: 300, description: "Estates, markets and big events" },
+};
+
+// Smallest suitable vehicle for the load.
+const recommendVehicle = (wasteType, bags) => {
+    if (wasteType === "Construction debris") return "Tipper truck";
+    const minimum = ["Bulky items", "E-waste", "Large waste bin"].includes(wasteType) ? "Mini truck" : null;
+    const types = Object.keys(VEHICLE_INFO);
+    const start = minimum ? types.indexOf(minimum) : 0;
+    return types.slice(start).find((t) => VEHICLE_INFO[t].capacityBags >= Number(bags || 1)) || "Compactor truck";
+};
+
 // Ghana DVLA plates, e.g. "GR 1234-21", "AS 567-19", "GT 4821 X".
 const VEHICLE_REG_REGEX = /^[A-Z]{2}[\s-]?\d{1,4}[\s-]?(\d{2}|[A-Z])$/;
 
@@ -120,6 +139,8 @@ module.exports = {
     NETWORK_PREFIXES,
     WASTE_TYPES,
     VEHICLE_TYPES,
+    VEHICLE_INFO,
+    recommendVehicle,
     VEHICLE_REG_REGEX,
     GHANA_POST_GPS_REGEX,
     normalizeGhanaPhone,

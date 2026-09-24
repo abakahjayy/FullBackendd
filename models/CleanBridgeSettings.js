@@ -28,6 +28,29 @@ const CleanBridgeSettingsSchema = new mongoose.Schema(
                 },
             },
         },
+        // Extra charge for the vehicle the customer chooses (GH₵).
+        vehicleFees: {
+            type: Map,
+            of: Number,
+            default: {
+                "Motor tricycle (Aboboyaa)": 0,
+                "Mini truck": 10,
+                "Light truck": 20,
+                "Tipper truck": 45,
+                "Compactor truck": 60,
+            },
+        },
+        // Ghana taxes on the service, each charged on the pre-tax subtotal.
+        // Defaults follow the VAT regime from 1 Jan 2026 (VAT 15% + NHIL 2.5%
+        // + GETFund 2.5%, COVID-19 levy abolished) - confirm current GRA
+        // rates, and switch off if the business is not VAT-registered.
+        tax: {
+            enabled: { type: Boolean, default: true },
+            vatPct: { type: Number, default: 15, min: 0, max: 100 },
+            nhilPct: { type: Number, default: 2.5, min: 0, max: 100 },
+            getFundPct: { type: Number, default: 2.5, min: 0, max: 100 },
+            covidLevyPct: { type: Number, default: 0, min: 0, max: 100 },
+        },
         payouts: {
             collectorSharePct: { type: Number, default: 70, min: 0, max: 100 },
             minimumPayout: { type: Number, default: 20 },
