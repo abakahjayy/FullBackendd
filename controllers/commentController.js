@@ -2,6 +2,7 @@
 const Comment = require('../models/Comments');
 const Post = require('../models/Posts');
 const User = require('../models/User');
+const { notify } = require('../utils/socialNotify');
 const { UnauthenticatedError, BadRequestError, NotFoundError } = require('../errors')
 const {StatusCodes} = require('http-status-codes')
 
@@ -44,6 +45,7 @@ exports.addComment = async (req, res) => {
 
     post.comments.push(newComment._id);
     await post.save();
+    await notify({ recipient: post.createdBy, actor: userId, type: 'comment', post: post._id, text });
 
 
 

@@ -5,6 +5,7 @@ const { UnauthenticatedError, BadRequestError, NotFoundError } = require('../err
 const { StatusCodes } = require('http-status-codes');
 const User = require('../models/User');
 const Comment = require('../models/Comments');
+const { notify, unnotify } = require('../utils/socialNotify');
 
 exports.createPost = async (req, res) => {
   const { caption, comments } = req.body;
@@ -80,6 +81,39 @@ exports.getImage = async (req, res) => {
     res.set("Content-Disposition", `attachment; filename=${file[0].filename}`);
 
     await gfs.openDownloadStream(new ObjectId(id)).pipe(res);
+};
+
+// Posts the given user has liked (profile "Likes" tab).
+exports.getLikedPosts = async (req, res) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new BadRequestError('Please provide a valid user id')
+    }
+    const posts = await Post.find({ likes: id }).populate('comments').sort('-created');
+    res.status(StatusCodes.OK).json({ nbHits: posts.length, posts });
+};
+
+// Signed-in user's saved posts (profile "Saved" tab). Needs authMiddleware.
+exports.getSavedPosts = async (req, res) => {
+    const user = await User.findById(req.user.userId, { saved: 1 });
+    const posts = await Post.find({ _id: { $in: user?.saved || [] } }).populate('comments').sort('-created');
+    res.status(StatusCodes.OK).json({ nbHits: posts.length, posts, saved: user?.saved || [] });
+};
+
+// Toggle a post in the signed-in user's saved list. Needs authMiddleware.
+exports.toggleSavePost = async (req, res) => {
+    const { postId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      throw new BadRequestError('Please provide a valid post id')
+    }
+    if (!(await Post.exists({ _id: postId }))) {
+      throw new NotFoundError(`No Post found with id:${postId}`)
+    }
+    const user = await User.findById(req.user.userId);
+    const isSaved = user.saved.some((id) => String(id) === postId);
+    user.saved = isSaved ? user.saved.filter((id) => String(id) !== postId) : [postId, ...user.saved];
+    await user.save();
+    res.status(StatusCodes.OK).json({ saved: !isSaved, savedPosts: user.saved });
 };
 
 // Like getImage, but served inline and with HTTP Range support. Browsers need
@@ -190,6 +224,7 @@ exports.likePosts = async (req, res) => {
   if (!post.likes.includes(userId)) {
     post.likes.unshift(userId)
     await post.save();
+    await notify({ recipient: post.createdBy, actor: userId, type: 'like', post: post._id });
   }
 
   console.log('\x1b[36m%s\x1b[0m',`${user.username} liked  post: ${postId}`)
@@ -221,8 +256,11 @@ exports.unlikePosts = async (req, res) => {
   if(!post){
     throw new NotFoundError(`No Post found with id:${postId}`)
   }
-  post.likes = user.following.filter(f => f.toString() !== userId);
+  // Was user.following.filter(...), which replaced the post's likes with the
+  // unliker's following list.
+  post.likes = post.likes.filter(f => f.toString() !== userId);
   await post.save()
+  await unnotify({ recipient: post.createdBy, actor: userId, type: 'like', post: post._id });
   
   console.log('\x1b[36m%s\x1b[0m',`${user.username} unliked post:${postId}`)
   res.status(StatusCodes.OK).json({message:`${user.username} liked post : ${postId}`,post});

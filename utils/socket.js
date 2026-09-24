@@ -25,7 +25,14 @@ const emitToUser = (io, userId, event, payload) => {
     sockets.forEach((socketId) => io.to(socketId).emit(event, payload));
 };
 
+// Set by setupSocket so REST controllers (e.g. utils/socialNotify.js) can push events.
+let ioInstance = null;
+const emitToUserId = (userId, event, payload) => {
+    if (ioInstance) emitToUser(ioInstance, userId, event, payload);
+};
+
 const setupSocket = (io) => {
+    ioInstance = io;
     // Every connection must carry a valid JWT (the same one issued by
     // POST /api/v1/auth/login) - without this, any client could claim to be
     // any userId via socket.handshake.query and read or send messages as
@@ -112,3 +119,4 @@ const setupSocket = (io) => {
 };
 
 module.exports = setupSocket;
+module.exports.emitToUserId = emitToUserId;

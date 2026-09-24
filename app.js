@@ -45,6 +45,7 @@ const testing1Router = require('./routes/testing1.js')
 const deliveryRouter = require('./routes/delivery.js')
 const changeDelRouter = require('./routes/cart2.js')
 const messageRoutes = require('./routes/messageRoutes');
+const socialNotificationRoutes = require('./routes/socialNotificationRoutes');
 const setupSocket = require('./utils/socket');
 const userRoutes = require('./routes/userRoute');
 const userProfilePic = require('./routes/userProfilePic');
@@ -262,6 +263,7 @@ app.use('/api/v1/ordersdata', ordersdataRouter)
 app.use('/api/v1/delivery', deliveryRouter)
 app.use('/api/v1/changedel', changeDelRouter)
 app.use('/api/v1/messages', messageRoutes);
+app.use('/api/v1/notifications', socialNotificationRoutes);
 app.use('/api/v1/users', userRoutes);
 
 app.use('/api/v1/comments', commentRoutes);

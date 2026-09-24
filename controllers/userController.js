@@ -1,6 +1,11 @@
 const { UnauthenticatedError, BadRequestError,NotFoundError } = require('../errors')
 const { StatusCodes } = require('http-status-codes');
 const User = require('../models/User');
+const { notify, unnotify } = require('../utils/socialNotify');
+
+// Never send credentials to the client - these routes are public.
+const PRIVATE_FIELDS = '-password -tokens -resetPasswordToken -resetPasswordExpires';
+const POPULATE_PUBLIC = { path: 'followers following', select: `${PRIVATE_FIELDS} -email -phone` };
 
 exports.followUser = async (req, res) => {
   const { id } = req.params;//UserId
@@ -33,6 +38,7 @@ exports.followUser = async (req, res) => {
       following.followers.push(id);
       await user.save();
       await following.save();
+      await notify({ recipient: userId, actor: id, type: 'follow' });
     }
     console.log( '\x1b[32m%s\x1b[0m',`You: ${user.username} followed ${following.username}!`)
     res.status(StatusCodes.OK).json({ message: `You: ${user.username} followed ${following.username}!` ,user,following});
@@ -71,6 +77,7 @@ exports.unfollowUser = async (req, res) => {
 
     await user.save();
     await following.save();
+    await unnotify({ recipient: userId, actor: id, type: 'follow' });
     console.log( '\x1b[31m%s\x1b[0m',`You: ${user.username} unfollowed ${following.username}!`)
 
     res.status(StatusCodes.OK).json({ message: `You: ${user.username} unfollowed ${following.username}!` ,user,following});
@@ -82,7 +89,7 @@ exports.getUser = async (req, res) => {
     if(!id){
       throw new BadRequestError('Please Provide a user id')
     }
-    const user = await User.findById(id).populate('followers following');
+    const user = await User.findById(id).select(PRIVATE_FIELDS).populate(POPULATE_PUBLIC);
     if(!user){
       throw new NotFoundError(`No user with id: ${id}`)
     }
@@ -95,11 +102,24 @@ exports.getAllUsers = async (req, res) => {
     if(!limit){
       limit=5;
     }
-    const users = await User.find({}).populate('followers following').sort('-created').limit(limit);
+    const users = await User.find({}).select(`${PRIVATE_FIELDS} -email -phone`).populate(POPULATE_PUBLIC).sort('-created').limit(limit);
     if(!users){
       throw new NotFoundError(`No users found in database`);
     }
     res.status(StatusCodes.OK).json({message:`Users found successfully`,nbHits:users.length,users});
+};
+
+// GET /users/search?q=jo - partial, case-insensitive match on username or name.
+exports.searchUsers = async (req, res) => {
+    const q = String(req.query.q || '').trim().slice(0, 50);
+    if (!q) {
+      return res.status(StatusCodes.OK).json({ nbHits: 0, users: [] });
+    }
+    const pattern = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    const users = await User.find({ $or: [{ username: pattern }, { firstName: pattern }, { lastName: pattern }] })
+      .select('username firstName lastName profile_picture_id followers')
+      .limit(20);
+    res.status(StatusCodes.OK).json({ nbHits: users.length, users });
 };
 
 exports.getUserByName = async (req, res) => {
@@ -108,8 +128,7 @@ exports.getUserByName = async (req, res) => {
       throw new BadRequestError('Please Provide a username')
     }
     // console.warn('Hi')
-    const user = await User.findOne({username:username}).populate('followers following')
-    User
+    const user = await User.findOne({username:username}).select(PRIVATE_FIELDS).populate(POPULATE_PUBLIC)
     if(!user){
       throw new NotFoundError(`No user with username: ${username}`)
     }

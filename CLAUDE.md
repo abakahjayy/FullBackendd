@@ -105,6 +105,16 @@ support, which `<video>` needs for seeking; the older `/posts/image/:id` has no 
 override, any aborted upload hangs the request forever and leaves the partial file behind. Keep the override
 if you touch that file.
 
+**Instagram social features**: `utils/socialNotify.js` `notify()`/`unnotify()` write `models/SocialNotification.js`
+(like/comment/follow, no self-notifications, one row per actor for like/follow) and push a `notification` socket
+event through `utils/socket.js` `emitToUserId`. They are called from `likePosts`/`unlikePosts`, `addComment` and
+`followUser`/`unfollowUser`, and never throw. `GET /api/v1/notifications` and `PATCH /api/v1/notifications/read`
+need auth. Other routes: `GET /users/search?q=` (regex-escaped, must stay above `/users/:id`), `GET /posts/liked/:id`,
+and `GET /posts/saved` plus `PATCH /posts/:postId/save` (auth; `User.saved` holds Posts ids, whereas `User.posts`
+holds GridFS file ids). `getUser`, `getUserByName` and `getAllUsers` strip password, tokens and reset fields,
+including on populated followers and following. `scripts/backfillPostMediaType.js` repairs `Posts.mediaType` for
+posts uploaded before it was recorded.
+
 **Mongoose defaults**: write `default: Date.now` (the function), never `Date.now()`, which is evaluated once
 at startup. `models/Message.js` had that bug, which gave every message the server's start time.
 
