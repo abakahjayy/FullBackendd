@@ -1,13 +1,16 @@
 const axios = require("axios");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError } = require("../errors");
-const { GHANA_BBOX, SERVICE_HUBS, isInGhana, serviceInfo } = require("../utils/ghana.js");
+const { GHANA_BBOX, SERVICE_HUBS, isInGhana, serviceInfo, haversineKm } = require("../utils/ghana.js");
+const { searchPlaces, placesNear, categoryLabel, normalise } = require("../utils/ghanaPlaces.js");
 
 // Address search / reverse geocoding for the CleanBridge location picker.
 // Proxied (instead of the browser calling the geocoder directly) so results
 // are limited to Ghana, cached, and the provider can be swapped in one place.
-// Provider: Photon (OpenStreetMap data, built for search-as-you-type), with
-// Nominatim as a fallback if Photon is down.
+// Providers: Photon (OpenStreetMap data, built for search-as-you-type; good
+// for streets and neighbourhoods), with Nominatim as a fallback if Photon is
+// down, merged with ~28k Ghanaian businesses and landmarks from Overture Maps
+// (utils/ghanaPlaces.js), which OpenStreetMap often lacks.
 const PHOTON = "https://photon.komoot.io";
 const NOMINATIM = "https://nominatim.openstreetmap.org";
 const USER_AGENT = "CleanBridgeGH/1.0 (waste collection app)";
@@ -30,6 +33,15 @@ const bboxParam = `${GHANA_BBOX.minLng},${GHANA_BBOX.minLat},${GHANA_BBOX.maxLng
 
 const unique = (parts) => [...new Set(parts.filter(Boolean))];
 
+// OSM tags -> a short category label ("Restaurant", "Road", "Area").
+const osmCategory = (key, value) => {
+    if (!value || value === "yes") return null;
+    if (key === "highway") return "Road";
+    if (key === "place") return ["city", "town"].includes(value) ? "Town" : "Area";
+    if (key === "boundary" || key === "landuse") return null;
+    return categoryLabel(value);
+};
+
 // Photon feature -> the shape the frontend uses everywhere.
 const fromPhoton = (f) => {
     const p = f.properties;
@@ -50,6 +62,7 @@ const fromPhoton = (f) => {
         postcode: p.postcode || null,
         lat,
         lng,
+        category: osmCategory(p.osm_key, p.osm_value),
     };
 };
 
@@ -73,6 +86,28 @@ const fromNominatim = (r) => {
     };
 };
 
+// Overture place -> the same shape as the OSM results.
+const fromOverture = (p) => {
+    const area = p.locality || null;
+    const secondary = unique([p.street && normalise(p.street) !== normalise(p.name) ? p.street : null, area, p.region]).join(", ");
+    return {
+        id: p.id,
+        name: p.name,
+        label: unique([p.name, secondary]).join(", "),
+        secondary,
+        area,
+        city: area,
+        region: p.region || null,
+        postcode: null,
+        lat: p.lat,
+        lng: p.lng,
+        category: categoryLabel(p.category),
+        phone: p.phone || null,
+        website: p.website || null,
+        source: "overture",
+    };
+};
+
 // =========================
 // GET /geo/search?q=&lat=&lng=   (lat/lng optional: bias results near the user)
 // =========================
@@ -83,32 +118,46 @@ const search = async (req, res) => {
 
     const lat = Number(req.query.lat);
     const lng = Number(req.query.lng);
-    const bias = Number.isFinite(lat) && Number.isFinite(lng) && isInGhana(lat, lng)
-        ? { lat: lat.toFixed(2), lon: lng.toFixed(2) } : {};
+    // Without the user's position, lean towards Accra (where most customers
+    // and hubs are) so "Papaye" finds the restaurants, not villages in Oti.
+    const hasPoint = Number.isFinite(lat) && Number.isFinite(lng) && isInGhana(lat, lng);
+    const center = hasPoint ? { lat, lng } : { lat: SERVICE_HUBS[0].lat, lng: SERVICE_HUBS[0].lng };
+    const bias = { lat: center.lat.toFixed(2), lon: center.lng.toFixed(2) };
 
-    const results = await cached(`s:${q.toLowerCase()}:${bias.lat || ""}:${bias.lon || ""}`, async () => {
+    const osm = await cached(`s:${q.toLowerCase()}:${bias.lat || ""}:${bias.lon || ""}`, async () => {
         try {
             const { data } = await http.get(`${PHOTON}/api/`, {
                 params: { q, limit: 8, lang: "en", bbox: bboxParam, ...bias },
             });
-            return data.features.filter((f) => f.properties.countrycode === "GH").map(fromPhoton);
+            return data.features.filter((f) => f.properties.countrycode === "GH").map((f) => ({ ...fromPhoton(f), source: "osm" }));
         } catch (err) {
             const { data } = await http.get(`${NOMINATIM}/search`, {
                 params: { q, format: "jsonv2", addressdetails: 1, countrycodes: "gh", limit: 6 },
             });
-            return data.map(fromNominatim);
+            return data.map((r) => ({ ...fromNominatim(r), source: "osm" }));
         }
-    });
+    }).catch(() => []); // OSM down: the local places still answer
 
-    // OSM often has several features for one place (building, shop, node);
-    // show each name + locality once.
-    const seen = new Set();
-    const deduped = results.filter((r) => {
-        const key = `${r.name}|${r.secondary}`.toLowerCase();
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
+    const places = searchPlaces(q, { near: center, limit: 8 });
+    // Order: OSM streets/areas named exactly like the query ("East Legon",
+    // "Spintex Road"), then businesses whose name contains it ("papaye" ->
+    // the Papaye branches), then the other OSM results, then the rest.
+    const phrase = ` ${normalise(q)}`;
+    const osmExact = osm.filter((r) => ` ${normalise(r.name)}`.startsWith(phrase)).slice(0, 3);
+    const osmOther = osm.filter((r) => !osmExact.includes(r));
+    const strong = places.filter((p) => p.nameKey.includes(phrase)).slice(0, 6).map(fromOverture);
+    const weak = places.filter((p) => !p.nameKey.includes(phrase)).map(fromOverture);
+
+    // The same place is often in both datasets (and OSM has several features
+    // per place): keep one per name within ~150 m.
+    const deduped = [];
+    for (const r of [...osmExact, ...strong, ...osmOther, ...weak]) {
+        const key = normalise(r.name);
+        if (deduped.some((k) => normalise(k.name) === key && haversineKm(k, r) < 0.15)) continue;
+        if (deduped.some((k) => `${k.name}|${k.secondary}`.toLowerCase() === `${r.name}|${r.secondary}`.toLowerCase())) continue;
+        deduped.push(r);
+        if (deduped.length === 10) break;
+    }
 
     return res.status(StatusCodes.OK).json({
         results: deduped.map((r) => ({ ...r, service: serviceInfo(r.lat, r.lng) })),
@@ -145,9 +194,19 @@ const reverse = async (req, res) => {
         }
     });
 
+    // A named business or landmark right at the pin (within ~40 m) is a better
+    // label than the street, e.g. "Batoul Pharmacy, Lagos Avenue".
+    const spot = placesNear(lat, lng, { radiusKm: 0.04, limit: 1 })[0];
+    let named = place;
+    if (spot) {
+        const o = fromOverture(spot);
+        const secondary = o.secondary || place?.secondary || "";
+        named = { ...o, secondary, label: unique([o.name, secondary]).join(", ") };
+    }
+
     // Keep the exact point the user chose, not the geocoder's feature centroid.
     return res.status(StatusCodes.OK).json({
-        place: place ? { ...place, lat, lng } : { name: "Pinned location", label: `${lat.toFixed(5)}, ${lng.toFixed(5)}`, lat, lng },
+        place: named ? { ...named, lat, lng } : { name: "Pinned location", label: `${lat.toFixed(5)}, ${lng.toFixed(5)}`, lat, lng },
         service: serviceInfo(lat, lng),
     });
 };
@@ -159,4 +218,56 @@ const hubs = async (req, res) => {
     res.status(StatusCodes.OK).json({ hubs: SERVICE_HUBS });
 };
 
-module.exports = { search, reverse, hubs };
+// =========================
+// GET /geo/photos?lat=&lng=
+// A picture of the place: a satellite snapshot centred on it (always), plus
+// real photos taken within ~150 m from Wikimedia Commons (free, no API key)
+// when anyone has uploaded some - common for landmarks, malls, churches,
+// schools and markets, rarer for small shops.
+// =========================
+const COMMONS = "https://commons.wikimedia.org/w/api.php";
+const stripHtml = (html) => String(html || "").replace(/<[^>]*>/g, "").trim();
+
+const photos = async (req, res) => {
+    const lat = Number(req.query.lat);
+    const lng = Number(req.query.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) throw new BadRequestError("Please provide lat and lng");
+
+    // Esri World Imagery - the same source as the map's satellite layer.
+    const d = 0.0011;
+    const satellite = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${lng - d},${lat - d * 0.6},${lng + d},${lat + d * 0.6}&bboxSR=4326&imageSR=3857&size=480,288&format=jpg&f=image`;
+
+    const list = await cached(`p:${lat.toFixed(4)}:${lng.toFixed(4)}`, async () => {
+        const { data } = await http.get(COMMONS, {
+            params: {
+                action: "query", format: "json", generator: "geosearch", ggsnamespace: 6,
+                ggscoord: `${lat}|${lng}`, ggsradius: 150, ggslimit: 12,
+                prop: "imageinfo|coordinates", iiprop: "url|extmetadata|mime", iiurlwidth: 480,
+            },
+        });
+        return Object.values(data?.query?.pages || {})
+            .filter((p) => /^image\/(jpeg|png|webp)$/.test(p.imageinfo?.[0]?.mime || ""))
+            .map((p) => {
+                const info = p.imageinfo[0];
+                const meta = info.extmetadata || {};
+                const c = p.coordinates?.[0];
+                return {
+                    title: stripHtml(meta.ObjectName?.value) || p.title.replace(/^File:/, "").replace(/\.\w+$/, ""),
+                    thumb: info.thumburl,
+                    page: info.descriptionurl,
+                    author: stripHtml(meta.Artist?.value) || null,
+                    license: stripHtml(meta.LicenseShortName?.value) || null,
+                    km: c ? haversineKm({ lat, lng }, { lat: c.lat, lng: c.lon }) : null,
+                };
+            })
+            .sort((a, b) => (a.km ?? 1) - (b.km ?? 1))
+            .slice(0, 6);
+    }).catch(() => []);
+
+    return res.status(StatusCodes.OK).json({
+        satellite: { url: satellite, credit: "Esri, Maxar, Earthstar Geographics" },
+        photos: list,
+    });
+};
+
+module.exports = { search, reverse, hubs, photos };

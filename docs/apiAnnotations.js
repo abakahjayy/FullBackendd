@@ -180,7 +180,13 @@ const notes = {
     },
     [`GET ${CB}/admin/live`]: { summary: "Live map: hubs, collectors and open pickups (admin)" },
 
-    [`GET ${CB}/geo/search`]: { summary: "Place search (Ghana)", description: "Search-as-you-type suggestions, biased towards `lat`/`lng`." },
+    [`GET ${CB}/geo/search`]: { summary: "Place search (Ghana)", description: "Search-as-you-type suggestions merged from OpenStreetMap (streets, areas) and ~28k Ghanaian businesses and landmarks from Overture Maps, nearest to `lat`/`lng` first (Accra when not given). Each result has a `category` and, for businesses, `phone`/`website` when known." },
+    [`GET ${CB}/geo/photos`]: {
+        summary: "Pictures of a place",
+        description: "A satellite snapshot centred on the point, plus real photos taken within ~150 m from Wikimedia Commons (when anyone has uploaded some). Show the author/licence credit with the photos.",
+        query: { lat: "5.6225", lng: "-0.1736" },
+        response: { satellite: { url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=...&f=image", credit: "Esri, Maxar, Earthstar Geographics" }, photos: [{ title: "Pizza Inn", thumb: "https://upload.wikimedia.org/.../500px-Pizza_Inn.jpg", page: "https://commons.wikimedia.org/wiki/File:Pizza_Inn.jpg", author: "Flixtey", license: "CC BY-SA 4.0", km: 0.02 }] },
+    },
     [`GET ${CB}/geo/reverse`]: { summary: "Address for a map point" },
     [`GET ${CB}/geo/hubs`]: { summary: "Service hubs" },
 

@@ -141,6 +141,14 @@ CleanBridge email links use `emailUrl()` (`utils/cleanbridgeMail.js`): when `CLE
 address they point at the live site instead (override with `CLEANBRIDGE_PUBLIC_URL`); unsubscribe links always hit the
 server that sent the email.
 
+## CleanBridge place search
+
+`/geo/search` merges Photon/OpenStreetMap (streets, areas) with ~28k Ghanaian businesses and landmarks from the
+Overture Maps places dataset, kept in memory by `utils/ghanaPlaces.js` from `data/ghana-places.json.gz` (rebuild
+with `scripts/buildGhanaPlaces.js`). Without a user position it biases to Accra. `/geo/photos` gives an Esri
+satellite snapshot plus nearby Wikimedia Commons photos. Google Maps isn't used because it needs a billing account.
+Keep the "© Overture Maps Foundation" / OpenStreetMap / Esri credits visible in the UI (PlacePreview).
+
 ## Forgot / reset password (every app)
 
 `utils/passwordReset.js` `createPasswordReset({ Model, appKey, appName, send, ... })` gives any user collection the
