@@ -162,6 +162,8 @@ app.use('/api/v1/posts', postRoutes);
 app.use('/api/v1/stories', require('./routes/storyRoutes'));
 // Voice notes in DMs (multipart too); the rest of /api/v1/messages is mounted later
 app.use('/api/v1/messages/voice', require('./routes/messageVoiceRoute'));
+// Instagram clone logged-in uploads (new post, profile photo); JSON routes mounted later
+app.use('/api/v1/instagram', require('./routes/instagramUploadRoutes'));
 app.use('/api/v1/ai', aiImageRoutes);
 app.use('/api/v1/ai', aiModelRoutes);
 

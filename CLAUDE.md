@@ -129,6 +129,10 @@ the last route in `postRoute.js`.
 - Voice notes (`routes/messageVoiceRoute.js`) are mounted early in app.js because the global `express-fileupload` would otherwise eat the multipart body. This applies to any new upload route: `postUpload(field, { accept, maxBytes, kind })` must run before `app.use(fileUpload())`.
 - Edit and delete are sender-only. They emit `messageUpdated` and `messageDeleted` to both people, and delete also removes the audio file from GridFS.
 
+**Instagram logged-in social API** (`/api/v1/instagram`, controllers/instagramSocialController.js): these are versions of post create/delete, like/unlike, comments, follow/unfollow and profile edit/photo that take the user from the JWT and check ownership. They reuse the original handlers by overwriting `req.body.userId` / `req.query.userId` / `req.params.id` with the token's user.
+- Uploads (`POST /posts`, `PATCH /me/photo`) are in routes/instagramUploadRoutes.js, mounted before express-fileupload.
+- The original open routes (`/api/v1/posts`, `/users/:id/follow`, `/comments`...) are deliberately unchanged: GHGPT-main's Chatbot still calls them without a token. Lock them only once no client uses them.
+
 **Mongoose defaults**: write `default: Date.now` (the function), never `Date.now()`, which is evaluated once
 at startup. `models/Message.js` had that bug, which gave every message the server's start time.
 
