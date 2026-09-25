@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { StatusCodes } = require('http-status-codes');
 const User = require('../models/User');
 const { BadRequestError } = require('../errors');
@@ -45,6 +46,64 @@ exports.setEmailPreference = async (req, res) => {
     if (typeof emailNotifications !== 'boolean') throw new BadRequestError('emailNotifications must be true or false');
     await User.updateOne({ _id: req.user.userId }, { emailNotifications });
     res.status(StatusCodes.OK).json({ emailNotifications });
+};
+
+// ---- Sign-up / sign-in emails ---------------------------------------------
+// POST /api/v1/instagram/events { type: 'signup' | 'login', deviceId } (auth)
+// Sent by the Instagram app after a successful sign-up or sign-in, so the shared
+// /api/v1/auth routes (used by other apps too) stay untouched.
+// - signup (or first sign-in of an account created in the last day, e.g. via Google):
+//   a welcome email, once.
+// - login from a device this account hasn't used before: a "new sign-in" security
+//   email (sent even if activity emails are off, like Instagram's).
+const MAX_DEVICES = 10;
+const deviceKey = (id) => crypto.createHash('sha256').update(String(id)).digest('hex').slice(0, 32);
+const describeDevice = (ua = '') => {
+    const os = /Windows/.test(ua) ? 'Windows' : /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iPhone/iPad' : /Mac OS X/.test(ua) ? 'Mac' : /Linux/.test(ua) ? 'Linux' : 'a device';
+    const browser = /Edg\//.test(ua) ? 'Edge' : /Chrome\//.test(ua) ? 'Chrome' : /Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : 'a browser';
+    return `${browser} on ${os}`;
+};
+
+exports.authEvent = async (req, res) => {
+    const { type, deviceId } = req.body;
+    if (!['signup', 'login'].includes(type)) throw new BadRequestError('type must be signup or login');
+    if (!deviceId || String(deviceId).length > 100) throw new BadRequestError('deviceId is required');
+
+    const user = await User.findById(req.user.userId, 'email username firstName emailNotifications instagramWelcomedAt instagramDevices createdAt');
+    const key = deviceKey(deviceId);
+    const knownDevice = user.instagramDevices.includes(key);
+    const isNewAccount = !user.instagramWelcomedAt && user.createdAt && Date.now() - new Date(user.createdAt).getTime() < 24 * 3600e3;
+    let sent = null;
+
+    if (type === 'signup' || isNewAccount) {
+        if (!user.instagramWelcomedAt) {
+            user.instagramWelcomedAt = new Date();
+            sent = 'welcome';
+            sendInstagramEmail(user, {
+                title: `Welcome to Instagram Clone, ${user.firstName || user.username}!`,
+                message: `Your account @${user.username} is ready.
+
+Follow friends, share photos, videos and stories, and chat with voice messages. You can also install the app on your phone or computer from the Get the app page.`,
+                cta: { label: 'Open Instagram Clone', url: siteUrl('/') },
+            });
+        }
+    } else if (!knownDevice && user.instagramDevices.length > 0) {
+        // (the very first device an existing account reports is just remembered)
+        sent = 'new-sign-in';
+        const when = new Date().toUTCString();
+        sendInstagramEmail(user, {
+            title: 'New sign-in to your account',
+            message: `Your account @${user.username} was just signed in to from ${describeDevice(req.headers['user-agent'])} (${when}).
+
+If this was you, there's nothing to do. If it wasn't, change your password right away and sign out of other devices.`,
+            cta: { label: 'Review your account', url: siteUrl(`/${user.username}`) },
+            force: true, // security email
+        });
+    }
+
+    if (!knownDevice) user.instagramDevices = [key, ...user.instagramDevices].slice(0, MAX_DEVICES);
+    await user.save();
+    res.status(StatusCodes.OK).json({ ok: true, sent });
 };
 
 // ---- App updates (admin) ----------------------------------------------------

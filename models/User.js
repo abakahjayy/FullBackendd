@@ -78,6 +78,10 @@ const UserSchema = new mongoose.Schema({
     ],
     // Instagram clone activity/update emails (unsubscribe link sets this false)
     emailNotifications: { type: Boolean, default: true },
+    // Instagram clone: welcome email sent once; hashed ids of devices that have signed
+    // in (a new one triggers a "new sign-in" email). See instagramController.authEvent.
+    instagramWelcomedAt: { type: Date, default: null },
+    instagramDevices: { type: [String], default: [] },
     // Instagram "Saved" - Posts document ids (not GridFS file ids like `posts` above)
     saved: [{ type: mongoose.Schema.Types.ObjectId, ref: "Posts" }],
     tokens: [{ type: String }], // Array to store tokens
