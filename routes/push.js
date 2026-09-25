@@ -4,7 +4,8 @@ const { StatusCodes } = require('http-status-codes');
 const authMiddleware = require('../middleware/auth');
 const cleanbridgeAuth = require('../middleware/cleanbridgeAuth');
 const { BadRequestError } = require('../errors');
-const { getPublicKey, pushToUser, saveSubscription, removeSubscription } = require('../utils/push');
+const { getPublicKey, pushToUser, pushToSubscription, saveSubscription, removeSubscription } = require('../utils/push');
+const User = require('../models/User');
 
 // Web Push device notifications for every app (/api/v1/push). See utils/push.js.
 const router = express.Router();
@@ -17,6 +18,19 @@ const TEST_MESSAGES = {
     cleanbridge: { title: 'CleanBridge notifications are on', body: "You'll get pickup updates on this device.", url: '/notifications' },
 };
 
+// Right after a device turns notifications on (or a different account signs in on it),
+// send it one notification, so the user sees it working in the notification bar.
+async function confirmDevice({ subscription, isNew }, app, userId) {
+    if (!isNew) return;
+    let who = '';
+    if (app !== 'cleanbridge') {
+        const user = await User.findById(userId, 'username').lean().catch(() => null);
+        if (user?.username) who = `Signed in as @${user.username}. `;
+    }
+    const msg = TEST_MESSAGES[app];
+    await pushToSubscription(subscription, { ...msg, body: who + msg.body, tag: 'push-on' });
+}
+
 router.get('/public-key', async (req, res) => {
     res.status(StatusCodes.OK).json({ publicKey: await getPublicKey() });
 });
@@ -25,7 +39,8 @@ router.get('/public-key', async (req, res) => {
 router.post('/subscribe', authMiddleware, async (req, res) => {
     const { app, subscription } = req.body;
     if (!USER_APPS.includes(app)) throw new BadRequestError(`app must be one of: ${USER_APPS.join(', ')}`);
-    await saveSubscription({ userId: req.user.userId, realm: 'user', app, subscription, userAgent: req.headers['user-agent'] });
+    const saved = await saveSubscription({ userId: req.user.userId, realm: 'user', app, subscription, userAgent: req.headers['user-agent'] });
+    confirmDevice(saved, app, req.user.userId);
     res.status(StatusCodes.CREATED).json({ subscribed: true });
 });
 
@@ -43,7 +58,8 @@ router.post('/test', authMiddleware, testLimiter, async (req, res) => {
 
 // CleanBridge has its own user collection and tokens.
 router.post('/cleanbridge/subscribe', cleanbridgeAuth, async (req, res) => {
-    await saveSubscription({ userId: req.user.userId, realm: 'cleanbridge', app: 'cleanbridge', subscription: req.body.subscription, userAgent: req.headers['user-agent'] });
+    const saved = await saveSubscription({ userId: req.user.userId, realm: 'cleanbridge', app: 'cleanbridge', subscription: req.body.subscription, userAgent: req.headers['user-agent'] });
+    confirmDevice(saved, 'cleanbridge', req.user.userId);
     res.status(StatusCodes.CREATED).json({ subscribed: true });
 });
 

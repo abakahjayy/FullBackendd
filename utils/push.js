@@ -131,13 +131,27 @@ async function saveSubscription({ userId, realm = 'user', app, subscription, use
         throw err;
     }
     // One row per device endpoint; re-subscribing moves it to the current user/app.
-    return PushSubscription.findOneAndUpdate(
+    const before = await PushSubscription.findOne({ endpoint }, 'userId realm app').lean();
+    const subscriptionDoc = await PushSubscription.findOneAndUpdate(
         { endpoint },
         { userId, realm, app, endpoint, keys: { p256dh: keys.p256dh, auth: keys.auth }, userAgent: String(userAgent || '').slice(0, 300) },
         { upsert: true, new: true, setDefaultsOnInsert: true }
     );
+    // isNew: this device wasn't linked to this account/app before (first time on, or a different user signed in).
+    const isNew = !before || String(before.userId) !== String(userId) || before.realm !== realm || before.app !== app;
+    return { subscription: subscriptionDoc, isNew };
+}
+
+/** Notify one device only (e.g. "notifications are on" right after it subscribes). Never throws. */
+async function pushToSubscription(subscriptionDoc, payload) {
+    try {
+        return await sendToSubscriptions([subscriptionDoc], { ...payload, app: payload.app || subscriptionDoc.app });
+    } catch (err) {
+        console.error('pushToSubscription failed:', err.message);
+        return 0;
+    }
 }
 
 const removeSubscription = (endpoint, userId) => PushSubscription.deleteOne({ endpoint, ...(userId && { userId }) });
 
-module.exports = { getPublicKey, pushToUser, pushToAdmins, saveSubscription, removeSubscription };
+module.exports = { getPublicKey, pushToUser, pushToAdmins, pushToSubscription, saveSubscription, removeSubscription };

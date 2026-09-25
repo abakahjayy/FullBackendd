@@ -3,6 +3,7 @@ const { StatusCodes } = require('http-status-codes');
 const User = require('../models/User');
 const { BadRequestError } = require('../errors');
 const { sendInstagramEmail, verifyUnsubscribeToken, siteUrl, emailEnabled } = require('../utils/instagramMail');
+const { pushToUser } = require('../utils/push');
 
 // ---- Unsubscribe (same pattern as controllers/cleanbridgeEmail.js) ----------
 // GET shows a confirmation page (link scanners open GET links, so GET changes
@@ -99,6 +100,17 @@ If this was you, there's nothing to do. If it wasn't, change your password right
             cta: { label: 'Review your account', url: siteUrl(`/${user.username}`) },
             force: true, // security email
         });
+    }
+
+    // Every other sign-in: a device notification only (the welcome and new-device
+    // emails above already push one).
+    if (type === 'login' && !sent) {
+        pushToUser(user._id, {
+            title: 'Signed in to Nsoro',
+            body: `@${user.username} signed in on ${describeDevice(req.headers['user-agent'])}.`,
+            url: '/',
+            tag: 'ig-login',
+        }, { app: 'instagram' });
     }
 
     if (!knownDevice) user.instagramDevices = [key, ...user.instagramDevices].slice(0, MAX_DEVICES);
