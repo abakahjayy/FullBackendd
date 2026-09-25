@@ -17,19 +17,21 @@ const userChatsSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
+        // Pinned chats are listed first in GH-GPT's sidebar.
+        pinned: { type: Boolean, default: false },
         createdAt: {
           type: Date,
-          default:Date.now()
+          default: Date.now
         },
         created:{
           type:Number,
-          default:Date.now()
+          default: Date.now
         },
       },
     ],
     created:{
       type:Number,
-      default:Date.now()
+      default: Date.now
     },
   },
   { timestamps: true }

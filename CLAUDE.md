@@ -173,6 +173,35 @@ environments stay in sync. Vars actually read via `process.env.*` in code: `MONG
 > treat those as already exposed if this repo/remote has ever been public or shared, and get the user's
 > explicit go-ahead before rotating keys or rewriting history — don't do it unilaterally.
 
+## GH-GPT (`/api/v1/ghgpt/*`)
+
+Backend for the GH-GPT chatbot (frontend: `Desktop/VS Projects/GHGPT-main/GHGPT-main/Chatbot`, repo abakahjayy/GHGPT,
+live at https://gh-gpt.onrender.com). It uses the shared `User` model and the chat models `ChatAi` (history of
+`{ role: 'user'|'model', parts: [{ text }], img? }`) and `UserChatAi` (per-user list of `{ chatId, title, pinned, createdAt }`).
+All `/api/v1/ghgpt` routes take the user from the JWT and only touch that user's chats; the older `/api/v1/ai/*`
+routes (userId in the URL, no auth) are kept for existing clients.
+- **AI** (`utils/ghgptAi.js`): `streamChat()` tries OpenRouter (`OPENROUTER_API_KEY`/`OPENROUTER_MODEL`) → OpenAI
+  (`OPENAI_API_KEYS`/`OPENAI_MODEL`) → Pollinations (free, keyless, text-only; `GHGPT_FREE_FALLBACK=false` disables it).
+  A provider that fails with 401/403 is skipped until restart, and a provider that fails before sending text falls
+  through to the next one. OpenRouter answers a revoked key with **401 "User not found."**, which isn't a GH-GPT user
+  problem. `buildMessages()` adds the system prompt, custom instructions and the last 20 messages as context.
+  `utils/askAi.js` (`POST /api/v1/ai/ask`) uses the same chain.
+- **Streaming**: `POST /chats/:chatId/stream` is Server-Sent Events (`token`… `done` {history} → optional `title`, or
+  `error`). Modes `send` / `regenerate` / `edit` (`editIndex` counts the `"."` placeholder a new chat starts with;
+  the controller removes the placeholder and shifts the index). A client disconnect aborts the AI call and saves the
+  partial answer (`_Response stopped._` if empty). New chats get an AI title after the first answer (`generateTitle`,
+  falling back to `heuristicTitle`). Images: `POST /uploads` (routes/ghgptUploadRoutes.js, mounted before
+  express-fileupload) stores to GridFS and returns `fileId`; the stream reads it back for vision models.
+- Also `PATCH /chats/:id/title`, `PATCH /chats/:id/pin`, `POST /chats/:id/email` (the transcript goes to the user's
+  own email, rate limited to 5 per 15 min).
+- **Email** (`utils/ghgptMail.js`, same rules as instagramMail): `POST /events {type, deviceId}` sends the welcome
+  email the first time an account uses GH-GPT and a "new sign-in" alert for unknown devices (`ghgptWelcomedAt`,
+  `ghgptDevices`). GH-GPT has its own opt-out, `User.ghgptEmailNotifications` (`GET /settings`,
+  `PATCH /settings/email`, one-click `/email/unsubscribe`), so it doesn't switch off Instagram emails. Security
+  alerts and requested transcripts use `force`.
+- `UserChatAi` used `default: Date.now()` (evaluated once at startup), so every chat got the server start time.
+  It's now `Date.now`; chats created before the fix keep their wrong dates.
+
 ## Email delivery (every app)
 
 All mail goes through `utils/mailTransport.js` `deliver()` (used by `utils/sendEmail.js` and `utils/cleanbridgeMail.js`).

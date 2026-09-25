@@ -164,6 +164,8 @@ app.use('/api/v1/stories', require('./routes/storyRoutes'));
 app.use('/api/v1/messages/voice', require('./routes/messageVoiceRoute'));
 // Instagram clone logged-in uploads (new post, profile photo); JSON routes mounted later
 app.use('/api/v1/instagram', require('./routes/instagramUploadRoutes'));
+// GH-GPT image upload (multipart); the JSON GH-GPT routes are mounted later
+app.use('/api/v1/ghgpt', require('./routes/ghgptUploadRoutes'));
 app.use('/api/v1/ai', aiImageRoutes);
 app.use('/api/v1/ai', aiModelRoutes);
 
@@ -278,6 +280,8 @@ app.use('/api/v1/comments', commentRoutes);
 
 //This is for the Ai
 app.use('/api/v1/ai', aiRoutes);
+// GH-GPT logged-in API: streaming answers, chat titles, emails, settings
+app.use('/api/v1/ghgpt', require('./routes/ghgpt'));
 
 
 app.use('/api/v1/uniserve', uniServe);

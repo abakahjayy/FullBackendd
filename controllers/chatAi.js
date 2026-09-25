@@ -7,6 +7,7 @@ const Post = require('../models/Posts');
 const Chat = require('../models/ChatAi');
 const UserChats = require('../models/UserChatAi');
 const stringSimilarity = require("string-similarity");
+const { heuristicTitle } = require('../utils/ghgptAi');
 const ImageKit = require("imagekit");
 const imagekit = new ImageKit({
     urlEndpoint: process.env.IMAGE_KIT_ENDPOINT,
@@ -236,7 +237,6 @@ exports.updateChat = async (req, res) => {//This is used to update a chat with a
     const { question, answer, img } = req.body;
     // const userchat = await UserChats.find({userId});
     // console.log('userchat:',userchat)
-    console.log('Body:', req.body)
     // if (!question) {
     //     throw new BadRequestError('You must provide a question from user ')
     // }
@@ -267,8 +267,7 @@ exports.updateChat = async (req, res) => {//This is used to update a chat with a
 
         if (chatIndex !== -1 && userChat.chats[chatIndex].title === ".") {
             // Use first 6 words of question as title (fallback to "New Chat")
-            const newTitle =
-                (question?.trim().split(" ").slice(0, 6).join(" ") || "New Chat").trim();
+            const newTitle = heuristicTitle(question);
 
             userChat.chats[chatIndex].title = newTitle;
             await userChat.save();
@@ -314,6 +313,12 @@ exports.postImage = async (req, res) => {
 
     chat.history.push(aiResponse);
     await chat.save();
+
+    // Name a new chat after its first question (it starts with the "." placeholder).
+    await UserChats.updateOne(
+        { userId, chats: { $elemMatch: { chatId: chat._id, title: '.' } } },
+        { $set: { 'chats.$.title': heuristicTitle(text || 'Image chat') } }
+    );
 
 
 

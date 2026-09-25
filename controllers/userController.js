@@ -141,7 +141,7 @@ exports.editUser = async (req, res) => {
   const {username} = req.params
   const {usernames,bio,firstName,lastName,phone,email} = req.body.updatedUser?req.body.updatedUser:req.body
   console.log(`User: ${username} is editing the profile`)
-  console.log(req.body)
+  // Not logged: the body can carry the user's token.
   if(!username){
     throw new BadRequestError('Please Provide a username')
   }

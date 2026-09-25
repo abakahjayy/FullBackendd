@@ -42,7 +42,7 @@ const signUp = async (req, res) => {
     const { firstName, lastName, username, email, password } = req.body;
     const phone = req.body.phone
     const role = req.body.role
-    console.log(req.body);
+    // Never log req.body here: it contains the plaintext password.
 
 
     // Create a new user
@@ -86,7 +86,7 @@ const signUp = async (req, res) => {
 // Login Route
 const login = async (req, res) => {
     const { email, password } = req.body;
-    console.log(req.body);
+    // Never log req.body here: it contains the plaintext password.
     if (!email || !password) {
         throw new BadRequestError('PLease Provide Email and Password')
     }
