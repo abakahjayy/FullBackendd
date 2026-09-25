@@ -180,12 +180,33 @@ live at https://gh-gpt.onrender.com). It uses the shared `User` model and the ch
 `{ role: 'user'|'model', parts: [{ text }], img? }`) and `UserChatAi` (per-user list of `{ chatId, title, pinned, createdAt }`).
 All `/api/v1/ghgpt` routes take the user from the JWT and only touch that user's chats; the older `/api/v1/ai/*`
 routes (userId in the URL, no auth) are kept for existing clients.
-- **AI** (`utils/ghgptAi.js`): `streamChat()` tries OpenRouter (`OPENROUTER_API_KEY`/`OPENROUTER_MODEL`) → OpenAI
-  (`OPENAI_API_KEYS`/`OPENAI_MODEL`) → Pollinations (free, keyless, text-only; `GHGPT_FREE_FALLBACK=false` disables it).
-  A provider that fails with 401/403 is skipped until restart, and a provider that fails before sending text falls
-  through to the next one. OpenRouter answers a revoked key with **401 "User not found."**, which isn't a GH-GPT user
-  problem. `buildMessages()` adds the system prompt, custom instructions and the last 20 messages as context.
-  `utils/askAi.js` (`POST /api/v1/ai/ask`) uses the same chain.
+- **AI** (`utils/ghgptAi.js`): `streamChat()` tries these in order:
+  1. `OPENROUTER_MODEL`, only if it's set (e.g. a paid model once the account has credits)
+  2. Gemini (`GEMINI_API_KEY`, free tier, reads images)
+  3. free OpenRouter models (`openrouter/free`, gemma, qwen…; override the list with `GHGPT_OPENROUTER_FREE_MODELS`)
+  4. OpenAI
+  5. Pollinations (free, keyless, text-only; `GHGPT_FREE_FALLBACK=false` disables it)
+
+  Free OpenRouter models are shared and often return 429, so several are tried. The account had $0 credits, so
+  the old hardcoded paid model is no longer the default. A provider that fails with 401/403 is skipped until the
+  server restarts. OpenRouter answers a revoked key with **401 "User not found."**, which isn't a GH-GPT user problem.
+  `buildMessages()` builds the context from the system prompt (which includes the ```chart JSON format the frontend
+  draws), the custom instructions, the last 20 messages and any attached document text. `utils/askAi.js`
+  (`POST /api/v1/ai/ask`) uses the same chain.
+- **Documents**: `POST /files` (routes/ghgptUploadRoutes.js, multer memory storage, 20 MB). `utils/ghgptFiles.js`
+  extracts the text:
+  - PDF: pdf-parse, loaded from `pdf-parse/lib/pdf-parse.js` to skip its self-test
+  - Word: mammoth
+  - Excel: exceljs
+  - PowerPoint: jszip
+  - anything else: read as plain text
+
+  The original goes into GridFS and the text into a `models/GhgptFile` doc. The stream takes `fileIds`, and the user
+  message keeps `attachments` and `docText` (ChatAi schema) so follow-up questions can use them.
+- **Images out** (`utils/ghgptImage.js`): `tool: 'image'` creates an image, and so does a prompt that matches
+  `wantsImage()` ("draw…", "create an image of…"). Images come from Pollinations (free, adds a watermark, 5-45 s,
+  retried 3×), or from the paid `GHGPT_IMAGE_MODEL` on OpenRouter if that's set. The file goes into GridFS and is
+  stored as `img` on the model message. The stream sends a `status` heartbeat every 15 s while it waits.
 - **Streaming**: `POST /chats/:chatId/stream` is Server-Sent Events (`token`… `done` {history} → optional `title`, or
   `error`). Modes `send` / `regenerate` / `edit` (`editIndex` counts the `"."` placeholder a new chat starts with;
   the controller removes the placeholder and shifts the index). A client disconnect aborts the AI call and saves the

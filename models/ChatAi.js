@@ -26,6 +26,18 @@ const chatSchema = new mongoose.Schema(
                     ref: 'uploads',
                     required: false,
                 },
+                // GH-GPT: documents attached to this message and their extracted text
+                // (kept so follow-up questions can use them). See controllers/ghgpt.js.
+                attachments: [
+                    {
+                        fileId: { type: mongoose.Types.ObjectId },
+                        name: String,
+                        mime: String,
+                        size: Number,
+                        kind: String,
+                    },
+                ],
+                docText: { type: String, required: false },
             },
         ],
     },

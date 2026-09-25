@@ -8,6 +8,9 @@ const UserChats = require('../models/UserChatAi');
 const { BadRequestError, NotFoundError } = require('../errors');
 const { streamChat, buildMessages, generateTitle, heuristicTitle } = require('../utils/ghgptAi');
 const { sendGhgptEmail, verifyUnsubscribeToken, siteUrl, emailEnabled } = require('../utils/ghgptMail');
+const { generateImage, wantsImage } = require('../utils/ghgptImage');
+const { extractText } = require('../utils/ghgptFiles');
+const GhgptFile = require('../models/GhgptFile');
 
 // GH-GPT (GHGPT-main/Chatbot) logged-in API, mounted at /api/v1/ghgpt.
 // Every route takes the user from the JWT (req.user.userId) and only touches
@@ -46,13 +49,28 @@ async function readImage(fileId) {
 
 // ---- Streaming answers --------------------------------------------------------
 // POST /chats/:chatId/stream  (Server-Sent Events)
-// body: { prompt?, imageId?, customInstructions?, mode?: 'send'|'regenerate'|'edit', editIndex? }
-//   send       - add a new question (text and/or an image uploaded via POST /uploads)
+// body: { prompt?, imageId?, fileIds?, tool?: 'image', customInstructions?,
+//         mode?: 'send'|'regenerate'|'edit', editIndex? }
+//   send       - add a new question (text, an image from POST /uploads and/or
+//                documents from POST /files)
 //   regenerate - replace the last answer with a new one
 //   edit       - replace the user message at editIndex (and everything after it)
-// Events: {type:'token',text} ... {type:'done',history} then maybe {type:'title',title};
-// {type:'error',message} if the AI fails after the stream started.
+//   tool 'image' (or a prompt like "draw a ...") creates an image instead of text.
+// Events: {type:'status',text} {type:'token',text} ... {type:'done',history} then maybe
+// {type:'title',title}; {type:'error',message} if the AI fails after the stream started.
 // If the client disconnects (Stop button) the partial answer is saved.
+const MAX_FILES_PER_MESSAGE = 5;
+const MAX_DOC_TEXT = 120000; // stored on the message for follow-up questions
+
+async function loadOwnFiles(userId, fileIds) {
+    const ids = [...new Set((Array.isArray(fileIds) ? fileIds : []).map(String))].filter((id) => mongoose.Types.ObjectId.isValid(id));
+    if (ids.length > MAX_FILES_PER_MESSAGE) throw new BadRequestError(`Attach at most ${MAX_FILES_PER_MESSAGE} files per message`);
+    if (!ids.length) return [];
+    const files = await GhgptFile.find({ _id: { $in: ids }, userId });
+    if (files.length !== ids.length) throw new NotFoundError('One of the attached files was not found');
+    return ids.map((id) => files.find((f) => String(f._id) === id));
+}
+
 exports.streamMessage = async (req, res) => {
     const userId = req.user.userId;
     const { chatId } = req.params;
@@ -67,17 +85,26 @@ exports.streamMessage = async (req, res) => {
 
     let prompt = String(req.body.prompt || '').trim();
     let imageId = req.body.imageId || null;
+    let files = await loadOwnFiles(userId, req.body.fileIds);
+    let attachments = files.map((f) => ({ fileId: f.fileId, name: f.name, mime: f.mime, size: f.size, kind: f.kind }));
+    let docText = files.map((f) => `# ${f.name}\n${f.text}`).join('\n\n').slice(0, MAX_DOC_TEXT);
+    let documents = files.map((f) => ({ name: f.name, text: f.text }));
+    let makeImage = req.body.tool === 'image';
     if (prompt.length > MAX_PROMPT_CHARS) throw new BadRequestError('Message is too long');
 
     let context; // history sent to the AI before the question
     if (mode === 'regenerate') {
         const last = chat.history[chat.history.length - 1];
         if (!last || last.role !== 'model') throw new BadRequestError('There is no answer to regenerate');
+        makeImage = Boolean(last.img); // regenerating a generated image makes a new one
         chat.history.pop();
         const question = chat.history[chat.history.length - 1];
         if (!question || question.role !== 'user') throw new BadRequestError('There is no question to answer');
         prompt = question.parts?.[0]?.text || '';
         imageId = question.img || null;
+        attachments = question.attachments || [];
+        docText = question.docText || '';
+        documents = docText ? [{ name: attachments.map((a) => a.name).join(', ') || 'document', text: docText }] : [];
         context = chat.history.slice(0, -1);
     } else {
         if (mode === 'edit') {
@@ -85,21 +112,22 @@ exports.streamMessage = async (req, res) => {
             if (!Number.isInteger(index) || index < 0 || index >= chat.history.length || chat.history[index].role !== 'user') {
                 throw new BadRequestError('Invalid message to edit');
             }
-            imageId = imageId || chat.history[index].img || null;
+            const old = chat.history[index];
+            imageId = imageId || old.img || null;
+            if (!files.length && old.docText) {
+                attachments = old.attachments || [];
+                docText = old.docText;
+                documents = [{ name: attachments.map((a) => a.name).join(', ') || 'document', text: docText }];
+            }
             chat.history.splice(index); // drop the old question and everything after it
         }
-        if (!prompt && !imageId) throw new BadRequestError('Please type a message or attach an image');
+        if (!prompt && !imageId && !documents.length) throw new BadRequestError('Please type a message or attach a file');
         context = chat.history.slice();
+        if (!makeImage && !imageId && !documents.length) makeImage = wantsImage(prompt);
     }
+    if (makeImage && !prompt) throw new BadRequestError('Describe the image you want');
 
-    const image = imageId ? await readImage(imageId) : null;
-    const messages = buildMessages({
-        history: context,
-        prompt: prompt || 'What is in this image?',
-        imageBase64: image?.base64,
-        imageMime: image?.mime,
-        customInstructions,
-    });
+    const image = !makeImage && imageId ? await readImage(imageId) : null;
 
     // Start the event stream.
     res.status(StatusCodes.OK);
@@ -120,28 +148,62 @@ exports.streamMessage = async (req, res) => {
         if (!res.writableEnded) controller.abort();
     });
 
-    let result;
+    let answer;
+    let answerImg = null;
+    let provider;
+    let aborted = false;
     try {
-        result = await streamChat({ messages, signal: controller.signal, onToken: (text) => send({ type: 'token', text }) });
+        if (makeImage) {
+            send({ type: 'status', text: 'Creating image…' });
+            // The free generator can take ~45 s; keep the connection busy so proxies don't close it.
+            let waited = 0;
+            const heartbeat = setInterval(() => {
+                waited += 15;
+                send({ type: 'status', text: waited >= 30 ? 'Still painting… this can take up to a minute' : 'Creating image…' });
+            }, 15000);
+            const generated = await generateImage(prompt).finally(() => clearInterval(heartbeat));
+            answerImg = generated.fileId;
+            provider = generated.source;
+            answer = `Here's the image you asked for: *${generated.description.slice(0, 300)}*`;
+        } else {
+            if (documents.length) send({ type: 'status', text: `Reading ${documents.length === 1 ? documents[0].name : `${documents.length} files`}…` });
+            const messages = buildMessages({
+                history: context,
+                prompt: prompt || (image ? 'What is in this image?' : ''),
+                imageBase64: image?.base64,
+                imageMime: image?.mime,
+                customInstructions,
+                documents,
+            });
+            const result = await streamChat({ messages, signal: controller.signal, onToken: (text) => send({ type: 'token', text }) });
+            aborted = Boolean(result.aborted);
+            provider = result.provider;
+            answer = result.text || (aborted ? '_Response stopped._' : '');
+        }
     } catch (err) {
         send({ type: 'error', message: err.message || 'The AI could not answer. Please try again.' });
         return res.end();
     }
 
-    const answer = result.text || (result.aborted ? '_Response stopped._' : '');
     if (mode !== 'regenerate') {
-        chat.history.push({ role: 'user', parts: [{ text: prompt }], ...(imageId && { img: imageId }) });
+        chat.history.push({
+            role: 'user',
+            parts: [{ text: prompt }],
+            ...(imageId && { img: imageId }),
+            ...(attachments.length && { attachments, docText }),
+        });
     }
-    chat.history.push({ role: 'model', parts: [{ text: answer }] });
+    chat.history.push({ role: 'model', parts: [{ text: answer }], ...(answerImg && { img: answerImg }) });
     await chat.save();
 
-    send({ type: 'done', history: chat.history, provider: result.provider, stopped: Boolean(result.aborted) });
+    send({ type: 'done', history: chat.history, provider, stopped: aborted });
 
     // Name new chats after their first exchange.
     const userChats = await UserChats.findOne({ userId });
     const entry = userChats?.chats.find((c) => String(c.chatId) === String(chatId));
     if (entry && (!entry.title || entry.title === PLACEHOLDER || entry.title === 'New Chat')) {
-        entry.title = result.aborted ? heuristicTitle(prompt || 'Image chat') : await generateTitle(prompt || 'An image', answer);
+        const topic = prompt || attachments.map((a) => a.name).join(', ') || 'Image chat';
+        entry.title = aborted || makeImage ? heuristicTitle(topic) : await generateTitle(topic, answer);
         await userChats.save();
         send({ type: 'title', title: entry.title });
     }
@@ -154,6 +216,45 @@ exports.streamMessage = async (req, res) => {
 exports.uploadImage = async (req, res) => {
     if (!req.file) throw new BadRequestError('Please attach an image');
     res.status(StatusCodes.CREATED).json({ fileId: req.file.id, url: `/api/v1/ai/image/${req.file.id}` });
+};
+
+// ---- Documents ----------------------------------------------------------------
+// POST /files (multipart field "file", held in memory) -> the stored document.
+// The original goes to GridFS; its text is extracted now so every model can use it.
+exports.uploadFile = async (req, res) => {
+    if (!req.file) throw new BadRequestError('Please attach a file');
+    const { originalname: name, mimetype: mime, size, buffer } = req.file;
+    const extracted = await extractText(buffer, name, mime);
+
+    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
+    const fileId = await new Promise((resolve, reject) => {
+        const upload = bucket.openUploadStream(name, { contentType: mime || 'application/octet-stream' });
+        upload.on('error', reject).on('finish', () => resolve(upload.id));
+        upload.end(buffer);
+    });
+
+    const doc = await GhgptFile.create({
+        userId: req.user.userId,
+        fileId,
+        name,
+        mime,
+        size,
+        kind: extracted.kind,
+        pages: extracted.pages,
+        text: extracted.text,
+        truncated: extracted.truncated,
+    });
+    res.status(StatusCodes.CREATED).json({
+        id: doc._id,
+        fileId,
+        name,
+        mime,
+        size,
+        kind: extracted.kind,
+        pages: extracted.pages,
+        chars: extracted.text.length,
+        truncated: extracted.truncated,
+    });
 };
 
 // ---- Chat list management -------------------------------------------------------
