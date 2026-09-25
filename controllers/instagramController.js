@@ -21,7 +21,7 @@ exports.unsubscribePage = async (req, res) => {
         return res.status(400).send(page('Link not valid', "<h1>This link isn't valid</h1><p>You can turn emails off in the app: Edit profile → Email notifications.</p>"));
     }
     const safeToken = String(req.query.token).replace(/[^\w.-]/g, '');
-    res.send(page('Stop emails', `<h1>Stop Instagram Clone emails?</h1>
+    res.send(page('Stop emails', `<h1>Stop Nsoro emails?</h1>
 <p>You'll stop getting emails about new followers, comments, messages and app updates. You'll still see everything in the app.</p>
 <form method="post" action="?token=${safeToken}"><button type="submit">Unsubscribe</button></form>`));
 };
@@ -36,7 +36,7 @@ exports.unsubscribe = async (req, res) => {
     await User.updateOne({ _id: userId }, { emailNotifications: false });
     res.send(page('Unsubscribed', `<h1>You're unsubscribed</h1>
 <p>We won't email you any more. Turn emails back on any time from Edit profile.</p>
-<a class="btn" href="${siteUrl('/')}">Open Instagram Clone</a>`));
+<a class="btn" href="${siteUrl('/')}">Open Nsoro</a>`));
 };
 
 // ---- Settings ---------------------------------------------------------------
@@ -80,11 +80,11 @@ exports.authEvent = async (req, res) => {
             user.instagramWelcomedAt = new Date();
             sent = 'welcome';
             sendInstagramEmail(user, {
-                title: `Welcome to Instagram Clone, ${user.firstName || user.username}!`,
+                title: `Welcome to Nsoro, ${user.firstName || user.username}!`,
                 message: `Your account @${user.username} is ready.
 
 Follow friends, share photos, videos and stories, and chat with voice messages. You can also install the app on your phone or computer from the Get the app page.`,
-                cta: { label: 'Open Instagram Clone', url: siteUrl('/') },
+                cta: { label: 'Open Nsoro', url: siteUrl('/') },
             });
         }
     } else if (!knownDevice && user.instagramDevices.length > 0) {

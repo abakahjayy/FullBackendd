@@ -6,7 +6,7 @@ const { pushToUser } = require("./push");
 // (new follower, comment, message while you're away) and admin "app update" emails.
 // Same deliverability rules as utils/cleanbridgeMail.js: sent as EMAIL_USER via
 // utils/mailTransport.js, plain text + simple HTML, RFC 8058 one-click unsubscribe.
-const FROM_NAME = "Instagram Clone";
+const FROM_NAME = "Nsoro";
 const enabled = Boolean(emailProvider);
 
 // Links are opened on phones/other computers, so never point them at localhost.
@@ -38,7 +38,7 @@ const render = ({ name, title, message, cta, unsubscribeUrl }) => {
         message,
         cta ? `\n${cta.label}: ${cta.url}` : "",
         "",
-        "— Instagram Clone",
+        "— Nsoro",
         "",
         `You're receiving this because you have an account on ${siteUrl()}. Stop these emails: ${unsubscribeUrl}`,
     ].join("\n");
@@ -54,13 +54,13 @@ const render = ({ name, title, message, cta, unsubscribeUrl }) => {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;padding:24px 12px;">
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #dbdbdb;border-radius:12px;">
-        <tr><td style="padding:22px 26px 6px;font-size:22px;font-weight:bold;font-family:Georgia,serif;">Instagram</td></tr>
+        <tr><td style="padding:22px 26px 6px;font-size:22px;font-weight:bold;font-family:Georgia,serif;color:#0a7a4b;">Nsoro</td></tr>
         <tr><td style="padding:10px 26px 4px;font-size:19px;font-weight:bold;">${escapeHtml(title)}</td></tr>
         <tr><td style="padding:8px 26px 0;font-size:15px;line-height:1.6;">${escapeHtml(greeting)}</td></tr>
         <tr><td style="padding:8px 26px 8px;font-size:15px;line-height:1.6;">${paragraphs}</td></tr>
         ${cta ? `<tr><td style="padding:4px 26px 22px;"><a href="${escapeHtml(cta.url)}" style="display:inline-block;background:#0095f6;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:bold;">${escapeHtml(cta.label)}</a></td></tr>` : ""}
         <tr><td style="padding:14px 26px 22px;border-top:1px solid #efefef;font-size:12px;line-height:1.5;color:#8e8e8e;">
-          You're receiving this because you have an Instagram Clone account.
+          You're receiving this because you have a Nsoro account.
           <a href="${escapeHtml(unsubscribeUrl)}" style="color:#8e8e8e;">Stop these emails</a>.
         </td></tr>
       </table>

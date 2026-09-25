@@ -13,7 +13,7 @@ const testLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, standardHeade
 const USER_APPS = ['ghgpt', 'instagram'];
 const TEST_MESSAGES = {
     ghgpt: { title: 'GH-GPT notifications are on', body: "You'll get alerts for sign-ins, emails and finished images on this device.", url: '/dashboard' },
-    instagram: { title: 'Instagram notifications are on', body: "You'll get alerts for messages, likes, comments and follows on this device.", url: '/notifications' },
+    instagram: { title: 'Nsoro notifications are on', body: "You'll get alerts for messages, likes, comments and follows on this device.", url: '/notifications' },
     cleanbridge: { title: 'CleanBridge notifications are on', body: "You'll get pickup updates on this device.", url: '/notifications' },
 };
 

@@ -35,7 +35,7 @@ function pushActivity(n) {
         : n.type === 'follow' ? `${who} started following you`
         : `${who} commented: ${n.text || ''}`;
     pushToUser(n.recipient, {
-        title: 'Instagram',
+        title: 'Nsoro',
         body: text,
         url: n.type === 'follow' ? `/${who}` : '/notifications',
         tag: `ig-${n.type}-${n.post?._id || who}`,
@@ -48,7 +48,7 @@ function emailActivity(n) {
         const recipient = await User.findById(n.recipient, 'email emailNotifications username firstName');
         const who = n.actor?.username || 'Someone';
         const email = n.type === 'follow'
-            ? { title: `${who} started following you`, message: `${who} is now following you on Instagram Clone.`, cta: { label: 'View profile', url: siteUrl(`/${who}`) } }
+            ? { title: `${who} started following you`, message: `${who} is now following you on Nsoro.`, cta: { label: 'View profile', url: siteUrl(`/${who}`) } }
             : { title: `${who} commented on your post`, message: `${who} commented: "${n.text}"`, cta: { label: 'View post', url: siteUrl(`/p/${n.post?._id || ''}`) } };
         await sendInstagramEmail(recipient, { ...email, kind: n.type, throttle: true, push: false });
     })().catch((err) => console.warn('activity email failed:', err.message));
@@ -71,7 +71,7 @@ function emailNewMessage(senderId, recipientId) {
         ]);
         await sendInstagramEmail(recipient, {
             title: `New message from ${sender?.username || 'someone'}`,
-            message: `${sender?.username || 'Someone'} sent you a message on Instagram Clone.`,
+            message: `${sender?.username || 'Someone'} sent you a message on Nsoro.`,
             cta: { label: 'Open messages', url: siteUrl(`/messages/${senderId}`) },
             kind: `message:${senderId}`,
             throttle: true,
