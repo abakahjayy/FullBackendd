@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { deliver, emailProvider } = require("./mailTransport");
+const { pushToUser } = require("./push");
 
 // Email for GH-GPT (GHGPT-main/Chatbot): welcome, new sign-in alerts and
 // "email me this chat". Same deliverability rules as utils/instagramMail.js:
@@ -91,7 +92,16 @@ const render = ({ name, title, message, blocks, cta, unsubscribeUrl }) => {
  * Respects user.ghgptEmailNotifications unless `force` (security alerts,
  * emails the user explicitly asked for).
  */
-async function sendGhgptEmail(user, { title, message, blocks, cta, force = false }) {
+async function sendGhgptEmail(user, { title, message, blocks, cta, force = false, push = true }) {
+    // The same news as a notification on the user's devices (if they allowed it).
+    if (push && user?._id) {
+        pushToUser(user._id, {
+            title,
+            body: String(message || "").split(/\n{2,}/)[0],
+            url: cta?.url ? cta.url.replace(/^https?:\/\/[^/]+/, "") || "/" : "/dashboard",
+            tag: `ghgpt-${title}`.slice(0, 60),
+        }, { app: "ghgpt" });
+    }
     if (!enabled || !user?.email) return false;
     if (user.ghgptEmailNotifications === false && !force) return false;
 

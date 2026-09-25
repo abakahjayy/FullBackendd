@@ -223,6 +223,32 @@ routes (userId in the URL, no auth) are kept for existing clients.
 - `UserChatAi` used `default: Date.now()` (evaluated once at startup), so every chat got the server start time.
   It's now `Date.now`; chats created before the fix keep their wrong dates.
 
+## Device notifications - Web Push (every app)
+
+`utils/push.js` + `models/PushSubscription.js` + `routes/push.js` (`/api/v1/push`).
+
+**Keys and routes**
+- VAPID keys come from `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` if set. Otherwise they're generated once and stored in MongoDB (`appsettings`, `_id: 'vapid'`), so every environment on the same database shares them with no setup. Changing the keys breaks every existing subscription.
+- `GET /public-key` (no auth).
+- `POST /subscribe` | `/unsubscribe` | `/test` with `{ app: 'ghgpt'|'instagram' }`, using the shared User JWT.
+- `/cleanbridge/subscribe` | `/unsubscribe` | `/test` use the CleanBridge JWT (`realm: 'cleanbridge'`).
+
+**Sending**
+- `pushToUser(userId, { title, body, url, tag }, { app, realm })` and `pushToAdmins(payload)` never throw.
+- Subscriptions that the push service answers with 404/410 are deleted.
+- `pushToAdmins` reaches admin accounts, the account whose email is `EMAIL_USER`, and `OWNER_ALERT_USERNAMES` (default `jayy`).
+
+**Where pushes come from**
+- `sendGhgptEmail` and `sendInstagramEmail` push the same news as the email, unless called with `push: false`.
+- `socialNotify` pushes every like, comment and follow, and every DM through `emailNewMessage`.
+- CleanBridge `notify()` pushes every notification.
+- The portfolio contact and order forms push to the owner.
+- GH-GPT pushes "Your image is ready" when the user left before a generated image finished.
+
+**Clients**
+- Each frontend's service worker shows the notification. It skips it while the app is focused, except for `tag: 'test'`.
+- iPhone/iPad only allow web push for apps added to the Home Screen.
+
 ## Email delivery (every app)
 
 All mail goes through `utils/mailTransport.js` `deliver()` (used by `utils/sendEmail.js` and `utils/cleanbridgeMail.js`).

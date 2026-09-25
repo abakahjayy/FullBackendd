@@ -2,6 +2,7 @@ const SocialNotification = require('../models/SocialNotification');
 const { emitToUserId, isUserOnline } = require('./socket');
 const User = require('../models/User');
 const { sendInstagramEmail, siteUrl } = require('./instagramMail');
+const { pushToUser } = require('./push');
 
 // profile_picture is the Google photo URL for Google sign-in accounts
 const ACTOR_FIELDS = 'username firstName lastName profile_picture_id profile_picture';
@@ -20,10 +21,25 @@ async function notify({ recipient, actor, type, post, text }) {
             .populate('actor', ACTOR_FIELDS)
             .populate('post', 'postId mediaType');
         emitToUserId(String(recipient), 'notification', full);
+        pushActivity(full);
         if (type !== 'like') emailActivity(full); // likes stay in-app only - too frequent for email
     } catch (err) {
         console.warn('notify failed:', err.message);
     }
+}
+
+// Device notification for every activity, likes included (the app suppresses it when open).
+function pushActivity(n) {
+    const who = n.actor?.username || 'Someone';
+    const text = n.type === 'like' ? `${who} liked your post`
+        : n.type === 'follow' ? `${who} started following you`
+        : `${who} commented: ${n.text || ''}`;
+    pushToUser(n.recipient, {
+        title: 'Instagram',
+        body: text,
+        url: n.type === 'follow' ? `/${who}` : '/notifications',
+        tag: `ig-${n.type}-${n.post?._id || who}`,
+    }, { app: 'instagram' });
 }
 
 // Fire-and-forget: email must never slow down or fail the action itself.
@@ -34,12 +50,19 @@ function emailActivity(n) {
         const email = n.type === 'follow'
             ? { title: `${who} started following you`, message: `${who} is now following you on Instagram Clone.`, cta: { label: 'View profile', url: siteUrl(`/${who}`) } }
             : { title: `${who} commented on your post`, message: `${who} commented: "${n.text}"`, cta: { label: 'View post', url: siteUrl(`/p/${n.post?._id || ''}`) } };
-        await sendInstagramEmail(recipient, { ...email, kind: n.type, throttle: true });
+        await sendInstagramEmail(recipient, { ...email, kind: n.type, throttle: true, push: false });
     })().catch((err) => console.warn('activity email failed:', err.message));
 }
 
-// "You have new messages" - only when the recipient isn't connected right now.
+// "You have new messages": a device notification for every message (the app hides it
+// while it's open), plus an email only when the recipient isn't connected right now.
 function emailNewMessage(senderId, recipientId) {
+    User.findById(senderId, 'username').lean().then((sender) => pushToUser(recipientId, {
+        title: sender?.username || 'New message',
+        body: 'Sent you a message',
+        url: `/messages/${senderId}`,
+        tag: `ig-msg-${senderId}`,
+    }, { app: 'instagram' })).catch(() => {});
     if (isUserOnline(recipientId)) return;
     (async () => {
         const [sender, recipient] = await Promise.all([
@@ -52,6 +75,7 @@ function emailNewMessage(senderId, recipientId) {
             cta: { label: 'Open messages', url: siteUrl(`/messages/${senderId}`) },
             kind: `message:${senderId}`,
             throttle: true,
+            push: false,
         });
     })().catch((err) => console.warn('message email failed:', err.message));
 }

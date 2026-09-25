@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { deliver, emailProvider } = require("./mailTransport");
+const { pushToUser } = require("./push");
 
 // Email for the Instagram clone (React-products/Instagram): activity emails
 // (new follower, comment, message while you're away) and admin "app update" emails.
@@ -78,7 +79,15 @@ const lastSent = new Map();
  * Send one email to a User. Never throws. Respects user.emailNotifications
  * unless force. `kind` + `throttle` limit repeats of activity emails.
  */
-async function sendInstagramEmail(user, { title, message, cta, kind, throttle = false, force = false }) {
+async function sendInstagramEmail(user, { title, message, cta, kind, throttle = false, force = false, push = true }) {
+    if (push && user?._id) {
+        pushToUser(user._id, {
+            title,
+            body: String(message || "").split(/\n{2,}/)[0],
+            url: cta?.url ? cta.url.replace(/^https?:\/\/[^/]+/, "") || "/" : "/",
+            tag: `ig-${kind || title}`.slice(0, 60),
+        }, { app: "instagram" });
+    }
     if (!enabled || !user?.email) return false;
     if (user.emailNotifications === false && !force) return false;
     if (throttle && kind) {

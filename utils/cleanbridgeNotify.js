@@ -3,6 +3,7 @@ const CleanBridgeUser = require("../models/CleanBridgeUser.js");
 const { sendCleanbridgeEmail, emailUrl } = require("./cleanbridgeMail.js");
 const { publish } = require("./cleanbridgeEvents.js");
 const { toNotificationDTO } = require("./cleanbridge.js");
+const { pushToUser } = require("./push.js");
 
 /**
  * In-app notification + email update for one CleanBridge user.
@@ -15,6 +16,13 @@ const notify = async (userId, title, message, { pickupId = null, ctaLabel, ctaPa
     const notification = await Notification.create({ userId, title, message, pickupId });
     // Instant in-app update for anyone with the app open.
     publish(userId, "notification", { ...toNotificationDTO(notification), kind });
+    // Device notification (works when the app is closed).
+    pushToUser(userId, {
+        title,
+        body: message,
+        url: ctaPath || (pickupId ? `/pickups/${pickupId}` : "/notifications"),
+        tag: pickupId ? `cb-pickup-${pickupId}` : undefined,
+    }, { app: "cleanbridge", realm: "cleanbridge" });
 
     if (email) {
         setImmediate(async () => {

@@ -11,6 +11,7 @@ const { sendGhgptEmail, verifyUnsubscribeToken, siteUrl, emailEnabled } = requir
 const { generateImage, wantsImage } = require('../utils/ghgptImage');
 const { extractText } = require('../utils/ghgptFiles');
 const GhgptFile = require('../models/GhgptFile');
+const { pushToUser } = require('../utils/push');
 
 // GH-GPT (GHGPT-main/Chatbot) logged-in API, mounted at /api/v1/ghgpt.
 // Every route takes the user from the JWT (req.user.userId) and only touches
@@ -197,6 +198,10 @@ exports.streamMessage = async (req, res) => {
     await chat.save();
 
     send({ type: 'done', history: chat.history, provider, stopped: aborted });
+    if (answerImg && res.writableEnded === false && res.destroyed) {
+        // They closed the app while the image was being created: tell them it's ready.
+        pushToUser(userId, { title: 'Your image is ready', body: prompt.slice(0, 120), url: `/chat/${chatId}`, tag: `ghgpt-image-${chatId}` }, { app: 'ghgpt' });
+    }
 
     // Name new chats after their first exchange.
     const userChats = await UserChats.findOne({ userId });

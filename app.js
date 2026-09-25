@@ -282,6 +282,8 @@ app.use('/api/v1/comments', commentRoutes);
 app.use('/api/v1/ai', aiRoutes);
 // GH-GPT logged-in API: streaming answers, chat titles, emails, settings
 app.use('/api/v1/ghgpt', require('./routes/ghgpt'));
+// Web Push device notifications for every app (utils/push.js)
+app.use('/api/v1/push', require('./routes/push'));
 
 
 app.use('/api/v1/uniserve', uniServe);

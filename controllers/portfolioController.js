@@ -1,6 +1,7 @@
 const ContactSubmission = require('../models/ContactSubmission.js');
 const PortfolioOrder = require('../models/PortfolioOrder.js');
 const { deliver } = require('../utils/mailTransport.js');
+const { pushToAdmins } = require('../utils/push.js');
 
 // Portfolio (portfolio-8jmo.onrender.com) "Contact" and "Order a Website" forms.
 // Each submission is saved, then two emails go out from the owner's Gmail
@@ -90,6 +91,8 @@ const submitContact = async (req, res) => {
     res.status(201).json({ success: true, submission });
 
     const s = submission;
+    // Instant alert on the owner's devices (admin accounts with notifications on).
+    pushToAdmins({ title: `Portfolio message from ${s.fullName}`, body: s.subject || s.message.slice(0, 120), url: PORTFOLIO_URL, tag: 'portfolio-contact' });
     sendInBackground('Contact', [
         {
             fromName: 'Portfolio contact form',
@@ -156,6 +159,7 @@ const submitOrder = async (req, res) => {
     res.status(201).json({ success: true, submission });
 
     const s = submission;
+    pushToAdmins({ title: `New website request from ${s.name}`, body: `${s.projectType}${s.budget ? ` · ${s.budget}` : ''}`, url: PORTFOLIO_URL, tag: 'portfolio-order' });
     const features = s.featuresNeeded;
     sendInBackground('Order', [
         {
