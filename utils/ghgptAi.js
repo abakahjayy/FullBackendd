@@ -22,7 +22,10 @@ ${FENCE}chart
 {"type":"bar","title":"Sales by month","xKey":"month","series":["sales"],"data":[{"month":"Jan","sales":120},{"month":"Feb","sales":150}]}
 ${FENCE}
 Rules: "type" is "bar", "line", "area" or "pie" (pie uses one series). "xKey" names the label field in each data row. "series" lists the names of the numeric fields to plot (not the numbers). Use real numbers, not strings. This is plain text in your answer: never use a tool or function call for charts. You may add a short explanation outside the block.
-The app renders these charts for the user. You cannot create or draw images yourself; image requests are handled by the app's image generator.
+The app renders these charts for the user.
+Images: you CAN give the user new pictures through the app's image generator. When the user wants a picture, photo, drawing, illustration, logo or design created or shown (and isn't asking about an image they attached), reply with exactly one line and nothing else:
+[[IMAGE: a detailed English description of the picture to create]]
+Never write tool calls, JSON "action" objects or DALL-E commands, and never say you can't show images.
 When the user attaches documents, their text is included in the message. Answer using that content, and quote or cite the relevant parts.`;
 
 const MAX_HISTORY_MESSAGES = 20; // recent turns sent as context

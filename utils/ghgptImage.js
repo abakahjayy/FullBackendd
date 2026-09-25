@@ -10,17 +10,54 @@ const { Readable } = require('stream');
 
 const TIMEOUT_MS = 90 * 1000;
 
-// "Draw a cat" / "generate an image of ..." / "make me a logo for ..." etc.
-const IMAGE_INTENT = /\b(generate|create|draw|make|design|paint|render|sketch|produce|imagine|illustrate|show me)\b[^.?!\n]{0,60}\b(image|picture|pic|photo|drawing|illustration|logo|poster|art(work)?|wallpaper|icon|painting|portrait|sketch|banner|flyer|cartoon|meme|avatar)s?\b/i;
+// "Draw a cat" / "generate an image of ..." / "send me a picture of jollof" / "make me a logo" etc.
+const IMAGE_INTENT = /\b(generate|create|draw|make|design|paint|render|sketch|produce|imagine|illustrate|show|send|give|get|find|share|want|need)\b[^.?!\n]{0,60}\b(image|picture|pic|photo|photograph|drawing|illustration|logo|poster|art(work)?|wallpaper|icon|painting|portrait|sketch|banner|flyer|cartoon|meme|avatar)s?\b/i;
 // "Draw a cat", "sketch my house": these verbs mean a picture even without the word image.
 const DRAW_VERB = /^\s*(please\s+)?(can you\s+|could you\s+)?(draw|paint|sketch|illustrate)\b/i;
-const wantsImage = (prompt) => IMAGE_INTENT.test(String(prompt || '')) || DRAW_VERB.test(String(prompt || ''));
+// A request that is just "picture of X" / "an image of X".
+const BARE_REQUEST = /^\s*(please\s+)?(an?\s+)?(image|picture|pic|photo|drawing|illustration)s?\s+of\b/i;
+// Questions ("How do I share a photo?") are about pictures, not requests for one,
+// unless they ask to be shown/sent one ("can you show me a picture of...").
+const QUESTION = /^\s*(how|what|why|where|when|who|which|whose|is|are|was|were|does|do|did|should|would|can i|could i|will)\b/i;
+const ASKS_FOR_ONE = /\b(show|send|give|draw|generate|create|make)\s+(me|us)\b/i;
+const wantsImage = (prompt) => {
+    const p = String(prompt || '');
+    if (QUESTION.test(p) && !ASKS_FOR_ONE.test(p)) return false;
+    return IMAGE_INTENT.test(p) || DRAW_VERB.test(p) || BARE_REQUEST.test(p);
+};
 
-// Keep the description, drop the request wording ("please draw me an image of").
-const cleanPrompt = (prompt) =>
-    String(prompt || '')
-        .replace(/^\s*(please\s+)?(can you\s+|could you\s+)?(generate|create|draw|make|design|paint|render|sketch|produce|imagine|illustrate|show me)\s+(me\s+)?(an?\s+|the\s+)?(image|picture|pic|photo|drawing|illustration|painting)?\s*(of|showing|with|for)?\s*/i, '')
-        .trim() || String(prompt || '').trim();
+// Keep the description, drop the request wording ("please send me a picture of").
+// Only request wording is removed; a plain description ("A steaming plate of ...")
+// is left exactly as written.
+const REQUEST_PHRASE = /^\s*(please\s+)?(can you\s+|could you\s+|i want\s+|i need\s+|i'd like\s+)?((generate|create|draw|make|design|paint|render|sketch|produce|imagine|illustrate|show|send|give|get|find|share)\s+(me\s+|us\s+)?)?((an?|the|some)\s+)?(image|picture|pic|photo|photograph|drawing|illustration|painting)s?\s+(of|showing)\s+/i;
+const REQUEST_VERB = /^\s*(please\s+)?(can you\s+|could you\s+)?(draw|paint|sketch|illustrate|generate|create|make|design|render|produce|imagine)\s+(me\s+|us\s+)?/i;
+const cleanPrompt = (prompt) => {
+    const original = String(prompt || '').trim();
+    const stripped = REQUEST_PHRASE.test(original) ? original.replace(REQUEST_PHRASE, '') : original.replace(REQUEST_VERB, '');
+    return stripped.trim() || original;
+};
+
+// The AI is told to answer picture requests with a single "[[IMAGE: description]]"
+// line; some models instead invent a tool call such as
+//   { "action": "dalle.text2im", "action_input": "{ "prompt": "..." }" }.
+// Returns the picture description from either form, or null.
+function imageRequestFromAnswer(text) {
+    const t = String(text || '');
+    const tag = /\[\[\s*IMAGE\s*:\s*([\s\S]+?)\]\]/i.exec(t);
+    if (tag) return tag[1].trim();
+    if (/dall-?e|text2im|image_gen|generate_image|create_image|image_generation/i.test(t)) {
+        const m = /\\?"prompt\\?"\s*:\s*\\?"([^"\\]{3,})/.exec(t);
+        if (m) return m[1].trim();
+    }
+    return null;
+}
+
+// While streaming: does the answer so far look like it's becoming one of those?
+// (Used to hide raw tool-call text from the user.)
+const looksLikeImageRequest = (partial) => {
+    const t = String(partial || '').trimStart();
+    return /^\[\[/.test(t) || /^(```(json)?\s*)?\{\s*"?(action|tool|name|prompt)"?\s*:/i.test(t) || /dall-?e|text2im/i.test(t.slice(0, 200));
+};
 
 async function saveToGridFS(buffer, contentType, filename) {
     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
@@ -91,4 +128,4 @@ async function generateImage(prompt) {
     return { fileId, source: result.source, description };
 }
 
-module.exports = { generateImage, wantsImage, cleanPrompt };
+module.exports = { generateImage, wantsImage, cleanPrompt, imageRequestFromAnswer, looksLikeImageRequest };

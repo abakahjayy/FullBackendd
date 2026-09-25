@@ -8,7 +8,7 @@ const UserChats = require('../models/UserChatAi');
 const { BadRequestError, NotFoundError } = require('../errors');
 const { streamChat, buildMessages, generateTitle, heuristicTitle } = require('../utils/ghgptAi');
 const { sendGhgptEmail, verifyUnsubscribeToken, siteUrl, emailEnabled } = require('../utils/ghgptMail');
-const { generateImage, wantsImage } = require('../utils/ghgptImage');
+const { generateImage, wantsImage, imageRequestFromAnswer, looksLikeImageRequest } = require('../utils/ghgptImage');
 const { extractText } = require('../utils/ghgptFiles');
 const GhgptFile = require('../models/GhgptFile');
 const { pushToUser } = require('../utils/push');
@@ -107,6 +107,11 @@ exports.streamMessage = async (req, res) => {
         docText = question.docText || '';
         documents = docText ? [{ name: attachments.map((a) => a.name).join(', ') || 'document', text: docText }] : [];
         context = chat.history.slice(0, -1);
+        // A picture request that earlier got a text (or broken tool-call) answer gets a picture now.
+        if (!makeImage && !imageId && !documents.length) {
+            makeImage = wantsImage(prompt) || Boolean(imageRequestFromAnswer(last.parts?.[0]?.text));
+            if (makeImage && !wantsImage(prompt)) prompt = imageRequestFromAnswer(last.parts[0].text);
+        }
     } else {
         if (mode === 'edit') {
             const index = Number(req.body.editIndex) - (hadPlaceholder ? 1 : 0);
@@ -153,19 +158,23 @@ exports.streamMessage = async (req, res) => {
     let answerImg = null;
     let provider;
     let aborted = false;
+    const createImage = async (description) => {
+        send({ type: 'status', text: 'Creating image…' });
+        // The free generator can take ~45 s; keep the connection busy so proxies don't close it.
+        let waited = 0;
+        const heartbeat = setInterval(() => {
+            waited += 15;
+            send({ type: 'status', text: waited >= 30 ? 'Still painting… this can take up to a minute' : 'Creating image…' });
+        }, 15000);
+        const generated = await generateImage(description).finally(() => clearInterval(heartbeat));
+        answerImg = generated.fileId;
+        provider = generated.source;
+        answer = `Here's the image you asked for: *${generated.description.slice(0, 300)}*`;
+    };
+
     try {
         if (makeImage) {
-            send({ type: 'status', text: 'Creating image…' });
-            // The free generator can take ~45 s; keep the connection busy so proxies don't close it.
-            let waited = 0;
-            const heartbeat = setInterval(() => {
-                waited += 15;
-                send({ type: 'status', text: waited >= 30 ? 'Still painting… this can take up to a minute' : 'Creating image…' });
-            }, 15000);
-            const generated = await generateImage(prompt).finally(() => clearInterval(heartbeat));
-            answerImg = generated.fileId;
-            provider = generated.source;
-            answer = `Here's the image you asked for: *${generated.description.slice(0, 300)}*`;
+            await createImage(prompt);
         } else {
             if (documents.length) send({ type: 'status', text: `Reading ${documents.length === 1 ? documents[0].name : `${documents.length} files`}…` });
             const messages = buildMessages({
@@ -176,10 +185,34 @@ exports.streamMessage = async (req, res) => {
                 customInstructions,
                 documents,
             });
-            const result = await streamChat({ messages, signal: controller.signal, onToken: (text) => send({ type: 'token', text }) });
+            // Hold back the first characters until we know whether the model is asking for
+            // an image ("[[IMAGE: ...]]" or an invented tool call) - that text is never shown.
+            let head = '';
+            let forwarding = false;
+            let hidden = false;
+            const onToken = (text) => {
+                if (forwarding) return send({ type: 'token', text });
+                if (hidden) return undefined;
+                head += text;
+                if (looksLikeImageRequest(head)) {
+                    hidden = true;
+                    send({ type: 'status', text: 'Creating image…' });
+                } else if (head.trim().length >= 16) {
+                    forwarding = true;
+                    send({ type: 'token', text: head });
+                }
+                return undefined;
+            };
+            const result = await streamChat({ messages, signal: controller.signal, onToken });
             aborted = Boolean(result.aborted);
             provider = result.provider;
-            answer = result.text || (aborted ? '_Response stopped._' : '');
+            const pictureRequest = !aborted && imageRequestFromAnswer(result.text);
+            if (pictureRequest) {
+                await createImage(pictureRequest);
+            } else {
+                if (!forwarding && head && !hidden) send({ type: 'token', text: head }); // short answer
+                answer = result.text || (aborted ? '_Response stopped._' : '');
+            }
         }
     } catch (err) {
         send({ type: 'error', message: err.message || 'The AI could not answer. Please try again.' });
