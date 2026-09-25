@@ -17,11 +17,11 @@ const SYSTEM_PROMPT = `You are GH-GPT, a friendly and knowledgeable AI assistant
 Give accurate, well-structured answers. Use Markdown: headings for long answers, bullet lists, tables when useful, and fenced code blocks with a language tag for code.
 Be concise for simple questions and thorough for complex ones. If you are not sure about something, say so.
 
-Charts: when the user asks for a graph, chart or plot (or data is clearer as one), include a fenced code block with the language "chart" containing only JSON in this shape:
+Charts: when the user asks for a graph, chart or plot (or data is clearer as one), write the chart as a Markdown fenced code block whose language is "chart" and whose content is only JSON, exactly like this:
 ${FENCE}chart
 {"type":"bar","title":"Sales by month","xKey":"month","series":["sales"],"data":[{"month":"Jan","sales":120},{"month":"Feb","sales":150}]}
 ${FENCE}
-"type" is one of "bar", "line", "area" or "pie" (for pie, use one series). Use real numbers, not strings. You may add a short explanation outside the block.
+Rules: "type" is "bar", "line", "area" or "pie" (pie uses one series). "xKey" names the label field in each data row. "series" lists the names of the numeric fields to plot (not the numbers). Use real numbers, not strings. This is plain text in your answer: never use a tool or function call for charts. You may add a short explanation outside the block.
 The app renders these charts for the user. You cannot create or draw images yourself; image requests are handled by the app's image generator.
 When the user attaches documents, their text is included in the message. Answer using that content, and quote or cite the relevant parts.`;
 
@@ -30,13 +30,39 @@ const MAX_TOKENS = 3000;
 const OLD_DOC_CHARS = 6000; // document text kept for earlier messages in the context
 
 // Free OpenRouter models, most capable first. All of these can also read images.
+// Named models come before openrouter/free, which picks a random (sometimes weak)
+// free model; a busy one fails fast with 429 and the next is tried.
 const DEFAULT_FREE_MODELS = [
-    { id: 'openrouter/free', vision: true },
     { id: 'google/gemma-4-31b-it:free', vision: true },
     { id: 'qwen/qwen3.8-27b:free', vision: true },
     { id: 'google/gemma-4-26b-a4b-it:free', vision: true },
+    { id: 'openrouter/free', vision: true },
     { id: 'nex-agi/nex-n2.5-mini:free', vision: true },
 ];
+
+// Some small models emit chat-template tool calls such as
+//   <|tool_call_start|>[chart(type='bar', xKey='item', data=[{'item': 'rice', 'price': 25}])]<|tool_call_end|>
+// instead of the ```chart block. Convert those into the block the app renders,
+// and drop any other leftover special tokens.
+function repairAnswer(text) {
+    if (!text || !text.includes('<|')) return text;
+    let out = text.replace(/<\|tool_call_start\|>\s*\[?\s*chart\(([\s\S]*?)\)\s*\]?\s*<\|tool_call_end\|>/g, (whole, args) => {
+        try {
+            const json = `{${args}}`
+                .replace(/([{,]\s*)([A-Za-z_]\w*)\s*=/g, '$1"$2":')
+                .replace(/'/g, '"')
+                .replace(/\bTrue\b/g, 'true')
+                .replace(/\bFalse\b/g, 'false')
+                .replace(/\bNone\b/g, 'null');
+            const spec = JSON.parse(json);
+            return `\n${FENCE}chart\n${JSON.stringify(spec)}\n${FENCE}\n`;
+        } catch {
+            return '';
+        }
+    });
+    out = out.replace(/<\|[a-z_]+\|>/g, '');
+    return out.trim();
+}
 
 const deadProviders = new Set();
 
@@ -174,7 +200,7 @@ async function streamChat({ messages, onToken = () => {}, signal, maxTokens = MA
                 }
             }
             if (!text && !signal?.aborted) throw new Error('The AI returned an empty answer');
-            return { text, provider: p.name };
+            return { text: repairAnswer(text), provider: p.name };
         } catch (err) {
             if (signal?.aborted) return { text, provider: p.name, aborted: true };
             if (text) throw err; // already streaming this provider's answer
@@ -219,4 +245,4 @@ function heuristicTitle(question) {
     return clean ? clean.charAt(0).toUpperCase() + clean.slice(1) : 'New chat';
 }
 
-module.exports = { streamChat, completeChat, buildMessages, generateTitle, heuristicTitle };
+module.exports = { streamChat, completeChat, buildMessages, generateTitle, heuristicTitle, repairAnswer };
